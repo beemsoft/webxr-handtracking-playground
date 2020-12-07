@@ -13,6 +13,7 @@ scene is displayed.
 
 ### Demo video
 This is a quick demo for hand tracking in the browser.
+
 [![demo-video](img/video1.jpg)](https://youtu.be/7FFeu797fLk)
 
 ## Usage
