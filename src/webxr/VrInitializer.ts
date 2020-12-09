@@ -36,10 +36,7 @@ export class VrInitializer {
   }
 
   public init() {
-    if (!navigator.xr) {
-      new WebPageManager(this.sceneBuilder);
-    } else {
-      // @ts-ignore
+    if (navigator.xr) { // @ts-ignore
       navigator.xr.isSessionSupported('immersive-vr')
         .then(isSupported => {
           if (isSupported) {
@@ -48,6 +45,8 @@ export class VrInitializer {
             new WebPageManager(this.sceneBuilder);
           }
         });
+    } else {
+      new WebPageManager(this.sceneBuilder);
     }
   }
 }

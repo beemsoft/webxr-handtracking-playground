@@ -106,6 +106,8 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   updateHandPose(result) {
-    this.handPoseManager.renderHands(result);
+    if (this.handPoseManager) {
+      this.handPoseManager.renderHands(result);
+    }
   }
 }

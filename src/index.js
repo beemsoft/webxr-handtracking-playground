@@ -19,7 +19,7 @@ import * as handpose from '@tensorflow-models/handpose';
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
 import {VrInitializer} from "./webxr/VrInitializer";
-import SceneManager from './scene/sceneManager';
+import SceneManager from './scene/SceneManager';
 import {fingerLookupIndices, VIDEO_HEIGHT, VIDEO_WIDTH} from "./shared/hands/HandPoseManager";
 
 let videoWidth, videoHeight, rafID, ctx, canvas, ANCHOR_POINTS,
