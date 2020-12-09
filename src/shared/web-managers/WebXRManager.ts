@@ -17,11 +17,11 @@ export default class WebXRManager {
   private sceneBuilder: SceneManagerInterface;
   private cameraManager = new CameraManager();
   private trackedHandsManager = new TrackedHandsManager(this.scene, this.physicsHandler, this.cameraManager.cameraVR);
+  private timestamp = null;
 
   constructor(sceneBuilder: SceneManagerInterface) {
     this.cameraManager.createVrCamera();
     this.sceneBuilder = sceneBuilder;
-    this.physicsHandler.dt = 1/60;
 
     navigator.xr.requestSession('immersive-vr', {optionalFeatures: ["hand-tracking"]})
       .then(session => {
@@ -52,8 +52,9 @@ export default class WebXRManager {
     this.session.updateRenderState({baseLayer: new XRWebGLLayer(this.session, this.gl)});
   }
 
-  onXRFrame = (t, frame: XRFrameOfReference) => {
+  onXRFrame = (timestamp: DOMHighResTimeStamp, frame: XRFrameOfReference) => {
     this.renderer.clear();
+    this.setDeltaTime(timestamp);
     let session = frame.session;
     session.requestAnimationFrame(this.onXRFrame);
     if (session.inputSources.length === 0) return;
@@ -77,6 +78,17 @@ export default class WebXRManager {
       this.renderScene(frame, pose);
     }
   };
+
+  private setDeltaTime(timestamp: DOMHighResTimeStamp) {
+    if (this.timestamp == null) {
+      this.timestamp = timestamp;
+    } else {
+      const delta = timestamp - this.timestamp;
+      this.timestamp = timestamp;
+      const fps = 1 / (delta / 1000);
+      this.physicsHandler.dt = 1 / fps;
+    }
+  }
 
   private renderScene(frame: XRFrameOfReference, pose: XRDevicePose) {
     if (this.trackedHandsManager.isTrackedHandAvailable(frame)) {

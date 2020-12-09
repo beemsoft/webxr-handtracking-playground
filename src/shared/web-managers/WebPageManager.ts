@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/physicsHandler';
 import "three/examples/js/controls/OrbitControls";
@@ -11,11 +11,11 @@ export default class WebPageManager {
   private readonly physicsHandler: PhysicsHandler;
   // @ts-ignore
   private controls: THREE.OrbitControls;
+  private clock = new Clock();
 
   constructor(sceneManager: SceneManagerInterface) {
     this.sceneBuilder = sceneManager;
     this.physicsHandler = new PhysicsHandler();
-    this.physicsHandler.dt = 1/60;
     this.camera = new PerspectiveCamera();
     this.camera.position.set(0, 0, 1);
     this.renderer = new WebGLRenderer({alpha: false});
@@ -25,10 +25,12 @@ export default class WebPageManager {
     this.addTrackBallControls();
     this.addOutputToPage();
     window.addEventListener( 'resize', this.onWindowResize, false );
+    this.clock.start();
     this.render();
   }
 
   private render = () => {
+    this.physicsHandler.dt = 1 / (1 / this.clock.getDelta());
     this.renderer.setAnimationLoop(this.render);
     this.sceneBuilder.update();
     this.controls.update();
