@@ -9,7 +9,7 @@ import {
   SphereGeometry,
   Vector3
 } from 'three';
-import {Body, Shape, Vec3} from 'cannon';
+import {Body, Shape, Vec3} from 'cannon-es';
 
 const particleGeo = new SphereGeometry( 0.5, 16, 8 );
 const settings = {

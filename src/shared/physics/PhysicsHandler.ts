@@ -1,4 +1,4 @@
-import { Body, ContactMaterial, Material as CannonMaterial, NaiveBroadphase, Quaternion, Shape, World } from "cannon";
+import { Body, ContactMaterial, Material as CannonMaterial, NaiveBroadphase, Quaternion, Shape, World } from "cannon-es";
 import { Material as ThreeMaterial, Mesh, Object3D, Scene } from "three";
 import { BodyToMeshConverter } from './BodyToMeshConverter';
 

@@ -9,7 +9,7 @@ import {
   Vector2,
   WebGLRenderer
 } from 'three';
-import { Body, Material, Sphere, Vec3 } from 'cannon';
+import { Body, Material, Sphere, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../shared/physics/physicsHandler';
 import { SceneHelper } from '../shared/scene/SceneHelper';
 import HandPoseManager from '../shared/hands/HandPoseManager';
@@ -31,7 +31,6 @@ export default class SceneManager implements SceneManagerInterface {
     this.sceneHelper = new SceneHelper(scene);
     this.physicsHandler = physicsHandler;
     this.physicsHandler.world.gravity.set(0, -9.8,0);
-    this.physicsHandler.world.solver.iterations = 30;
     this.sceneHelper.addLight();
     this.addBall();
     this.addCatcher();

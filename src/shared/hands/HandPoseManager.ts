@@ -1,4 +1,4 @@
-import { Body, Box, Vec3 } from 'cannon';
+import { Body, Box, Vec3 } from 'cannon-es';
 import { BoxGeometry, Mesh, MeshPhongMaterial, Scene } from 'three';
 import PhysicsHandler from '../physics/physicsHandler';
 
