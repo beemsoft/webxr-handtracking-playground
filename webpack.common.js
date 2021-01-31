@@ -12,7 +12,8 @@ const plugins = [
 
 module.exports = {
     entry: {
-        ball: './src/demo/ball/src'
+        ball: './src/demo/ball/src',
+        get_ball: './src/demo/get_ball/src'
     },
     module: {
         rules: [

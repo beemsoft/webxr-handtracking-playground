@@ -8,6 +8,7 @@ export default class PhysicsHandler {
   protected readonly bodies: Body[];
   world: World;
   public handMaterial = new CannonMaterial("hand");
+  public groundMaterial = new CannonMaterial("floor");
   private bodyToMeshConverter = new BodyToMeshConverter();
 
   constructor() {
