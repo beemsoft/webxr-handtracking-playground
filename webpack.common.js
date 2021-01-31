@@ -6,13 +6,13 @@ const plugins = [
         THREE: "three"
     }),
     new webpack.ProvidePlugin({
-        CANNON: "cannon"
+        CANNON: "cannon-es"
     })
 ];
 
 module.exports = {
     entry: {
-        handtracking: './src/'
+        ball: './src/demo/ball/src'
     },
     module: {
         rules: [
@@ -36,8 +36,19 @@ module.exports = {
     resolve: {
         extensions: [ '.tsx', '.ts', '.js' ]
     },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                commons: {
+                    name: 'commons',
+                    chunks: 'initial',
+                    minChunks: 2
+                }
+            }
+        }
+    },
     output: {
-        filename: 'dist/bundle.js',
+        filename: 'src/demo/[name]/dist/bundle.js',
         path: path.resolve(__dirname, 'dist')
     }
 };

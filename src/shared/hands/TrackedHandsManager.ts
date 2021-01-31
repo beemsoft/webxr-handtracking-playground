@@ -1,4 +1,4 @@
-import { Body, Box, Vec3 } from 'cannon';
+import { Body, Box, Vec3 } from 'cannon-es';
 import { BoxGeometry, Mesh, MeshPhongMaterial, PerspectiveCamera, Scene, Vector3 } from 'three';
 import PhysicsHandler from '../physics/physicsHandler';
 import {
@@ -9,7 +9,7 @@ import {
   XRJointSpace,
   XRReferenceSpace,
   XRRigidTransform
-} from '../../webxr/WebXRDeviceAPI';
+} from '../webxr/WebXRDeviceAPI';
 
 const orderedJoints = [
   [XRHandEnum.WRIST],
@@ -109,6 +109,7 @@ export default class TrackedHandsManager {
             let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
             let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
             if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.01) {
+              // TODO: add vertical check < 0.05
               let fingerType = this.getFingerType(inputSource, fingerTipJoint);
               if (inputSource.handedness == 'right') {
                 fingerType += 25;
@@ -140,7 +141,7 @@ export default class TrackedHandsManager {
   }
 
   public moveTowardsThePinchPosition(position: Vector3, xrReferenceSpace: XRReferenceSpace) {
-    let direction = new Vector3(position.x - this.camera.position.x, -1.5, position.z - this.camera.position.z);
+    let direction = new Vector3((position.x - this.camera.position.x)/10, -1.5, (position.z - this.camera.position.z)/10);
     this.moveInDirection(direction, xrReferenceSpace);
   }
 

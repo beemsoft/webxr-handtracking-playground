@@ -10,10 +10,10 @@ import {
   WebGLRenderer
 } from 'three';
 import { Body, Material, Sphere, Vec3 } from 'cannon-es';
-import PhysicsHandler from '../shared/physics/physicsHandler';
-import { SceneHelper } from '../shared/scene/SceneHelper';
-import HandPoseManager from '../shared/hands/HandPoseManager';
-import { SceneManagerInterface } from '../shared/scene/SceneManagerInterface';
+import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import { SceneHelper } from '../../../../shared/scene/SceneHelper';
+import HandPoseManager from '../../../../shared/hands/HandPoseManager';
+import { SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
 
 export default class SceneManager implements SceneManagerInterface {
   private scene: Scene;

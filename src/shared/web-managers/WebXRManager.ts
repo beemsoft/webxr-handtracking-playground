@@ -1,8 +1,8 @@
 import { Scene, Vector3, WebGLRenderer } from 'three';
 import PhysicsHandler from '../physics/physicsHandler';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
-import CameraManager from '../../webxr/CameraManager';
-import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../../webxr/WebXRDeviceAPI';
+import CameraManager from '../webxr/CameraManager';
+import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../webxr/WebXRDeviceAPI';
 import TrackedHandsManager from '../hands/TrackedHandsManager';
 
 export default class WebXRManager {

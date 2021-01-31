@@ -5,7 +5,7 @@ solution for adding hand tracking to the browser.
 The detected hand poses are used for rendering 3d hand models in a  [three.js](https://threejs.org/)
 scene. 
 
-When running in a [WebXR](https://immersiveweb.dev/) enabled browser, the hand tracking
+When running in a [WebXR](https://immersiveweb.dev/) enabled browser, the [hand tracking](https://immersive-web.github.io/webxr-hand-input/)
 solution of the device itself will be used. 
 
 In both cases, WebXR or non-WebXR, the same

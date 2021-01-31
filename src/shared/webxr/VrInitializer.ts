@@ -1,6 +1,6 @@
-import WebXRManager from '../shared/web-managers/WebXRManager';
-import WebPageManager from '../shared/web-managers/WebPageManager';
-import {SceneManagerInterface} from '../shared/scene/SceneManagerInterface';
+import WebXRManager from '../web-managers/WebXRManager';
+import WebPageManager from '../web-managers/WebPageManager';
+import {SceneManagerInterface} from '../scene/SceneManagerInterface';
 
 let element: HTMLElement;
 
