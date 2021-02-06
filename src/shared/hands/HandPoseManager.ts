@@ -36,7 +36,7 @@ export default class HandPoseManager {
       x = (x - centerX) / (VIDEO_WIDTH * 2);
       let y = point[1];
       y = (y - centerY) / (VIDEO_HEIGHT * 2);
-      let z = point[2] / 250;
+      let z = point[2] / 275;
       return [-x, -y, z + 0.3];
     })
     pointsData.map(point => {
