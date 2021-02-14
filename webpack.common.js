@@ -23,7 +23,7 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.(png|svg|jpg|gif|wav)$/,
+                test: /\.(png|svg|jpg|gif|wav|mp3)$/,
                 use: [{
                     loader: 'file-loader',
                     options: {
