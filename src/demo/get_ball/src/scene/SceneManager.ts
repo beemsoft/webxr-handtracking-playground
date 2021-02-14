@@ -101,11 +101,20 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   update() {
+    if (isNaN(this.ball.position.y) || this.ball.position.y> 10 || this.ball.position.y < -2) {
+      this.ball.velocity = new Vec3(0,0,0);
+      this.ball.angularVelocity = new Vec3(0,0,0);
+      this.ball.position.set(0,5,0);
+    }
   }
 
   updateHandPose(result) {
     if (this.handPoseManager) {
       this.handPoseManager.renderHands(result);
+
+      // this.trackedHandsManager.checkFixedBall(frame, this.xrReferenceSpace);
+      this.handPoseManager.openHand();
+      // this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
     }
   }
 }

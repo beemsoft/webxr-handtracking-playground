@@ -33,11 +33,12 @@ export class BasketballHelper {
     let ball = new Body({ mass: mass, material: this.ballMaterial });
     ball.addShape(sphereShape);
     ball.linearDamping = damping;
-    ball.position.set(1,5,1);
+    ball.position.set(-1,2,-1);
     this.physicsHandler.addBody(ball);
     this.scene.add(ballMesh);
     this.physicsHandler.addContactMaterial(this.ballMaterial, this.physicsHandler.handMaterial, 0.001, 0.1);
     this.physicsHandler.addContactMaterial(this.ballMaterial, this.physicsHandler.groundMaterial, 0.6, 0.7);
+    this.physicsHandler.addBodyControlledByHandGesture(ball);
     return ball;
   }
 

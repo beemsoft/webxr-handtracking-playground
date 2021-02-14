@@ -97,6 +97,9 @@ export default class WebXRManager {
         let direction = new Vector3(pinchPosition.x - this.cameraManager.cameraVR.position.x, 0, pinchPosition.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)
         this.moveInDirection(direction);
       }
+      this.trackedHandsManager.checkFixedBall(frame, this.xrReferenceSpace);
+      this.trackedHandsManager.openHand(frame, this.xrReferenceSpace);
+      this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
     }
     this.trackedHandsManager.renderHands(frame, pose, this.xrReferenceSpace);
     this.sceneBuilder.update();

@@ -1,5 +1,5 @@
 import { Body, ContactMaterial, Material as CannonMaterial, NaiveBroadphase, Quaternion, Shape, World } from "cannon-es";
-import { Material as ThreeMaterial, Mesh, Object3D, Scene } from "three";
+import { Material as ThreeMaterial, Mesh, MeshPhongMaterial, Object3D, Scene } from "three";
 import { BodyToMeshConverter } from './BodyToMeshConverter';
 
 export default class PhysicsHandler {
@@ -8,8 +8,10 @@ export default class PhysicsHandler {
   protected readonly bodies: Body[];
   world: World;
   public handMaterial = new CannonMaterial("hand");
+  public handMeshMaterial = new MeshPhongMaterial({ color: 0xFF3333 });
   public groundMaterial = new CannonMaterial("floor");
   private bodyToMeshConverter = new BodyToMeshConverter();
+  public bodyControlledByHandGesture: Body;
 
   constructor() {
     this.dt = 1 / 60;
@@ -67,5 +69,9 @@ export default class PhysicsHandler {
         this.meshes.push(mesh);
         scene.add(mesh);
       });
+  }
+
+  addBodyControlledByHandGesture(body: Body) {
+    this.bodyControlledByHandGesture = body;
   }
 }
