@@ -1,7 +1,7 @@
 import { Mesh, MeshPhongMaterial, Scene, SphereGeometry, TextureLoader, Vector2, Vector3 } from 'three';
-import {Body, Material, Sphere} from 'cannon-es';
+import { Body, Material, Sphere } from 'cannon-es';
 import PhysicsHandler from '../../physics/physicsHandler';
-import AudioHandler from '../../audio/AudioHandler';
+import AudioHandler, { AudioDemo } from '../../audio/AudioHandler';
 
 export class BasketballHelper {
   private scene: Scene;
@@ -14,7 +14,7 @@ export class BasketballHelper {
   constructor(scene: Scene, physicsHandler: PhysicsHandler) {
     this.scene = scene;
     this.physicsHandler = physicsHandler;
-    this.audioHandler.initAudio();
+    this.audioHandler.initAudio(AudioDemo.basketball);
   }
 
   addBall(): Body {

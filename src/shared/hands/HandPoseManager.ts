@@ -1,5 +1,5 @@
 import { Body, Box, Vec3 } from 'cannon-es';
-import { BoxGeometry, Mesh, Scene, Vector3 } from 'three';
+import { BoxGeometry, MathUtils, Mesh, Scene, Vector3 } from 'three';
 import PhysicsHandler from '../physics/physicsHandler';
 import BallManager from './BallManager';
 
@@ -92,5 +92,21 @@ export default class HandPoseManager {
       }
     }
     this.ballManager.checkBall(wristPosition);
+  }
+
+  isOpenHand() {
+    let wristPose = this.pointsData[0];
+    let wristPosition = new Vector3(wristPose[0], wristPose[1], wristPose[2]);
+    if (wristPose) {
+      let pinkTipPose = this.pointsData[20];
+      let thumbTipPose = this.pointsData[4];
+      if (pinkTipPose && thumbTipPose) {
+        let pinkPosition = new Vector3(pinkTipPose[0], pinkTipPose[1], pinkTipPose[2]);
+        pinkPosition = pinkPosition.sub(wristPosition);
+        let thumbPosition = new Vector3(thumbTipPose[0], thumbTipPose[1], thumbTipPose[2]);
+        thumbPosition = thumbPosition.sub(wristPosition);
+        return (MathUtils.radToDeg(pinkPosition.angleTo(thumbPosition)) > 70);
+      }
+    }
   }
 }

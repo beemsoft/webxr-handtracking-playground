@@ -13,7 +13,7 @@ import { Body, Material, Sphere, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import { SceneHelper } from '../../../../shared/scene/SceneHelper';
 import HandPoseManager from '../../../../shared/hands/HandPoseManager';
-import { SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
 
 export default class SceneManager implements SceneManagerInterface {
   private scene: Scene;
@@ -108,5 +108,8 @@ export default class SceneManager implements SceneManagerInterface {
     if (this.handPoseManager) {
       this.handPoseManager.renderHands(result);
     }
+  }
+
+  handleGesture(gesture: GestureType) {
   }
 }

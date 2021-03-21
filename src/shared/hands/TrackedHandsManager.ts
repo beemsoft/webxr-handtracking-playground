@@ -1,5 +1,5 @@
 import { Body, Box, Vec3 } from 'cannon-es';
-import { BoxGeometry, Mesh, MeshPhongMaterial, PerspectiveCamera, Scene, Vector3 } from 'three';
+import { BoxGeometry, MathUtils, Mesh, MeshPhongMaterial, PerspectiveCamera, Scene, Vector3 } from 'three';
 import PhysicsHandler from '../physics/physicsHandler';
 import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../webxr/WebXRDeviceAPI';
 import BallManager from './BallManager';
@@ -141,6 +141,27 @@ export default class TrackedHandsManager {
     }
   }
 
+  isOpenHand(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
+      for (let inputSource of frame.session.inputSources) {
+        let wrist = inputSource.hand.get('wrist');
+        let wristPose = frame.getJointPose(wrist, xrReferenceSpace);
+        if (wristPose) {
+          let wristPosition = new Vector3(wristPose.transform.position.x, wristPose.transform.position.y, wristPose.transform.position.z);
+          let pink = inputSource.hand.get('pinky-finger-tip');
+          let pinkTipPose = frame.getJointPose(pink, xrReferenceSpace);
+          let thumb = inputSource.hand.get('thumb-tip');
+          let thumbTipPose = frame.getJointPose(thumb, xrReferenceSpace);
+          if (pinkTipPose && thumbTipPose) {
+            let pinkPosition = new Vector3(pinkTipPose.transform.position.x, pinkTipPose.transform.position.y, pinkTipPose.transform.position.z);
+            pinkPosition = pinkPosition.sub(wristPosition);
+            let thumbPosition = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
+            thumbPosition = thumbPosition.sub(wristPosition);
+            return (MathUtils.radToDeg(pinkPosition.angleTo(thumbPosition)) > 70);
+          }
+        }
+      }
+  }
+
   checkFixedBall(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
     if (this.fixHand) {
       for (let inputSource of frame.session.inputSources) {
@@ -185,7 +206,8 @@ export default class TrackedHandsManager {
   }
 
   public moveTowardsThePinchPosition(position: Vector3, xrReferenceSpace: XRReferenceSpace) {
-    let direction = new Vector3((position.x - this.camera.position.x)/10, -1.5, (position.z - this.camera.position.z)/10);
+    //let direction = new Vector3((position.x - this.camera.position.x)/10, -1.5, (position.z - this.camera.position.z)/10);
+    let direction = new Vector3((position.x - this.camera.position.x) * 50, 500, (position.z - this.camera.position.z) * 50);
     this.moveInDirection(direction, xrReferenceSpace);
   }
 

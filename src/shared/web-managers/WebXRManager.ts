@@ -1,6 +1,6 @@
 import { Scene, Vector3, WebGLRenderer } from 'three';
 import PhysicsHandler from '../physics/physicsHandler';
-import { SceneManagerInterface } from '../scene/SceneManagerInterface';
+import { GestureType, SceneManagerInterface } from '../scene/SceneManagerInterface';
 import CameraManager from '../webxr/CameraManager';
 import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../webxr/WebXRDeviceAPI';
 import TrackedHandsManager from '../hands/TrackedHandsManager';
@@ -97,9 +97,14 @@ export default class WebXRManager {
         let direction = new Vector3(pinchPosition.x - this.cameraManager.cameraVR.position.x, 0, pinchPosition.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)
         this.moveInDirection(direction);
       }
-      this.trackedHandsManager.checkFixedBall(frame, this.xrReferenceSpace);
-      this.trackedHandsManager.openHand(frame, this.xrReferenceSpace);
-      this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
+      if (this.physicsHandler.bodyControlledByHandGesture) {
+        this.trackedHandsManager.checkFixedBall(frame, this.xrReferenceSpace);
+        this.trackedHandsManager.openHand(frame, this.xrReferenceSpace);
+        this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
+      }
+      if (this.trackedHandsManager.isOpenHand(frame, this.xrReferenceSpace)) {
+        this.sceneBuilder.handleGesture(GestureType.openHand);
+      }
     }
     this.trackedHandsManager.renderHands(frame, pose, this.xrReferenceSpace);
     this.sceneBuilder.update();

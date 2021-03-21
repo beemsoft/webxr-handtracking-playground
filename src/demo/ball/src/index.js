@@ -27,8 +27,8 @@ let videoWidth, videoHeight, rafID, ctx, canvas, ANCHOR_POINTS,
 
 const state = {
   backend: 'webgl',
-  renderPointCloud: true,
-  pauseVideo: false
+  renderPointCloud: false,
+  pauseVideo: true
 };
 
 const stats = new Stats();

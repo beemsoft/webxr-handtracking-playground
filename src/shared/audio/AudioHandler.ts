@@ -1,6 +1,13 @@
 import {ResonanceAudio, Source} from "resonance-audio";
 // @ts-ignore
-import cubeSound from '../../demo/get_ball/BasketBall-BallBounce.mp3';
+import bounceSound from '../../demo/get_ball/BasketBall-BallBounce.mp3';
+// @ts-ignore
+import danceSound from '../../demo/dance/bachata.mp3';
+
+export enum AudioDemo {
+  "basketball",
+  "dance"
+}
 
 export default class AudioHandler {
 
@@ -26,10 +33,14 @@ export default class AudioHandler {
     this.materials = materials;
   }
 
-  initAudio() {
+  initAudio(audioDemo: AudioDemo) {
     this.audioContext = new AudioContext();
     this.audioElement = document.createElement('audio');
-    this.audioElement.src = cubeSound;
+    if (audioDemo == AudioDemo.basketball) {
+      this.audioElement.src = bounceSound;
+    } else if (audioDemo = AudioDemo.dance) {
+      this.audioElement.src = danceSound;
+    }
     this.audioElement.load();
     this.audioElement.loop = true;
     this.audioElementSource = this.audioContext.createMediaElementSource(this.audioElement);

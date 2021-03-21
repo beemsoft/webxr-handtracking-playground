@@ -16,7 +16,7 @@ import {
 import { Body, Box, Plane, Quaternion, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import { SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
 import { BasketballHelper } from '../../../../shared/scene/sport/BasketballHelper';
 import HandPoseManager from '../../../../shared/hands/HandPoseManager';
 
@@ -116,5 +116,8 @@ export default class SceneManager implements SceneManagerInterface {
       this.handPoseManager.openHand();
       // this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
     }
+  }
+
+  handleGesture(gesture: GestureType) {
   }
 }
