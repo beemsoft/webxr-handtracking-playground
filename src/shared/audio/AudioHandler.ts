@@ -38,7 +38,7 @@ export default class AudioHandler {
     this.audioElement = document.createElement('audio');
     if (audioDemo == AudioDemo.basketball) {
       this.audioElement.src = bounceSound;
-    } else if (audioDemo = AudioDemo.dance) {
+    } else if (audioDemo == AudioDemo.dance) {
       this.audioElement.src = danceSound;
     }
     this.audioElement.load();
