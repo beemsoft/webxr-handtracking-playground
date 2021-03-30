@@ -1,6 +1,6 @@
 import { Mesh, MeshPhongMaterial, Scene, SphereGeometry, TextureLoader, Vector2, Vector3 } from 'three';
 import { Body, Material, Sphere } from 'cannon-es';
-import PhysicsHandler from '../../physics/physicsHandler';
+import PhysicsHandler from '../../physics/PhysicsHandler';
 import AudioHandler, { AudioDemo } from '../../audio/AudioHandler';
 
 export class BasketballHelper {

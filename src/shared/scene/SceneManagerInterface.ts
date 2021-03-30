@@ -1,5 +1,5 @@
 import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-import PhysicsHandler from '../physics/physicsHandler';
+import PhysicsHandler from '../physics/PhysicsHandler';
 
 export enum GestureType {
   "openHand"

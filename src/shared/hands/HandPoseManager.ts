@@ -1,6 +1,6 @@
 import { Body, Box, Vec3 } from 'cannon-es';
 import { BoxGeometry, MathUtils, Mesh, Scene, Vector3 } from 'three';
-import PhysicsHandler from '../physics/physicsHandler';
+import PhysicsHandler from '../physics/PhysicsHandler';
 import BallManager from './BallManager';
 
 export const fingerLookupIndices = {

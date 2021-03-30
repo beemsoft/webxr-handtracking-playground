@@ -1,5 +1,5 @@
 import { Scene, Vector3, WebGLRenderer } from 'three';
-import PhysicsHandler from '../physics/physicsHandler';
+import PhysicsHandler from '../physics/PhysicsHandler';
 import { GestureType, SceneManagerInterface } from '../scene/SceneManagerInterface';
 import CameraManager from '../webxr/CameraManager';
 import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../webxr/WebXRDeviceAPI';

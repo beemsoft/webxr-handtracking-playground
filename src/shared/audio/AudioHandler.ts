@@ -1,6 +1,6 @@
 import {ResonanceAudio, Source} from "resonance-audio";
 // @ts-ignore
-import bounceSound from '../../demo/get_ball/BasketBall-BallBounce.mp3';
+import bounceSound from '../../demo/get_ball/bounce.mp3';
 // @ts-ignore
 import danceSound from '../../demo/dance/bachata.mp3';
 

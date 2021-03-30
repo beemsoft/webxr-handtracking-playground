@@ -1,6 +1,6 @@
 import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
-import PhysicsHandler from '../physics/physicsHandler';
+import PhysicsHandler from '../physics/PhysicsHandler';
 import "three/examples/js/controls/OrbitControls";
 
 export default class WebPageManager {
