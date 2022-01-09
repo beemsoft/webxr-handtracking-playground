@@ -1,7 +1,7 @@
 import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/PhysicsHandler';
-import "three/examples/js/controls/OrbitControls";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export default class WebPageManager {
   private readonly camera: PerspectiveCamera;
@@ -9,8 +9,7 @@ export default class WebPageManager {
   private readonly scene: Scene = new Scene();
   private sceneBuilder: SceneManagerInterface;
   private readonly physicsHandler: PhysicsHandler;
-  // @ts-ignore
-  private controls: THREE.OrbitControls;
+  private controls: OrbitControls;
   private clock = new Clock();
 
   constructor(sceneManager: SceneManagerInterface) {
@@ -39,8 +38,7 @@ export default class WebPageManager {
   };
 
   private addTrackBallControls() {
-    // @ts-ignore
-    this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
   }
 
   private addOutputToPage = () => {
