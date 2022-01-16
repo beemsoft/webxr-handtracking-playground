@@ -14,7 +14,8 @@ module.exports = {
     entry: {
         ball: './src/demo/ball/src',
         get_ball: './src/demo/get_ball/src',
-        dance: './src/demo/dance/src'
+        dance: './src/demo/dance/src',
+        vrm_animation: './src/demo/vrm_animation/src'
     },
     module: {
         rules: [
