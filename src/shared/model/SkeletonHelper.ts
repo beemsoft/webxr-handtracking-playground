@@ -4,7 +4,7 @@ import {
   Float32BufferAttribute,
   LineBasicMaterial,
   LineSegments,
-  Matrix4,
+  Matrix4, Skeleton,
   Vector3
 } from 'three';
 
@@ -15,11 +15,15 @@ const _matrixWorldInv = /*@__PURE__*/ new Matrix4();
 
 export default class SkeletonHelper extends LineSegments {
   private isSkeletonHelper: boolean;
-  private bones: any[];
+  public skeleton: Skeleton;
+  public visible: boolean;
+  public bones: any[];
   root: any;
 
-  constructor(object) {
-    const bones = getBoneList(object);
+  constructor(object, bonesObject) {
+    let  bones = null;
+    if (bonesObject == null) bones = getBoneList(object);
+    else bones = getBoneListForVrm(bonesObject);
     const geometry = new BufferGeometry();
     const vertices = [];
     const colors = [];
@@ -74,11 +78,36 @@ export default class SkeletonHelper extends LineSegments {
 
 function getBoneList(object) {
   const boneList = [];
-  if (object && object.isBone) {
-    boneList.push(object);
-  }
-  for (let i = 0; i < object.children.length; i++) {
-    boneList.push.apply(boneList, getBoneList(object.children[i]));
-  }
+    if (object && object.isBone) {
+      boneList.push(object);
+    }
+    for (let i = 0; i < object.children.length; i++) {
+      boneList.push.apply(boneList, getBoneList(object.children[i]));
+    }
+
+  return boneList;
+}
+
+function getBoneListForVrm(bones) {
+  const boneList = [];
+    boneList.push(bones.chest[0].node);
+    boneList.push(bones.head[0].node);
+    boneList.push(bones.hips[0].node);
+    boneList.push(bones.leftShoulder[0].node);
+    boneList.push(bones.rightShoulder[0].node);
+    boneList.push(bones.spine[0].node);
+    boneList.push(bones.upperChest[0].node);
+    boneList.push(bones.leftLowerArm[0].node);
+    boneList.push(bones.leftUpperArm[0].node);
+    boneList.push(bones.leftHand[0].node);
+    boneList.push(bones.rightLowerArm[0].node);
+    boneList.push(bones.rightUpperArm[0].node);
+    boneList.push(bones.rightHand[0].node);
+    boneList.push(bones.leftLowerLeg[0].node);
+    boneList.push(bones.leftUpperLeg[0].node);
+    boneList.push(bones.leftFoot[0].node);
+    boneList.push(bones.rightLowerLeg[0].node);
+    boneList.push(bones.rightUpperLeg[0].node);
+    boneList.push(bones.rightFoot[0].node);
   return boneList;
 }
