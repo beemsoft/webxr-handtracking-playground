@@ -17,7 +17,8 @@ module.exports = {
         dance: './src/demo/dance/src',
         vrm_animation: './src/demo/vrm_animation/src',
         vrm_dance: './src/demo/vrm_dance/src',
-        bar: './src/demo/bar/src'
+        bar: './src/demo/bar/src',
+        bar2: './src/demo/bar2/src'
     },
     module: {
         rules: [

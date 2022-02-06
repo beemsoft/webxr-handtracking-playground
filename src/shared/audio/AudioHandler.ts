@@ -4,12 +4,15 @@ import bounceSound from '../../demo/get_ball/bounce.mp3';
 // @ts-ignore
 import danceSound from '../../demo/dance/bachata.mp3';
 // @ts-ignore
-import danceSalsaSound from '../../demo/bar/fast salsa music mix.mp3';
+import danceSalsaFastSound from '../../demo/bar/fast salsa music mix.mp3';
+// @ts-ignore
+import danceSalsaSlowSound from '../../demo/bar2/Lalala de Direct Latin Influence (salsa, mambo).mp3';
 
 export enum AudioDemo {
   "basketball",
   "dance",
-  "salsaDance"
+  "salsaDanceFast",
+  "salsaDanceSlow"
 }
 
 export default class AudioHandler {
@@ -43,8 +46,10 @@ export default class AudioHandler {
       this.audioElement.src = bounceSound;
     } else if (audioDemo == AudioDemo.dance) {
       this.audioElement.src = danceSound;
-    } else if (audioDemo == AudioDemo.salsaDance) {
-      this.audioElement.src = danceSalsaSound;
+    } else if (audioDemo == AudioDemo.salsaDanceFast) {
+      this.audioElement.src = danceSalsaFastSound;
+    } else if (audioDemo == AudioDemo.salsaDanceSlow) {
+      this.audioElement.src = danceSalsaSlowSound;
     }
     this.audioElement.load();
     this.audioElement.loop = true;

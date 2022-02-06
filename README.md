@@ -11,8 +11,8 @@ solution of the device itself will be used.
 In both cases, WebXR or non-WebXR, the same
 scene is displayed.
 
-### Demo video
-This is a quick demo for hand tracking in the browser.
+### Introduction video
+This is a quick introduction/demo for hand tracking in the browser.
 
 [![demo-video](img/video1.jpg)](https://youtu.be/7FFeu797fLk)
 

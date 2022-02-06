@@ -83,7 +83,7 @@ export default class SceneManager implements SceneManagerInterface {
     this.sceneHelper = new SceneHelper(scene);
     this.physicsHandler = physicsHandler;
     this.sceneHelper.addLight();
-    this.audioHandler.initAudio(AudioDemo.salsaDance);
+    this.audioHandler.initAudio(AudioDemo.salsaDanceFast);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = false;
     this.loadBar(scene);
