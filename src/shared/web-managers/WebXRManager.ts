@@ -94,7 +94,7 @@ export default class WebXRManager {
     if (this.trackedHandsManager.isTrackedHandAvailable(frame)) {
       let pinchPosition = this.trackedHandsManager.pinchFinger(frame, this.xrReferenceSpace);
       if (pinchPosition) {
-        let direction = new Vector3(pinchPosition.x - this.cameraManager.cameraVR.position.x, 0, pinchPosition.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)
+        let direction = new Vector3(pinchPosition.x - this.cameraManager.cameraVR.position.x, pinchPosition.y - this.cameraManager.cameraVR.position.y, pinchPosition.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)
         this.moveInDirection(direction);
       }
       if (this.physicsHandler.bodyControlledByHandGesture) {
@@ -117,7 +117,7 @@ export default class WebXRManager {
     // @ts-ignore
     this.xrReferenceSpace = this.xrReferenceSpace.getOffsetReferenceSpace(new XRRigidTransform({
       x: -direction.x,
-      y: 0,
+      y: -direction.y,
       z: -direction.z
     }));
   }
