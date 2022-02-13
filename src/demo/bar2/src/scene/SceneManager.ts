@@ -117,7 +117,7 @@ export default class SceneManager implements SceneManagerInterface {
         this.person1 = vrm;
         vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
         this.playBlinkAnimationPerson1();
-        this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0], vrm.humanoid.humanBones);
+        this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.target1Skeleton = this.person1.scene.children[4].children[0];
         gltfLoader.load('models/vrm/three-vrm-girl.vrm', (gltf) => {
           VRMUtils.removeUnnecessaryJoints(gltf.scene);
@@ -125,7 +125,7 @@ export default class SceneManager implements SceneManagerInterface {
             this.person2 = vrm;
             vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
             this.playBlinkAnimationPerson2();
-            this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0], vrm.humanoid.humanBones);
+            this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
             this.target2Skeleton = this.person2.scene.children[4].children[0];
             this.loadBVH(1);
             this.audioElement.play();
@@ -179,11 +179,11 @@ export default class SceneManager implements SceneManagerInterface {
     }
     loader.load("models/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.bvh1 = bvh;
-      this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0], null);
+      this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
       this.source1SkeletonHelper.skeleton = bvh.skeleton;
       loader.load("models/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.bvh2 = bvh;
-        this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0], null);
+        this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
         this.source2SkeletonHelper.skeleton = bvh.skeleton;
         this.startShow(move);
         this.preloadBVH(move + 1);
@@ -197,9 +197,9 @@ export default class SceneManager implements SceneManagerInterface {
     if (move < 15) {
       this.preloadBVH(move + 1);
     }
-    this.source1SkeletonHelper = new SkeletonHelper(this.bvh1.skeleton.bones[0], null);
+    this.source1SkeletonHelper = new SkeletonHelper(this.bvh1.skeleton.bones[0]);
     this.source1SkeletonHelper.skeleton = this.bvh1.skeleton;
-    this.source2SkeletonHelper = new SkeletonHelper(this.bvh2.skeleton.bones[0], null);
+    this.source2SkeletonHelper = new SkeletonHelper(this.bvh2.skeleton.bones[0]);
     this.source2SkeletonHelper.skeleton = this.bvh2.skeleton;
     this.startShow(move);
   }

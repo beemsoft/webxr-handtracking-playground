@@ -135,7 +135,7 @@ export default class SceneManager implements SceneManagerInterface {
     let loader = new BVHLoader();
     loader.load( "models/bvh/Samy.bvh", (bvh) => {
       this.bvh = bvh;
-      this.sourceSkeletonHelper = new SkeletonHelper( bvh.skeleton.bones[0], null );
+      this.sourceSkeletonHelper = new SkeletonHelper( bvh.skeleton.bones[0]);
       this.sourceSkeletonHelper.skeleton = bvh.skeleton;
       this.boneContainer = new Group();
       this.boneContainer.add( bvh.skeleton.bones[ 0 ] );

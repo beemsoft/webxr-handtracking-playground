@@ -87,7 +87,7 @@ export default class SceneManager implements SceneManagerInterface {
       let model = gltf.scene;
       scene.add(model);
       this.player = model;
-      let skeleton = new SkeletonHelper(model, null);
+      let skeleton = new SkeletonHelper(model);
       skeleton.visible = true;
       scene.add(skeleton);
       this.loadBVH();
@@ -98,7 +98,7 @@ export default class SceneManager implements SceneManagerInterface {
     let loader = new BVHLoader();
     loader.load( "models/bvh/Samy.bvh", (bvh) => {
       this.bvh = bvh;
-      this.skeletonHelper = new SkeletonHelper( bvh.skeleton.bones[0], null );
+      this.skeletonHelper = new SkeletonHelper( bvh.skeleton.bones[0]);
       // @ts-ignore
       this.skeletonHelper.skeleton = bvh.skeleton;
       this.adjustScale(bvh, 1.05);
