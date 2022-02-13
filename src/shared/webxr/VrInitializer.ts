@@ -1,6 +1,7 @@
 import WebXRManager from '../web-managers/WebXRManager';
 import WebPageManager from '../web-managers/WebPageManager';
 import {SceneManagerInterface} from '../scene/SceneManagerInterface';
+import { Vector3 } from 'three';
 
 let element: HTMLElement;
 
@@ -35,18 +36,18 @@ export class VrInitializer {
     return button;
   }
 
-  public init() {
+  public init(cameraPosition: Vector3) {
     if (navigator.xr) { // @ts-ignore
       navigator.xr.isSessionSupported('immersive-vr')
         .then(isSupported => {
           if (isSupported) {
             this.addVrButton();
           } else {
-            new WebPageManager(this.sceneBuilder);
+            new WebPageManager(this.sceneBuilder, cameraPosition);
           }
         });
     } else {
-      new WebPageManager(this.sceneBuilder);
+      new WebPageManager(this.sceneBuilder, cameraPosition);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { Clock, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/PhysicsHandler';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -12,11 +12,13 @@ export default class WebPageManager {
   private controls: OrbitControls;
   private clock = new Clock();
 
-  constructor(sceneManager: SceneManagerInterface) {
+  constructor(sceneManager: SceneManagerInterface, cameraPosition: Vector3) {
     this.sceneBuilder = sceneManager;
     this.physicsHandler = new PhysicsHandler();
     this.camera = new PerspectiveCamera();
-    this.camera.position.set(0, 0, 1);
+    if (cameraPosition) {
+      this.camera.position.add(cameraPosition);
+    }
     this.renderer = new WebGLRenderer({alpha: false});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.autoClear = false;
