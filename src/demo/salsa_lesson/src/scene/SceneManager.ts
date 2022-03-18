@@ -25,7 +25,6 @@ import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
-import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
 
 export default class SceneManager implements SceneManagerInterface {
@@ -83,8 +82,6 @@ export default class SceneManager implements SceneManagerInterface {
       "J_Bip_L_Foot": "lFoot"                   // 17
     }
   };
-  private audioHandler = new AudioHandler();
-  private audioElement: HTMLAudioElement;
   private bvh1: BVH;
   private bvh2: BVH;
   private nextBvh1: BVH;
@@ -102,10 +99,6 @@ export default class SceneManager implements SceneManagerInterface {
     this.sceneHelper = new SceneHelper(scene);
     this.physicsHandler = physicsHandler;
     this.sceneHelper.addLight();
-    this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
-    this.audioHandler.setPosition(new Vector3(-3, 2, 1));
-    this.audioElement = this.audioHandler.audioElement;
-    this.audioElement.loop = true;
     this.loadShoes(scene);
     this.loadModels();
 
@@ -185,7 +178,6 @@ export default class SceneManager implements SceneManagerInterface {
             this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
             this.target2Skeleton = this.person2.scene.children[4].children[0];
             this.loadBVH(1);
-            // this.audioElement.play();
           })
         });
       })
