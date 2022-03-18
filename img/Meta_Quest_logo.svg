@@ -1,0 +1,100 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 747 96" width="747" height="96">
+	<defs>
+		<linearGradient id="g1" x1="70" y1="42.2" x2="42.3" y2="5.7" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#0867df"/>
+			<stop offset=".5" stop-color="#0668e1"/>
+			<stop offset=".9" stop-color="#0064e0"/>
+		</linearGradient>
+		<linearGradient id="g2" x1="15.9" y1="18.6" x2="34.9" y2="4.1" gradientUnits="userSpaceOnUse">
+			<stop offset=".1" stop-color="#0064df"/>
+			<stop offset="1" stop-color="#0064e0"/>
+		</linearGradient>
+		<linearGradient id="g3" x1="7.8" y1="39.8" x2="15.4" y2="20.6" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#0072ec"/>
+			<stop offset=".7" stop-color="#0064df"/>
+		</linearGradient>
+		<linearGradient id="g4" x1="6.7" y1="53.7" x2="7.6" y2="41.9" gradientUnits="userSpaceOnUse">
+			<stop offset=".1" stop-color="#007cf6"/>
+			<stop offset="1" stop-color="#0072ec"/>
+		</linearGradient>
+		<linearGradient id="g5" x1="7.2" y1="60.1" x2="6.6" y2="55.4" gradientUnits="userSpaceOnUse">
+			<stop offset=".1" stop-color="#007ff9"/>
+			<stop offset="1" stop-color="#007cf6"/>
+		</linearGradient>
+		<linearGradient id="g6" x1="6.9" y1="61.3" x2="10.8" y2="69.7" gradientUnits="userSpaceOnUse">
+			<stop offset=".1" stop-color="#007ff9"/>
+			<stop offset="1" stop-color="#0082fb"/>
+		</linearGradient>
+		<linearGradient id="g7" x1="67.5" y1="20.9" x2="72.7" y2="13.7" gradientUnits="userSpaceOnUse">
+			<stop offset=".3" stop-color="#007ff8"/>
+			<stop offset=".9" stop-color="#0082fb"/>
+		</linearGradient>
+		<linearGradient id="g8" x1="107.2" y1="11.5" x2="118" y2="51.6" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#0082fb"/>
+			<stop offset="1" stop-color="#0081fa"/>
+		</linearGradient>
+		<linearGradient id="g9" x1="120.7" y1="53.1" x2="113.8" y2="67.1" gradientUnits="userSpaceOnUse">
+			<stop offset=".1" stop-color="#0081fa"/>
+			<stop offset="1" stop-color="#0080f9"/>
+		</linearGradient>
+		<linearGradient id="g10" x1="108.3" y1="74.5" x2="114.8" y2="70.1" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#027af3"/>
+			<stop offset="1" stop-color="#0080f9"/>
+		</linearGradient>
+		<linearGradient id="g11" x1="98.2" y1="75.3" x2="107.2" y2="75.3" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#0377ef"/>
+			<stop offset="1" stop-color="#0279f1"/>
+		</linearGradient>
+		<linearGradient id="g12" x1="90.4" y1="70.4" x2="96.8" y2="74.2" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#0471e9"/>
+			<stop offset="1" stop-color="#0377ef"/>
+		</linearGradient>
+		<linearGradient id="g13" x1="70.7" y1="42.5" x2="91.3" y2="68.4" gradientUnits="userSpaceOnUse">
+			<stop offset=".3" stop-color="#0867df"/>
+			<stop offset="1" stop-color="#0471e9"/>
+		</linearGradient>
+	</defs>
+	<style>
+		.s0 { fill: #000000 } 
+		.s1 { fill: url(#g1) } 
+		.s2 { fill: url(#g2) } 
+		.s3 { fill: url(#g3) } 
+		.s4 { fill: url(#g4) } 
+		.s5 { fill: url(#g5) } 
+		.s6 { fill: url(#g6) } 
+		.s7 { fill: #0082fb } 
+		.s8 { fill: url(#g7) } 
+		.s9 { fill: url(#g8) } 
+		.s10 { fill: url(#g9) } 
+		.s11 { fill: url(#g10) } 
+		.s12 { fill: url(#g11) } 
+		.s13 { fill: url(#g12) } 
+		.s14 { fill: url(#g13) } 
+	</style>
+	<g id="Layer">
+		<path id="Layer" class="s0" d="m150.3 2.7h15.5l26.4 47.6l26.4-47.6h15.2v78.3h-12.7v-60l-23.1 41.5h-11.9l-23.1-41.5v60h-12.7z" />
+		<path id="Layer" fill-rule="evenodd" class="s0" d="m274.6 82.4q-8.8 0-15.4-3.9c-4.4-2.6-8-6.3-10.4-10.8q-3.8-6.9-3.8-15.8q0-9 3.7-15.9q3.6-6.9 10.1-10.9q6.5-3.9 14.9-3.9q8.3 0 14.3 4q6.1 3.9 9.3 11q3.3 7.1 3.3 16.7v3.5h-43q1.2 7.1 5.8 11.2q4.6 4.1 11.7 4.1q5.6 0 9.7-1.6q4.1-1.7 7.7-5.1l6.7 8.2q-10 9.2-24.6 9.2zm9.3-46.5q-4-4-10.5-4q-6.2 0-10.5 4.1q-4.2 4.1-5.3 11.1h30.8q-0.6-7.1-4.5-11.2z" />
+		<path id="Layer" class="s0" d="m315.9 33h-11.6v-10.4h11.6v-17.1h12.2v17.1h17.7v10.4h-17.7v26.2q0 6.6 2.3 9.3q2.2 2.8 7.6 2.8q2.1 0.1 4.1-0.1q1.7-0.2 3.7-0.6v10.3q-2.3 0.6-4.7 1q-2.7 0.4-5.4 0.4q-19.8 0-19.8-21.6z" />
+		<path id="Layer" fill-rule="evenodd" class="s0" d="m409.5 81h-12v-8.2c-2.1 3-4.9 5.4-8.1 7.1q-5 2.5-11.3 2.5q-7.7 0-13.7-4q-5.9-3.9-9.3-10.8q-3.5-6.9-3.5-15.8q0-9 3.5-15.9q3.5-6.8 9.6-10.8q6.2-3.9 14.1-3.9q6 0 10.8 2.4c3.1 1.5 5.8 3.7 7.9 6.5v-7.5h12zm-12.3-37.9q-1.9-5-6.1-7.9q-4.3-2.8-9.8-2.8q-7.9 0-12.5 5.2q-4.7 5.3-4.7 14.2q0 9 4.5 14.3q4.5 5.3 12.2 5.3q5.6 0 10.1-3c2.9-1.8 5.1-4.6 6.3-7.8z" />
+		<path id="Layer" fill-rule="evenodd" class="s0" d="m510.4 20.9q5 9.1 5 20.9q0 11-4.7 19.9q-4.8 8.8-12.7 14.1q7.8 9.8 13 19.4h-14.4q-4-7.5-9-14.5c-3.8 1.1-7.8 1.7-11.7 1.7q-8.6 0-15.9-3c-4.7-2-8.9-4.8-12.5-8.5c-3.6-3.7-6.4-8-8.2-12.8q-3-7.4-2.9-16.3q0-8.8 2.9-16.2c1.8-4.8 4.6-9.2 8.2-12.9c3.6-3.6 7.8-6.5 12.5-8.4q7.3-3 15.9-3q11.5 0 20.5 5.2c5.9 3.4 10.7 8.4 14 14.4zm-57.3 35.8q3.4 6.5 9.3 10.1q5.9 3.7 13.5 3.7q7.7 0 13.6-3.7q5.8-3.6 9.2-10.1q3.4-6.4 3.4-14.9q0-8.4-3.4-14.9q-3.4-6.5-9.2-10.1q-5.9-3.6-13.6-3.6q-7.6 0-13.5 3.6q-5.9 3.6-9.3 10.1q-3.4 6.5-3.4 14.9q0 8.5 3.4 14.9z" />
+		<path id="Layer" class="s0" d="m578 81h-12.1v-8.4q-6.7 9.8-18.6 9.8q-10.3 0-15.8-6.5q-5.5-6.5-5.5-18.6v-34.7h12.2v33.3q0 8.1 2.8 12q2.9 3.8 9 3.8q5.3 0 9.4-2.7q4.1-2.8 6.4-7.8v-38.6h12.2z" />
+		<path id="Layer" fill-rule="evenodd" class="s0" d="m618.2 82.4q-8.8 0-15.5-3.9c-4.4-2.6-8-6.3-10.4-10.8q-3.7-6.9-3.7-15.8q0-9 3.6-15.9q3.7-6.9 10.2-10.9q6.4-3.9 14.8-3.9q8.4 0 14.4 4q6 3.9 9.3 11q3.2 7.1 3.2 16.7v3.5h-42.9q1.1 7.1 5.8 11.2q4.6 4.1 11.6 4.1q5.7 0 9.8-1.6q4.1-1.7 7.7-5.1l6.7 8.2q-10.1 9.2-24.6 9.2zm9.2-46.5q-3.9-4-10.4-4q-6.3 0-10.5 4.1q-4.2 4.1-5.3 11.1h30.8q-0.6-7.1-4.6-11.2z" />
+		<path id="Layer" class="s0" d="m694.2 77.4q-6.5 5-17.4 5q-9.3 0-16.1-3.3q-6.9-3.2-10.2-8.7l8.2-7.2q2.6 4 7.1 6.2q4.5 2.3 10.8 2.3q11.7 0 11.7-6.8q0-2.9-1.9-4.7q-1.9-1.7-6.4-2.4l-11.2-2q-8-1.4-12.2-5.7q-4.2-4.2-4.2-10.9q0-8.1 6.5-13q6.5-5 17.5-5q8 0 14.4 3.3q6.3 3.3 9.4 8.5l-8.5 6.4q-2.1-3.5-6.3-5.5q-4.2-2-9.7-2q-5.3 0-8.1 1.7q-2.8 1.8-2.8 5q0 2.8 1.7 4.3q1.8 1.5 5.9 2.2l12.6 2.3q7.6 1.3 11.7 5.7q4 4.4 4 11q0 8.4-6.5 13.3z" />
+		<path id="Layer" class="s0" d="m717.1 33h-11.7v-10.4h11.7v-17.1h12.2v17.1h17.7v10.4h-17.7v26.2q0 6.6 2.2 9.3q2.3 2.8 7.7 2.8q2 0.1 4.1-0.1q1.7-0.2 3.7-0.6v10.3q-2.3 0.6-4.7 1q-2.7 0.4-5.5 0.4q-19.7 0-19.7-21.6z" />
+		<path id="Layer" class="s1" d="m63.8 17.4q2.9 3.7 6 8.4q2.8 4 5.7 8.8l0.1 0.1l-8.4 12.6v-0.1l-1-1.6c-14.9-25.1-21.8-32.1-30.7-32.1q0 0-0.1 0l0.2-13.5q0 0 0.1 0c9.9 0 18.2 4.8 28.1 17.4z" />
+		<path id="Layer" class="s2" d="m35.7 0l-0.2 13.5q0 0-0.1 0c-5 0-9.6 3.6-13.3 9.2q0 0 0 0l-11.7-6.3q0 0 0-0.1c6.4-9.8 15.2-16.2 25.2-16.3q0 0 0.1 0z" />
+		<path id="Layer" class="s3" d="m22.1 22.7q0 0 0 0c-3.5 5.3-6.2 12.3-7.6 19.8q0 0.1 0 0.2l-13.1-3.1q0-0.1 0-0.1c1.7-8.6 4.8-16.6 9-23.1q0 0 0-0.1z" />
+		<path id="Layer" class="s4" d="m14.5 42.7q-1.1 5.7-1.1 11.6q0 0.4 0 0.8q0 0.1 0 0.1l-13.4-1.2q0 0 0-0.1c0-4.8 0.5-9.6 1.4-14.3q0-0.1 0-0.1l13.1 3q0 0.1 0 0.2z" />
+		<path id="Layer" class="s5" d="m13.9 59.5l-13.1 3q-0.1 0-0.1-0.1q-0.7-4.1-0.7-8.4q0 0 0-0.1l13.4 1.2q0 0.1 0 0.1q0.1 2.1 0.5 4.2q0 0.1 0 0.1z" />
+		<path id="Layer" class="s6" d="m17 66.4l-10.4 9q-0.1 0-0.1-0.1c-2.8-3.2-4.8-7.6-5.7-12.8q-0.1 0-0.1-0.1l13.2-3q0 0.1 0 0.1c0.5 3 1.6 5.3 3 6.9q0.1 0 0.1 0z" />
+		<path id="Layer" class="s7" d="m62.1 38.8c-3.7 6.6-9.1 16.1-9.1 16.1c-13 22.7-20.3 27.5-30.5 27.5c-6.7 0-12.1-2.5-15.9-7q-0.1 0-0.1-0.1l10.4-8.9q0.1 0 0.1 0c1.6 1.7 3.6 2.6 6 2.6c5.9 0 9.6-3.7 20.1-20.2c0 0 4.8-7.6 12.7-19.7c1.9 2.8 4 6 6.3 9.7z" />
+		<path id="Layer" class="s8" d="m77 16.4q0 0-0.1 0.1c-2.2 2.3-4.6 5.4-7 9.3q-3.2-4.7-6.1-8.4q2.8-3.8 6-7.3q0 0 0.1-0.1z" />
+		<path id="Layer" class="s7" d="m108.3 8.9l-8.2 7.3q-0.1 0-0.1 0c-3.5-3.6-7.5-5.6-11.7-5.6c-4 0-7.6 1.9-11.3 5.8q0 0-0.1 0.1l-7.1-6.4q0 0 0.1-0.1c5.6-5.9 11.8-10 19.2-10c7 0 13.6 3.3 19.1 8.8q0.1 0.1 0.1 0.1z" />
+		<path id="Layer" class="s9" d="m124.2 52.3l-11.9-0.1q0 0 0-0.1c-0.4-15.4-5.2-28.7-12.2-35.9q-0.1 0-0.1 0l8.2-7.4q0.1 0.1 0.1 0.1c9.3 9.4 15.5 25.4 15.9 43.2q0 0.1 0 0.2z" />
+		<path id="Layer" class="s10" d="m124.2 53.5c0 8.4-1.7 15.2-4.9 20.2q-0.1 0-0.1 0.1l-8.8-9.2q0-0.1 0-0.1c1.3-2.5 1.9-5.9 1.9-10.1q0-1.1 0-2.2q0 0 0-0.1h11.9q0 0.1 0 0.2q0 0.6 0 1.2z" />
+		<path id="Layer" class="s11" d="m119.3 73.7q-0.1 0-0.1 0.1q-0.1 0.1-0.2 0.3q-0.2 0.2-0.3 0.5c-1.8 2.4-4.1 4.4-6.8 5.8q-0.1 0-0.2 0.1q-0.3 0.1-0.5 0.2q-0.7 0.3-1.5 0.6l-4.1-12.7c2.1-0.6 3.7-2 4.8-4q0-0.1 0-0.1z" />
+		<path id="Layer" class="s12" d="m105.7 68.6l4.1 12.7c-2.3 0.7-4.7 1.1-7 1.1c-2.8 0-5.3-0.4-7.6-1.2l4.1-12.9c1.2 0.5 2.5 0.7 3.8 0.7q1.3 0 2.6-0.4z" />
+		<path id="Layer" class="s13" d="m99.5 68.3l-4.2 13c-3.5-1.2-6.7-3.4-10-6.9q0-0.1-0.1-0.1l9.5-9.9q0.1 0.1 0.1 0.1c1.7 2 3.1 3.2 4.7 3.8z" />
+		<path id="Layer" class="s14" d="m94.8 64.5l-9.5 9.9q0-0.1-0.1-0.1c-3.9-4.2-7.9-10.2-12.9-18.4l-5.1-8.6v-0.1l8.3-12.6l0.1 0.1l7.2 12c5.6 8.9 9.1 14.4 11.9 17.7q0.1 0.1 0.1 0.1z" />
+	</g>
+</svg>
