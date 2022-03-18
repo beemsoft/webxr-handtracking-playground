@@ -18,7 +18,8 @@ module.exports = {
         vrm_animation: './src/demo/vrm_animation/src',
         vrm_dance: './src/demo/vrm_dance/src',
         bar: './src/demo/bar/src',
-        bar2: './src/demo/bar2/src'
+        bar2: './src/demo/bar2/src',
+        salsa_lesson: './src/demo/salsa_lesson/src'
     },
     module: {
         rules: [

@@ -92,6 +92,7 @@ export default class WebXRManager {
 
   private renderScene(frame: XRFrameOfReference, pose: XRDevicePose) {
     if (this.trackedHandsManager.isTrackedHandAvailable(frame)) {
+      this.trackedHandsManager.snapFinger(frame, this.xrReferenceSpace);
       let pinchPosition = this.trackedHandsManager.pinchFinger(frame, this.xrReferenceSpace);
       if (pinchPosition) {
         let direction = new Vector3(pinchPosition.x - this.cameraManager.cameraVR.position.x, pinchPosition.y - this.cameraManager.cameraVR.position.y, pinchPosition.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)

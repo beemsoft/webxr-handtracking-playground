@@ -13,7 +13,8 @@ const orderedJoints = [
   ["pinky-finger-metacarpal", "pinky-finger-phalanx-proximal", "pinky-finger-phalanx-intermediate", "pinky-finger-phalanx-distal", "pinky-finger-tip"]
 ];
 
-const fingerTipsWithoutThumb = ["index-finger-tip", "index-finger-tip", "ring-finger-tip", "pinky-finger-tip"];
+const pinchFingerTips = ["index-finger-tip"];
+const snapFingerTips = ["middle-finger-tip"];
 
 const handMeshList = Array<Body>();
 
@@ -26,6 +27,7 @@ export default class TrackedHandsManager {
   private canFixBall = true;
   private fixHand = "";
   private ballManager: BallManager;
+  private isPinchingEnabled = true;
 
   constructor(scene: Scene, physicsHandler: PhysicsHandler, camera: PerspectiveCamera) {
     this.scene = scene;
@@ -87,27 +89,55 @@ export default class TrackedHandsManager {
   }
 
   pinchFinger(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace): Vector3 {
+    if (this.isPinchingEnabled) {
+      for (let inputSource of frame.session.inputSources) {
+        let thumbTip = inputSource.hand.get('thumb-tip');
+        let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
+        if (thumbTipPose) {
+          for (let fingerTip of pinchFingerTips) {
+            let fingerTipJoint = inputSource.hand.get(fingerTip);
+            let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
+            if (fingerTipPose) {
+              let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
+              let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
+              if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.01) {
+                this.material.color.set(0x33fdff);
+                this.moveTowardsThePinchPosition(fingerTipPose.transform.position, xrReferenceSpace)
+                return fingerTipPose.transform.position;
+              }
+            }
+          }
+        }
+      }
+      this.material.color.set(0xFF3333);
+    }
+    return null;
+  }
+
+  snapFinger(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
     for (let inputSource of frame.session.inputSources) {
       let thumbTip = inputSource.hand.get('thumb-tip');
       let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
       if (thumbTipPose) {
-        for (let fingerTip of fingerTipsWithoutThumb) {
+        for (let fingerTip of snapFingerTips) {
           let fingerTipJoint = inputSource.hand.get(fingerTip);
           let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
           if (fingerTipPose) {
             let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
             let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
             if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.01) {
-              this.material.color.set(0x33fdff);
-              this.moveTowardsThePinchPosition(fingerTipPose.transform.position, xrReferenceSpace)
-              return fingerTipPose.transform.position;
+              if (this.isPinchingEnabled) {
+                this.material.color.set(0xdd00cc);
+                this.isPinchingEnabled = false;
+              } else {
+                this.material.color.set(0xFF3333);
+                this.isPinchingEnabled = true;
+              }
             }
           }
         }
       }
     }
-    this.material.color.set(0xFF3333);
-    return null;
   }
 
   openHand(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
