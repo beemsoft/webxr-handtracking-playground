@@ -101,8 +101,7 @@ export default class SceneManager implements SceneManagerInterface {
         vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
         vrm.lookAt.target = this.lookAtTarget;
         this.prepareAnimation();
-        let skeleton = new SkeletonHelper(vrm.scene.children[0], vrm.humanoid.humanBones);
-        this.targetSkeletonHelper = skeleton;
+        this.targetSkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.loadBVH();
       })
     });
@@ -113,7 +112,6 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   private playAnimation() {
-    console.log("Blinky");
     this.mixer1 = new AnimationMixer( this.currentVrm.scene );
 
     const blinkTrack = new NumberKeyframeTrack(
