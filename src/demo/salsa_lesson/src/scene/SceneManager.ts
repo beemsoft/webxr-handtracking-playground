@@ -166,7 +166,6 @@ export default class SceneManager implements SceneManagerInterface {
       VRM.from(gltf).then( (vrm) => {
         this.person1 = vrm;
         vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-        this.playBlinkAnimationPerson1();
         this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.target1Skeleton = this.person1.scene.children[4].children[0];
         gltfLoader.load('models/vrm/three-vrm-girl.vrm', (gltf) => {
@@ -182,24 +181,6 @@ export default class SceneManager implements SceneManagerInterface {
         });
       })
     });
-  }
-
-  private playBlinkAnimationPerson1() {
-    this.mixerBlink1 = new AnimationMixer( this.person1.scene );
-
-    const blinkTrack = new NumberKeyframeTrack(
-      this.person1.blendShapeProxy.getBlendShapeTrackName( VRMSchema.BlendShapePresetName.Blink ), // name
-      [ 0.0, 0.5, 1.0 ], // times
-      [ 0.0, 1.0, 0.0 ] // values
-    );
-
-    const clip = new AnimationClip( 'blink', 1, [ blinkTrack ] );
-    this.animationAction = this.mixerBlink1.clipAction( clip ).setLoop(LoopOnce, 1)
-    this.animationAction.play();
-    setTimeout( () => {
-        this.playBlinkAnimationPerson1()
-      }, 4000
-    )
   }
 
   private playBlinkAnimationPerson2() {
