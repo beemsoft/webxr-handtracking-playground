@@ -104,14 +104,14 @@ export default class SceneManager implements SceneManagerInterface {
 
   private loadModels() {
     let gltfLoader = new GLTFLoader();
-    gltfLoader.load('models/vrm/three-vrm-girl.vrm', (gltf) => {
+    gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {
         this.person1 = vrm;
         vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
         this.playBlinkAnimationPerson1();
         this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-        gltfLoader.load('models/vrm/three-vrm-girl.vrm', (gltf) => {
+        gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
           VRMUtils.removeUnnecessaryJoints(gltf.scene);
           VRM.from(gltf).then( (vrm) => {
             this.person2 = vrm;
@@ -163,11 +163,11 @@ export default class SceneManager implements SceneManagerInterface {
 
   loadBVH = () => {
     let loader = new BVHLoader();
-    loader.load("models/bvh/60/60_01_scaled.bvh", (bvh) => {
+    loader.load("/shared/bvh/60/60_01_scaled.bvh", (bvh) => {
       this.bvh1 = bvh;
       this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
       this.source1SkeletonHelper.skeleton = bvh.skeleton;
-      loader.load("models/bvh/61/61_01_scaled.bvh", (bvh) => {
+      loader.load("/shared/bvh/61/61_01_scaled.bvh", (bvh) => {
         this.bvh2 = bvh;
         this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
         this.source2SkeletonHelper.skeleton = bvh.skeleton;

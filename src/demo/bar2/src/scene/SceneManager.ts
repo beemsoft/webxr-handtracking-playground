@@ -111,7 +111,7 @@ export default class SceneManager implements SceneManagerInterface {
 
   private loadModels() {
     let gltfLoader = new GLTFLoader();
-    gltfLoader.load('models/vrm/three-vrm-girl.vrm', (gltf) => {
+    gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {
         this.person1 = vrm;
@@ -119,7 +119,7 @@ export default class SceneManager implements SceneManagerInterface {
         this.playBlinkAnimationPerson1();
         this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.target1Skeleton = this.person1.scene.children[4].children[0];
-        gltfLoader.load('models/vrm/three-vrm-girl.vrm', (gltf) => {
+        gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
           VRMUtils.removeUnnecessaryJoints(gltf.scene);
           VRM.from(gltf).then( (vrm) => {
             this.person2 = vrm;
@@ -177,11 +177,11 @@ export default class SceneManager implements SceneManagerInterface {
     if (move < 10) {
        moveStr = "0" + move;
     }
-    loader.load("models/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
+    loader.load("/shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.bvh1 = bvh;
       this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
       this.source1SkeletonHelper.skeleton = bvh.skeleton;
-      loader.load("models/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
+      loader.load("/shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.bvh2 = bvh;
         this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
         this.source2SkeletonHelper.skeleton = bvh.skeleton;
@@ -210,9 +210,9 @@ export default class SceneManager implements SceneManagerInterface {
     if (move < 10) {
       moveStr = "0" + move;
     }
-    loader.load("models/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
+    loader.load("/shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.nextBvh1 = bvh;
-      loader.load("models/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
+      loader.load("/shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.nextBvh2 = bvh;
        });
     });
