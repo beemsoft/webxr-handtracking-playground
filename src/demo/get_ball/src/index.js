@@ -21,6 +21,7 @@ import '@tensorflow/tfjs-backend-webgl';
 import {VrInitializer} from "../../../shared/webxr/VrInitializer";
 import SceneManager from './scene/SceneManager';
 import {fingerLookupIndices, VIDEO_HEIGHT, VIDEO_WIDTH} from "../../../shared/hands/HandPoseManager";
+import {Vector3} from "three";
 
 let videoWidth, videoHeight, rafID, ctx, canvas, ANCHOR_POINTS,
   scatterGLHasInitialized = false, scatterGL;
@@ -117,7 +118,8 @@ let sceneManager = new SceneManager();
 
 async function main() {
   let initializer = new VrInitializer(sceneManager);
-  initializer.init();
+  let cameraPosition = new Vector3(-0.5, 1.75, 4);
+  initializer.init(cameraPosition);
 
   try {
     let video = await loadVideo();
