@@ -1,6 +1,6 @@
 import {
   AnimationClip,
-  AnimationMixer,
+  AnimationMixer, AxesHelper,
   Clock,
   Group,
   LoopOnce,
@@ -98,9 +98,11 @@ export default class SceneManager implements SceneManagerInterface {
     this.scene = scene;
     this.sceneHelper = new SceneHelper(scene);
     this.physicsHandler = physicsHandler;
-    this.sceneHelper.addLight();
+    this.sceneHelper.addLight(false);
     this.loadShoes(scene);
     this.loadModels();
+    const axesHelper = new AxesHelper( 5 );
+    this.scene.add( axesHelper );
 
     this.handPoseManager = new HandPoseManager(scene, physicsHandler);
  }
@@ -268,6 +270,7 @@ export default class SceneManager implements SceneManagerInterface {
       if (move < 15) {
         this.doNext(move + 1);
       } else {
+        // TODO: fix pause animation and timeout
         this.isAnimationPaused = true;
       }
     }, this.bvh1.clip.duration * 1000 * this.slowDownFactor)
@@ -286,7 +289,7 @@ export default class SceneManager implements SceneManagerInterface {
   update() {
     let delta = this.clock.getDelta();
     if (this.mixerDance1 && this.mixerDance2) {
-      if (!this.isAnimationPaused) {
+      if (!this.isAnimationPaused && this.target1Skeleton && this.target2Skeleton) {
         this.mixerDance1.update(delta/this.slowDownFactor);
         this.mixerDance2.update(delta/this.slowDownFactor);
         VrmSkeletonUtils.retarget(this.target1Skeleton, this.source1SkeletonHelper, this.options, true);

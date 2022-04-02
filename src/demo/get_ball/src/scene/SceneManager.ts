@@ -38,7 +38,7 @@ export default class SceneManager implements SceneManagerInterface {
     this.physicsHandler.world.gravity.set(0, -9.8,0);
     this.basketballHelper = new BasketballHelper(scene, physicsHandler);
     this.handPoseManager = new HandPoseManager(scene, physicsHandler);
-    this.sceneHelper.addLight();
+    this.sceneHelper.addLight(true);
     this.addFloor();
     this.addHall();
     this.ball = this.basketballHelper.addBall();

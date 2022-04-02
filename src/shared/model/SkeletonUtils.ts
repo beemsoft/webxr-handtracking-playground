@@ -75,7 +75,7 @@ export default class SkeletonUtils {
         if (options.useTargetMatrix) {
           relativeMatrix.copy(boneTo.matrixWorld);
         } else {
-          relativeMatrix.getInverse(target.matrixWorld);
+          relativeMatrix.copy( target.matrixWorld ).invert();
           relativeMatrix.multiply(boneTo.matrixWorld);
         }
         // ignore scale to extract rotation
@@ -85,13 +85,13 @@ export default class SkeletonUtils {
         globalMatrix.makeRotationFromQuaternion(quat.setFromRotationMatrix(relativeMatrix));
         if (target.isObject3D) {
           const boneIndex = bones.indexOf(bone),
-            wBindMatrix = bindBones ? bindBones[boneIndex] : bindBoneMatrix.getInverse(target.skeleton.boneInverses[boneIndex]);
+            wBindMatrix = bindBones ? bindBones[ boneIndex ] : bindBoneMatrix.copy( target.skeleton.boneInverses[ boneIndex ] ).invert();
           globalMatrix.multiply(wBindMatrix);
         }
         globalMatrix.copyPosition(relativeMatrix);
       }
 
-      bone.matrix.getInverse(bone.parent.matrixWorld);
+      bone.matrix.copy( bone.parent.matrixWorld ).invert();
       bone.matrix.multiply(globalMatrix);
 
       if (options.preserveHipPosition && name === options.hip) {

@@ -46,16 +46,19 @@ export default class SkeletonHelper extends LineSegments {
     this.isSkeletonHelper = true;
     this.root = object;
     this.bones = bones;
+    // @ts-ignore
     this.matrix = object.matrixWorld;
+    // @ts-ignore
     this.matrixAutoUpdate = false;
   }
 
   updateMatrixWorld(force) {
     const bones = this.bones;
+    // @ts-ignore
     const geometry = this.geometry;
     // @ts-ignore
     const position = geometry.getAttribute('position');
-    _matrixWorldInv.getInverse(this.root.matrixWorld);
+    _matrixWorldInv.copy( this.root.matrixWorld ).invert();
     for (let i = 0, j = 0; i < bones.length; i++) {
       const bone = bones[i];
       if (bone.parent && bone.parent.isBone) {

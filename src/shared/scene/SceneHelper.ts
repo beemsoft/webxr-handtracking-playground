@@ -8,11 +8,11 @@ export class SceneHelper {
     this.scene = scene;
   }
 
-  addLight() {
+  addLight(useHemisphere: boolean) {
     let light = new DirectionalLight(0xFFFFFF, 1);
     light.position.set(1, 10, -0.5);
     this.scene.add(light);
-    this.scene.add(new HemisphereLight(0x909090, 0x404040));
+    if (useHemisphere) this.scene.add(new HemisphereLight(0x909090, 0x404040));
   }
 
   addMessage(message: string, maxAnisotropy: number) {

@@ -31,7 +31,7 @@ export default class SceneManager implements SceneManagerInterface {
     this.sceneHelper = new SceneHelper(scene);
     this.physicsHandler = physicsHandler;
     this.physicsHandler.world.gravity.set(0, -9.8,0);
-    this.sceneHelper.addLight();
+    this.sceneHelper.addLight(true);
     this.addBall();
     this.addCatcher();
     this.sceneHelper.addMessage('Catch the ball and throw it!', renderer.capabilities.getMaxAnisotropy());

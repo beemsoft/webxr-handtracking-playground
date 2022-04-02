@@ -1,15 +1,14 @@
 import WebXRManager from '../web-managers/WebXRManager';
-import WebPageManager from '../web-managers/WebPageManager';
 import {SceneManagerInterface} from '../scene/SceneManagerInterface';
-import { Vector3 } from 'three';
 
 let element: HTMLElement;
 
 export class VrInitializer {
-  private readonly sceneBuilder: SceneManagerInterface;
+  private readonly sceneManager: SceneManagerInterface;
 
   constructor(sceneManager: SceneManagerInterface) {
-    this.sceneBuilder = sceneManager;
+    this.sceneManager = sceneManager;
+    this.addVrButton();
   }
 
   addVrButton() {
@@ -30,25 +29,10 @@ export class VrInitializer {
     button.style.textAlign = 'center';
     button.textContent = 'ENTER VR';
     button.addEventListener('click', () => {
-      new WebXRManager(this.sceneBuilder);
+      new WebXRManager(this.sceneManager);
     });
     element.appendChild(button);
     return button;
-  }
-
-  public init(cameraPosition: Vector3) {
-    if (navigator.xr) { // @ts-ignore
-      navigator.xr.isSessionSupported('immersive-vr')
-        .then(isSupported => {
-          if (isSupported) {
-            this.addVrButton();
-          } else {
-            new WebPageManager(this.sceneBuilder, cameraPosition);
-          }
-        });
-    } else {
-      new WebPageManager(this.sceneBuilder, cameraPosition);
-    }
   }
 }
 

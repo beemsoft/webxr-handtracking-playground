@@ -39,7 +39,7 @@ export default class SceneManager implements SceneManagerInterface {
     this.scene = scene;
     this.sceneHelper = new SceneHelper(scene);
     this.physicsHandler = physicsHandler;
-    this.sceneHelper.addLight();
+    this.sceneHelper.addLight(false);
     this.loadModel(scene);
     this.sceneHelper.addMessage('Show open hand to start the animation!', renderer.capabilities.getMaxAnisotropy());
     this.handPoseManager = new HandPoseManager(scene, physicsHandler);
@@ -52,6 +52,7 @@ export default class SceneManager implements SceneManagerInterface {
 
   private loadModel(scene: Scene) {
     new GLTFLoader().load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
+      VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {
         console.log( vrm );
