@@ -10,8 +10,8 @@ module.exports = merge(common, {
         port: 8081,
         https: {
             key: fs.readFileSync('certs/key.pem'),
-            cert: fs.readFileSync('certs/cert.pem'),
+            cert: fs.readFileSync('certs/cert.pem')
         },
-        disableHostCheck: true
+        allowedHosts: "all"
     }
 });

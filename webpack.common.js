@@ -29,7 +29,7 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.(png|svg|jpg|gif|wav|mp3)$/,
+                test: /\.(png|svg|jpg|ico|wav|mp3)$/,
                 use: [{
                     loader: 'file-loader',
                     options: {
@@ -48,14 +48,13 @@ module.exports = {
             cacheGroups: {
                 commons: {
                     name: 'commons',
-                    chunks: 'initial',
-                    minChunks: 2
+                    chunks: 'all'
                 }
             }
         }
     },
     output: {
-        filename: 'src/demo/[name]/dist/bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        publicPath: "/",
+        filename: 'src/demo/[name]/dist/bundle.js'
     }
 };

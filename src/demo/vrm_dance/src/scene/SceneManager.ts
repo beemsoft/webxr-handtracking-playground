@@ -91,7 +91,7 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   private loadModel(scene: Scene) {
-    new GLTFLoader().load('models/vrm/three-vrm-girl.vrm', (gltf) => {
+    new GLTFLoader().load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {
         console.log( vrm );
