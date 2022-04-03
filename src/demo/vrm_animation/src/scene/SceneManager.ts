@@ -21,6 +21,8 @@ import { GestureType, SceneManagerInterface } from '../../../../shared/scene/Sce
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
+// @ts-ignore
+import vrmModel from '../../../../../public/shared/vrm/three-vrm-girl.vrm';
 
 export default class SceneManager implements SceneManagerInterface {
   private scene: Scene;
@@ -51,7 +53,7 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   private loadModel(scene: Scene) {
-    new GLTFLoader().load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
+    new GLTFLoader().load(vrmModel, (gltf) => {
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {

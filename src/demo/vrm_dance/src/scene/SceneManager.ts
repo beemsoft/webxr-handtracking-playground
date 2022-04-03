@@ -22,6 +22,8 @@ import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import VrmSkeletonUtils from '../../../../shared/model/VrmSkeletonUtils';
+// @ts-ignore
+import vrmModel from '../../../../../public/shared/vrm/three-vrm-girl.vrm';
 
 export default class SceneManager implements SceneManagerInterface {
   private scene: Scene;
@@ -91,7 +93,7 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   private loadModel(scene: Scene) {
-    new GLTFLoader().load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
+    new GLTFLoader().load(vrmModel, (gltf) => {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {
         console.log( vrm );

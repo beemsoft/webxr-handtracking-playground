@@ -29,11 +29,22 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.(png|svg|jpg|ico|wav|mp3)$/,
+                test: /\.(mp3)$/,
                 use: [{
                     loader: 'file-loader',
                     options: {
-                        name: '[name].[ext]'
+                        name: '[name].[ext]',
+                        publicPath: '/sound'
+                    }
+                }]
+            },
+            {
+                test: /\.(vrm)$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        publicPath: '/shared/vrm'
                     }
                 }]
             }
