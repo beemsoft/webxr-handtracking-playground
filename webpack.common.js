@@ -47,6 +47,16 @@ module.exports = {
                         publicPath: '/shared/vrm'
                     }
                 }]
+            },
+            {
+                test: /\.(bvh)$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        publicPath: '/shared/bvh'
+                    }
+                }]
             }
         ]
     },

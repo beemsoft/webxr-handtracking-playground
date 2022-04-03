@@ -211,7 +211,7 @@ export default class SceneManager implements SceneManagerInterface {
     if (move < 10) {
        moveStr = "0" + move;
     }
-    loader.load("/shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
+    loader.load("../../../../../shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.bvh1 = bvh;
       this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
       this.source1SkeletonHelper.skeleton = bvh.skeleton;
@@ -219,7 +219,7 @@ export default class SceneManager implements SceneManagerInterface {
       this.boneContainer.add( bvh.skeleton.bones[ 0 ] );
       this.scene.add( this.skeletonHelper );
       this.scene.add( this.boneContainer );
-      loader.load("/shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
+      loader.load("../../../../../shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.bvh2 = bvh;
         this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
         this.source2SkeletonHelper.skeleton = bvh.skeleton;
