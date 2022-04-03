@@ -35,13 +35,13 @@ export default class AudioHandler {
     this.audioContext = new AudioContext();
     this.audioElement = document.createElement('audio');
     if (audioDemo == AudioDemo.basketball) {
-      this.audioElement.src = '/sound/bounce.mp3';
+      this.audioElement.src = '/vr/sound/bounce.mp3';
     } else if (audioDemo == AudioDemo.dance) {
-      this.audioElement.src = '/sound/bachata.mp3';
+      this.audioElement.src = '/vr/sound/bachata.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceFast) {
-      this.audioElement.src = '/sound/fast salsa music mix.mp3';
+      this.audioElement.src = '/vr/sound/fast salsa music mix.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceSlow) {
-      this.audioElement.src = '/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
+      this.audioElement.src = '/vr/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
     }
     this.audioElement.load();
     this.audioElement.loop = true;
