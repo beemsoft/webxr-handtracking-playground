@@ -1,12 +1,4 @@
 import {ResonanceAudio, Source} from "resonance-audio";
-// @ts-ignore
-import bounceSound from '../../../public/sound/bounce.mp3';
-// @ts-ignore
-import danceSound from '../../../public/sound/bachata.mp3';
-// @ts-ignore
-import danceSalsaFastSound from '../../../public/sound/fast salsa music mix.mp3';
-// @ts-ignore
-import danceSalsaSlowSound from '../../../public/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
 
 export enum AudioDemo {
   "basketball",
@@ -43,13 +35,13 @@ export default class AudioHandler {
     this.audioContext = new AudioContext();
     this.audioElement = document.createElement('audio');
     if (audioDemo == AudioDemo.basketball) {
-      this.audioElement.src = bounceSound;
+      this.audioElement.src = '/sound/bounce.mp3';
     } else if (audioDemo == AudioDemo.dance) {
-      this.audioElement.src = danceSound;
+      this.audioElement.src = '/sound/bachata.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceFast) {
-      this.audioElement.src = danceSalsaFastSound;
+      this.audioElement.src = '/sound/fast salsa music mix.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceSlow) {
-      this.audioElement.src = danceSalsaSlowSound;
+      this.audioElement.src = '/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
     }
     this.audioElement.load();
     this.audioElement.loop = true;

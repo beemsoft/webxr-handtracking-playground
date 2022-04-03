@@ -26,8 +26,6 @@ import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
-// @ts-ignore
-import vrmModel from '../../../../../public/shared/vrm/three-vrm-girl.vrm';
 
 export default class SceneManager implements SceneManagerInterface {
   private scene: Scene;
@@ -165,14 +163,14 @@ export default class SceneManager implements SceneManagerInterface {
 
   private loadModels() {
     let gltfLoader = new GLTFLoader();
-    gltfLoader.load(vrmModel, (gltf) => {
+    gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       VRM.from(gltf).then( (vrm) => {
         this.person1 = vrm;
         vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
         this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.target1Skeleton = this.person1.scene.children[4].children[0];
-        gltfLoader.load(vrmModel, (gltf) => {
+        gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
           VRMUtils.removeUnnecessaryJoints(gltf.scene);
           VRM.from(gltf).then( (vrm) => {
             this.person2 = vrm;

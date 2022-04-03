@@ -27,36 +27,6 @@ module.exports = {
                 test: /\.ts?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
-            },
-            {
-                test: /\.(mp3)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        publicPath: '/sound'
-                    }
-                }]
-            },
-            {
-                test: /\.(vrm)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        publicPath: '/shared/vrm'
-                    }
-                }]
-            },
-            {
-                test: /\.(bvh)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        publicPath: '/shared/bvh'
-                    }
-                }]
             }
         ]
     },
@@ -75,7 +45,8 @@ module.exports = {
         }
     },
     output: {
-        publicPath: "/",
-        filename: 'src/demo/[name]/dist/bundle.js'
+        publicPath: "/public",
+        filename: 'src/demo/[name]/dist/bundle.js',
+        path: path.resolve(__dirname, 'public')
     }
 };
