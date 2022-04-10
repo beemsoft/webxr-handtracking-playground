@@ -12,10 +12,11 @@ export default class WebPageManager {
   private controls: OrbitControls;
   private clock = new Clock();
 
-  constructor(sceneManager: SceneManagerInterface, cameraPosition: Vector3) {
+  constructor(sceneManager: SceneManagerInterface) {
     this.sceneBuilder = sceneManager;
     this.physicsHandler = new PhysicsHandler();
     this.camera = new PerspectiveCamera();
+    let cameraPosition = sceneManager.getInitialCameraPosition();
     if (cameraPosition) {
       this.camera.position.add(cameraPosition);
     }

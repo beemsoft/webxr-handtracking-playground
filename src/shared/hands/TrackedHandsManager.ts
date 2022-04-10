@@ -1,7 +1,7 @@
 import { Body, Box, Vec3 } from 'cannon-es';
-import { BoxGeometry, MathUtils, Mesh, MeshPhongMaterial, PerspectiveCamera, Scene, Vector3 } from 'three';
+import { ArrayCamera, BoxGeometry, MathUtils, Mesh, MeshPhongMaterial, Scene, Vector3 } from 'three';
 import PhysicsHandler from '../physics/PhysicsHandler';
-import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../webxr/WebXRDeviceAPI';
+import { XRDevicePose, XRFrameOfReference, XRReferenceSpace } from '../webxr/WebXRDeviceAPI';
 import BallManager from './BallManager';
 
 const orderedJoints = [
@@ -13,23 +13,32 @@ const orderedJoints = [
   ["pinky-finger-metacarpal", "pinky-finger-phalanx-proximal", "pinky-finger-phalanx-intermediate", "pinky-finger-phalanx-distal", "pinky-finger-tip"]
 ];
 
-const pinchFingerTips = ["index-finger-tip"];
-const snapFingerTips = ["middle-finger-tip"];
+const pinchFingerTip = ["index-finger-tip"];
+const snapFingerTip = ["middle-finger-tip"];
+const ringFingerTip = ["ring-finger-tip"];
+const pinkyFingerTip = ["pinky-finger-tip"];
 
 const handMeshList = Array<Body>();
 
 export default class TrackedHandsManager {
   private scene: Scene;
   private physicsHandler: PhysicsHandler;
-  private camera: PerspectiveCamera;
+  private camera: ArrayCamera;
   private material = new MeshPhongMaterial({ color: 0xFF3333 });
   private ballInMotion = false;
   private canFixBall = true;
   private fixHand = "";
   private ballManager: BallManager;
   private isPinchingEnabled = true;
+  isCameraRotationEnabled = false;
+  isOriginRotationEnabled = false;
+  public rotationStartVector: Vector3;
+  private rotationStartPos: Vector3;
+  public rotationStopVector: Vector3;
+  public offsetAngle = 0;
+  public rotationPosition: Vector3;
 
-  constructor(scene: Scene, physicsHandler: PhysicsHandler, camera: PerspectiveCamera) {
+  constructor(scene: Scene, physicsHandler: PhysicsHandler, camera: ArrayCamera) {
     this.scene = scene;
     this.physicsHandler = physicsHandler;
     this.camera = camera;
@@ -94,7 +103,7 @@ export default class TrackedHandsManager {
         let thumbTip = inputSource.hand.get('thumb-tip');
         let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
         if (thumbTipPose) {
-          for (let fingerTip of pinchFingerTips) {
+          for (let fingerTip of pinchFingerTip) {
             let fingerTipJoint = inputSource.hand.get(fingerTip);
             let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
             if (fingerTipPose) {
@@ -102,7 +111,6 @@ export default class TrackedHandsManager {
               let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
               if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.01) {
                 this.material.color.set(0x33fdff);
-                this.moveTowardsThePinchPosition(fingerTipPose.transform.position, xrReferenceSpace)
                 return fingerTipPose.transform.position;
               }
             }
@@ -119,7 +127,7 @@ export default class TrackedHandsManager {
       let thumbTip = inputSource.hand.get('thumb-tip');
       let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
       if (thumbTipPose) {
-        for (let fingerTip of snapFingerTips) {
+        for (let fingerTip of snapFingerTip) {
           let fingerTipJoint = inputSource.hand.get(fingerTip);
           let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
           if (fingerTipPose) {
@@ -132,6 +140,79 @@ export default class TrackedHandsManager {
               } else {
                 this.material.color.set(0xFF3333);
                 this.isPinchingEnabled = true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ringFinger(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
+    if (!this.isPinchingEnabled) {
+      for (let inputSource of frame.session.inputSources) {
+        let thumbTip = inputSource.hand.get('thumb-tip');
+        let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
+        if (thumbTipPose && inputSource.handedness == 'right') {
+          for (let fingerTip of ringFingerTip) {
+            let fingerTipJoint = inputSource.hand.get(fingerTip);
+            let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
+            if (fingerTipPose) {
+              let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
+              let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
+              if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.02) {
+                if (!this.isCameraRotationEnabled) {
+                  this.rotationStartPos = new Vector3(this.camera.position.x, 0, this.camera.position.z);
+                  this.rotationStartVector = vector1.sub(this.rotationStartPos);
+                  this.rotationPosition = new Vector3(this.camera.position.x, 0, this.camera.position.z)
+                  console.log('Start rotating');
+                } else {
+                  this.offsetAngle = Math.PI/140;
+                }
+                this.isCameraRotationEnabled = true;
+                vector1.y = 0;
+
+              } else {
+                if (this.isCameraRotationEnabled && inputSource.handedness == 'right') {
+                  this.rotationStopVector = vector1.sub(this.rotationStartPos);
+                  console.log('Stop rotating');
+                }
+                this.isCameraRotationEnabled = false;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  pinkyFinger(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
+    if (!this.isPinchingEnabled) {
+      for (let inputSource of frame.session.inputSources) {
+        let thumbTip = inputSource.hand.get('thumb-tip');
+        let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
+        if (thumbTipPose && inputSource.handedness == 'right') {
+          for (let fingerTip of pinkyFingerTip) {
+            let fingerTipJoint = inputSource.hand.get(fingerTip);
+            let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
+            if (fingerTipPose) {
+              let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
+              let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
+              if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.02) {
+                if (!this.isOriginRotationEnabled) {
+                  console.log('Start rotating');
+                } else {
+                  this.offsetAngle = Math.PI/140;
+                  console.log('Offset angle (degrees): ' + MathUtils.radToDeg(this.offsetAngle));
+                }
+                this.isOriginRotationEnabled = true;
+                vector1.y = 0;
+
+              } else {
+                if (this.isOriginRotationEnabled && inputSource.handedness == 'right') {
+                  console.log('Stop rotating');
+                }
+                this.isOriginRotationEnabled = false;
               }
             }
           }
@@ -171,7 +252,7 @@ export default class TrackedHandsManager {
     }
   }
 
-  isOpenHand(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
+  isOpenHand(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace): boolean {
       for (let inputSource of frame.session.inputSources) {
         let wrist = inputSource.hand.get('wrist');
         let wristPose = frame.getJointPose(wrist, xrReferenceSpace);
@@ -190,6 +271,31 @@ export default class TrackedHandsManager {
           }
         }
       }
+  }
+
+  isStopHand(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace): boolean {
+    for (let inputSource of frame.session.inputSources) {
+      let wrist = inputSource.hand.get('wrist');
+      let wristPose = frame.getJointPose(wrist, xrReferenceSpace);
+      if (wristPose) {
+        let thumbTipPose = frame.getJointPose(inputSource.hand.get('thumb-tip'), xrReferenceSpace);
+        let pinkyTipPose = frame.getJointPose(inputSource.hand.get('pinky-finger-tip'), xrReferenceSpace);
+        let pinkyBasePose = frame.getJointPose(inputSource.hand.get('pinky-finger-metacarpal'), xrReferenceSpace);
+        let thumbSubTipPose = frame.getJointPose(inputSource.hand.get('thumb-phalanx-distal'), xrReferenceSpace);
+        if (pinkyTipPose && thumbTipPose) {
+          let pinkyPosition = new Vector3(pinkyTipPose.transform.position.x, pinkyTipPose.transform.position.y, pinkyTipPose.transform.position.z);
+          let thumbTipPosition = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
+          let pinkyBasePosition = new Vector3(pinkyBasePose.transform.position.x, pinkyBasePose.transform.position.y, pinkyBasePose.transform.position.z);
+          let thumbSubTipPosition = new Vector3(thumbSubTipPose.transform.position.x, thumbSubTipPose.transform.position.y, thumbSubTipPose.transform.position.z);
+          let pinkyDirection = pinkyPosition.sub(pinkyBasePosition).normalize();
+          let thumbDirection  = thumbTipPosition.sub(thumbSubTipPosition).normalize();
+          if (pinkyDirection.distanceTo(thumbDirection) < 0.1) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   checkFixedBall(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
@@ -233,16 +339,5 @@ export default class TrackedHandsManager {
         this.canFixBall = true;
       }
     }
-  }
-
-  public moveTowardsThePinchPosition(position: Vector3, xrReferenceSpace: XRReferenceSpace) {
-    //let direction = new Vector3((position.x - this.camera.position.x)/10, -1.5, (position.z - this.camera.position.z)/10);
-    let direction = new Vector3((position.x - this.camera.position.x) * 50, 500, (position.z - this.camera.position.z) * 50);
-    this.moveInDirection(direction, xrReferenceSpace);
-  }
-
-  private moveInDirection(direction: Vector3, xrReferenceSpace: XRReferenceSpace) {
-      // @ts-ignore
-      xrReferenceSpace.getOffsetReferenceSpace(new XRRigidTransform({x: -direction.x, y: 0, z: -direction.z}));
   }
 }

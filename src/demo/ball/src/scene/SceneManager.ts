@@ -7,6 +7,7 @@ import {
   SphereGeometry,
   TextureLoader,
   Vector2,
+  Vector3,
   WebGLRenderer
 } from 'three';
 import { Body, Material, Sphere, Vec3 } from 'cannon-es';
@@ -111,5 +112,13 @@ export default class SceneManager implements SceneManagerInterface {
   }
 
   handleGesture(gesture: GestureType) {
+  }
+
+  getInitialCameraAngle(): number {
+    return 0;
+  }
+
+  getInitialCameraPosition(): Vector3 {
+    return new Vector3(-0.5, 1.75, 4);
   }
 }

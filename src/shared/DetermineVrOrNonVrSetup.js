@@ -1,13 +1,10 @@
 import {VrInitializer} from "./webxr/VrInitializer";
-import {Vector3} from "three";
 import WebPageManager from "./web-managers/WebPageManager";
 import {setupOldMediaPipeStuff} from "./NonVrInitializer";
 
-const cameraPosition = new Vector3(-0.5, 1.75, 4);
-
-function nonVrSetup(sceneManager, cameraPosition, useMediaPipeStuff) {
+function nonVrSetup(sceneManager, useMediaPipeStuff) {
     if (useMediaPipeStuff) setupOldMediaPipeStuff(sceneManager);
-    new WebPageManager(sceneManager, cameraPosition);
+    new WebPageManager(sceneManager);
 }
 
 export function determineVrOrNonVrSetup(sceneManager, useMediaPipeStuff) {
@@ -17,10 +14,10 @@ export function determineVrOrNonVrSetup(sceneManager, useMediaPipeStuff) {
                 if (isSupported) {
                     new VrInitializer(sceneManager);
                 } else {
-                    nonVrSetup(sceneManager, cameraPosition, useMediaPipeStuff);
+                    nonVrSetup(sceneManager, useMediaPipeStuff);
                 }
             });
     } else {
-        nonVrSetup(sceneManager, cameraPosition, useMediaPipeStuff);
+        nonVrSetup(sceneManager, useMediaPipeStuff);
     }
 }

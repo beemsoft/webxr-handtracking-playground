@@ -94,7 +94,7 @@ export default class HandPoseManager {
     this.ballManager.checkBall(wristPosition);
   }
 
-  isOpenHand() {
+  isOpenHand(): boolean {
     let wristPose = this.pointsData[0];
     let wristPosition = new Vector3(wristPose[0], wristPose[1], wristPose[2]);
     if (wristPose) {
@@ -108,5 +108,25 @@ export default class HandPoseManager {
         return (MathUtils.radToDeg(pinkPosition.angleTo(thumbPosition)) > 70);
       }
     }
+  }
+
+  isStopHand(): boolean {
+    let wristPose = this.pointsData[0];
+    if (wristPose) {
+      let thumbTipPose = this.pointsData[4];
+      let pinkyTipPose = this.pointsData[20];
+      let pinkyBasePose = this.pointsData[17];
+      let thumbSubTipPose = this.pointsData[3];
+        let pinkyPosition = new Vector3(pinkyTipPose[0], pinkyTipPose[1], pinkyTipPose[2]);
+        let thumbPosition = new Vector3(thumbTipPose[0], thumbTipPose[1], thumbTipPose[2]);
+        let thumbSubTipPosition = new Vector3(thumbSubTipPose[0], thumbSubTipPose[1], thumbSubTipPose[2]);
+        let pinkyBasePosition = new Vector3(pinkyBasePose[0], pinkyBasePose[1], pinkyBasePose[2]);
+        let pinkyDirection = pinkyPosition.sub(pinkyBasePosition).normalize();
+        let thumbDirection  = thumbPosition.sub(thumbSubTipPosition).normalize();
+        if (pinkyDirection.distanceTo(thumbDirection) < 0.1) {
+          return true;
+        }
+    }
+    return false;
   }
 }

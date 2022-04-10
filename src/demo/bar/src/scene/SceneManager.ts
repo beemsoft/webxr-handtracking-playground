@@ -7,6 +7,7 @@ import {
   NumberKeyframeTrack,
   PerspectiveCamera,
   Scene,
+  Vector3,
   WebGLRenderer
 } from 'three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
@@ -236,5 +237,13 @@ export default class SceneManager implements SceneManagerInterface {
         this.startShow();
       }
     }
+  }
+
+  getInitialCameraAngle(): number {
+    return 0;
+  }
+
+  getInitialCameraPosition(): Vector3 {
+    return new Vector3(-0.5, 1.75, 4);
   }
 }

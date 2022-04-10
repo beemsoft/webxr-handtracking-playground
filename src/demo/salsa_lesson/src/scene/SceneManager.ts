@@ -2,6 +2,7 @@ import {
   AnimationClip,
   AnimationMixer, AxesHelper,
   Clock,
+  GridHelper,
   Group,
   LoopOnce,
   Mesh,
@@ -33,7 +34,6 @@ export default class SceneManager implements SceneManagerInterface {
   private physicsHandler: PhysicsHandler;
   private handPoseManager: HandPoseManager;
   private clock = new Clock();
-  private mixerBlink1: AnimationMixer;
   private mixerBlink2: AnimationMixer;
   private mixerDance1: AnimationMixer;
   private mixerDance2: AnimationMixer;
@@ -47,6 +47,7 @@ export default class SceneManager implements SceneManagerInterface {
   private target2SkeletonHelper: SkeletonHelper;
   private target1Skeleton: Object3D;
   private target2Skeleton: Object3D;
+  private isModelsLoaded = false;
 
   private options = {
     hip: "hip",
@@ -84,8 +85,6 @@ export default class SceneManager implements SceneManagerInterface {
   };
   private bvh1: BVH;
   private bvh2: BVH;
-  private nextBvh1: BVH;
-  private nextBvh2: BVH;
   private slowDownFactor = 4;
   private leftHand: Mesh;
   private rightHand: Mesh;
@@ -103,6 +102,8 @@ export default class SceneManager implements SceneManagerInterface {
     this.loadModels();
     const axesHelper = new AxesHelper( 5 );
     this.scene.add( axesHelper );
+    const gridHelper = new GridHelper( 10, 10 );
+    this.scene.add( gridHelper );
 
     this.handPoseManager = new HandPoseManager(scene, physicsHandler);
  }
@@ -221,59 +222,20 @@ export default class SceneManager implements SceneManagerInterface {
         this.bvh2 = bvh;
         this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
         this.source2SkeletonHelper.skeleton = bvh.skeleton;
-        // stop in VR
         this.startShow(move);
-        this.preloadBVH(move + 1);
+        this.isModelsLoaded = true;
       });
-    });
-  }
-
-  doNext(move) {
-    this.bvh1 = this.nextBvh1;
-    this.bvh2 = this.nextBvh2;
-    if (move < 15) {
-      this.preloadBVH(move + 1);
-    }
-    this.source1SkeletonHelper = new SkeletonHelper(this.bvh1.skeleton.bones[0]);
-    this.source1SkeletonHelper.skeleton = this.bvh1.skeleton;
-    this.source2SkeletonHelper = new SkeletonHelper(this.bvh2.skeleton.bones[0]);
-    this.source2SkeletonHelper.skeleton = this.bvh2.skeleton;
-    this.startShow(move);
-  }
-
-  preloadBVH(move) {
-    let loader = new BVHLoader();
-    let moveStr = move;
-    if (move < 10) {
-      moveStr = "0" + move;
-    }
-    loader.load("/shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
-      this.nextBvh1 = bvh;
-      loader.load("/shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
-        this.nextBvh2 = bvh;
-       });
     });
   }
 
   private startShow(move) {
     console.log("Play move " + move + " for second: " + this.bvh1.clip.duration * this.slowDownFactor);
     this.isAnimationPaused = false;
+    this.scene.add(this.person2.scene);
     this.mixerDance1 = new AnimationMixer(this.source1SkeletonHelper);
     this.mixerDance2 = new AnimationMixer(this.source2SkeletonHelper);
-    console.log("Start animation");
-    // this.scene.add(this.person1.scene);
-    this.scene.add(this.person2.scene);
     this.mixerDance1.clipAction(this.bvh1.clip).play();
     this.mixerDance2.clipAction(this.bvh2.clip).play();
-    setTimeout(() => {
-      console.log("Stop animation");
-      if (move < 15) {
-        this.doNext(move + 1);
-      } else {
-        // TODO: fix pause animation and timeout
-        this.isAnimationPaused = true;
-      }
-    }, this.bvh1.clip.duration * 1000 * this.slowDownFactor)
   }
 
   private pauseShow() {
@@ -289,53 +251,53 @@ export default class SceneManager implements SceneManagerInterface {
   update() {
     let delta = this.clock.getDelta();
     if (this.mixerDance1 && this.mixerDance2) {
-      if (!this.isAnimationPaused && this.target1Skeleton && this.target2Skeleton) {
+      if (!this.isAnimationPaused && this.isModelsLoaded && this.target1Skeleton && this.target2Skeleton) {
         this.mixerDance1.update(delta/this.slowDownFactor);
         this.mixerDance2.update(delta/this.slowDownFactor);
         VrmSkeletonUtils.retarget(this.target1Skeleton, this.source1SkeletonHelper, this.options, true);
-        let result = new Vector3();
+        let leftHandPosition = new Vector3();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[23].getWorldPosition(result);
-        this.leftHand.position.x = result.x;
-        this.leftHand.position.y = result.y;
-        this.leftHand.position.z = result.z;
-        let result1a = new Quaternion();
+        this.target1Skeleton.skeleton.bones[23].getWorldPosition(leftHandPosition);
+        this.leftHand.position.x = leftHandPosition.x;
+        this.leftHand.position.y = leftHandPosition.y;
+        this.leftHand.position.z = leftHandPosition.z;
+        let leftHandQuaternion = new Quaternion();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[23].getWorldQuaternion(result1a);
-        this.leftHand.setRotationFromQuaternion(result1a);
+        this.target1Skeleton.skeleton.bones[23].getWorldQuaternion(leftHandQuaternion);
+        this.leftHand.setRotationFromQuaternion(leftHandQuaternion);
 
-        let result2 = new Vector3();
+        let rightHandPosition = new Vector3();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[21].getWorldPosition(result2);
-        this.rightHand.position.x = result2.x;
-        this.rightHand.position.y = result2.y;
-        this.rightHand.position.z = result2.z;
-        let result2a = new Quaternion();
+        this.target1Skeleton.skeleton.bones[21].getWorldPosition(rightHandPosition);
+        this.rightHand.position.x = rightHandPosition.x;
+        this.rightHand.position.y = rightHandPosition.y;
+        this.rightHand.position.z = rightHandPosition.z;
+        let rightHandQuaternion = new Quaternion();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[21].getWorldQuaternion(result2a);
-        this.rightHand.setRotationFromQuaternion(result2a);
+        this.target1Skeleton.skeleton.bones[21].getWorldQuaternion(rightHandQuaternion);
+        this.rightHand.setRotationFromQuaternion(rightHandQuaternion);
 
-        let result3 = new Vector3();
+        let rightFootPosition = new Vector3();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[19].getWorldPosition(result3);
-        this.rightFoot.position.x = result3.x;
-        this.rightFoot.position.y = result3.y + 0.17;
-        this.rightFoot.position.z = result3.z;
-        let result3a = new Quaternion();
+        this.target1Skeleton.skeleton.bones[19].getWorldPosition(rightFootPosition);
+        this.rightFoot.position.x = rightFootPosition.x;
+        this.rightFoot.position.y = rightFootPosition.y + 0.17;
+        this.rightFoot.position.z = rightFootPosition.z;
+        let rightFootQuaternion = new Quaternion();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[19].getWorldQuaternion(result3a);
-        this.rightFoot.setRotationFromQuaternion(result3a);
+        this.target1Skeleton.skeleton.bones[19].getWorldQuaternion(rightFootQuaternion);
+        this.rightFoot.setRotationFromQuaternion(rightFootQuaternion);
 
-        let result4 = new Vector3();
+        let leftFootPosition = new Vector3();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[17].getWorldPosition(result4);
-        this.leftFoot.position.x = result4.x;
-        this.leftFoot.position.y = result4.y + 0.17;
-        this.leftFoot.position.z = result4.z;
-        let result4a = new Quaternion();
+        this.target1Skeleton.skeleton.bones[17].getWorldPosition(leftFootPosition);
+        this.leftFoot.position.x = leftFootPosition.x;
+        this.leftFoot.position.y = leftFootPosition.y + 0.17;
+        this.leftFoot.position.z = leftFootPosition.z;
+        let leftFootQuaternion = new Quaternion();
         // @ts-ignore
-        this.target1Skeleton.skeleton.bones[17].getWorldQuaternion(result4a);
-        this.leftFoot.setRotationFromQuaternion(result4a);
+        this.target1Skeleton.skeleton.bones[17].getWorldQuaternion(leftFootQuaternion);
+        this.leftFoot.setRotationFromQuaternion(leftFootQuaternion);
 
         VrmSkeletonUtils.retarget(this.target2Skeleton, this.source2SkeletonHelper, this.options, false);
       }
@@ -356,11 +318,13 @@ export default class SceneManager implements SceneManagerInterface {
       this.handPoseManager.renderHands(result);
       if (this.isAnimationPaused) {
         if (this.handPoseManager.isOpenHand()) {
+          console.log('Hand open');
           this.resumeShow();
         }
       } else {
-        if (this.handPoseManager.isOpenHand()) {
+        if (this.handPoseManager.isStopHand()) {
           this.pauseShow();
+          console.log('Hand stop!');
         }
       }
     }
@@ -369,10 +333,22 @@ export default class SceneManager implements SceneManagerInterface {
   handleGesture(gesture: GestureType) {
     if (gesture == GestureType.openHand) {
       if (this.isAnimationPaused) {
+        console.log('Hand open');
         this.resumeShow();
-      } else {
+      }
+    } else if (gesture == GestureType.stopHand) {
+      if (!this.isAnimationPaused) {
+        console.log('Hand stop!');
         this.pauseShow();
       }
     }
+  }
+
+  getInitialCameraAngle(): number {
+    return Math.PI/2;
+  }
+
+  getInitialCameraPosition(): Vector3 {
+    return new Vector3(-0.9, 1.3, 0);
   }
 }
