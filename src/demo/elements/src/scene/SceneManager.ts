@@ -30,7 +30,7 @@ export default class SceneManager implements SceneManagerInterface {
       gltf.scene.position.y = 0;
       gltf.scene.position.z = 0;
       gltf.scene.scale.set(5,5,5)
-      gltf.scene.rotation.y = 360
+      // gltf.scene.rotation.y = 360
       this.scene.add(gltf.scene);
       this.mixer = new AnimationMixer( gltf.scene );
       this.mixer.clipAction( gltf.animations[0] ).play();
