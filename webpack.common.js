@@ -19,7 +19,8 @@ module.exports = {
         vrm_dance: './src/demo/vrm_dance/src',
         bar: './src/demo/bar/src',
         bar2: './src/demo/bar2/src',
-        salsa_lesson: './src/demo/salsa_lesson/src'
+        salsa_lesson: './src/demo/salsa_lesson/src',
+        elements: './src/demo/elements/src'
     },
     module: {
         rules: [
@@ -45,8 +46,6 @@ module.exports = {
         }
     },
     output: {
-        publicPath: "/public",
-        filename: 'src/demo/[name]/dist/bundle.js',
-        path: path.resolve(__dirname, 'public')
+        filename: 'src/demo/[name]/dist/bundle.js'
     }
 };
