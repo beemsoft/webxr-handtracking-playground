@@ -11,38 +11,27 @@ import {
   TextureLoader,
   Vector3,
   WebGLRenderer
-} from 'three';
+} from 'three/src/Three';
 // @ts-ignore
 import { Body, Box, Plane, Quaternion, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { BasketballHelper } from '../../../../shared/scene/sport/BasketballHelper';
-import HandPoseManager from '../../../../shared/hands/HandPoseManager';
+import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
-export default class SceneManager implements SceneManagerInterface {
-  private scene: Scene;
-  private sceneHelper: SceneHelper;
-  private camera: PerspectiveCamera;
-  private physicsHandler: PhysicsHandler;
+export default class SceneManager extends SceneManagerParent {
   private basketballHelper: BasketballHelper;
   private loader: TextureLoader = new TextureLoader();
   private ball: Body;
-  private handPoseManager: HandPoseManager;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler)  {
-    this.scene = scene;
-    this.sceneHelper = new SceneHelper(scene);
-    this.camera = camera;
-    this.physicsHandler = physicsHandler;
+    super.build(camera, scene, renderer, physicsHandler);
     this.physicsHandler.world.gravity.set(0, -9.8,0);
     this.basketballHelper = new BasketballHelper(scene, physicsHandler);
-    this.handPoseManager = new HandPoseManager(scene, physicsHandler);
     this.sceneHelper.addLight(true);
     this.addFloor();
     this.addHall();
     this.ball = this.basketballHelper.addBall();
-
   };
 
   addWall(length, height, positionX, positionZ, rotationY) {
@@ -116,13 +105,6 @@ export default class SceneManager implements SceneManagerInterface {
       this.handPoseManager.openHand();
       // this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
     }
-  }
-
-  handleGesture(gesture: GestureType) {
-  }
-
-  getInitialCameraAngle(): number {
-    return 0;
   }
 
   getInitialCameraPosition(): Vector3 {

@@ -9,34 +9,25 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer
-} from 'three';
+} from 'three/src/Three';
 import { Body, Material, Sphere, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import HandPoseManager from '../../../../shared/hands/HandPoseManager';
-import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
-export default class SceneManager implements SceneManagerInterface {
-  private scene: Scene;
-  private sceneHelper: SceneHelper;
-  private physicsHandler: PhysicsHandler;
+export default class SceneManager extends SceneManagerParent {
   private loader: TextureLoader = new TextureLoader();
   private ball: Body;
   private ballMaterial: Material;
   private hand: Body;
   private handSettings = { handRadius: .15 };
-  private handPoseManager: HandPoseManager;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
-    this.scene = scene;
-    this.sceneHelper = new SceneHelper(scene);
-    this.physicsHandler = physicsHandler;
+    super.build(camera, scene, renderer, physicsHandler);
     this.physicsHandler.world.gravity.set(0, -9.8,0);
     this.sceneHelper.addLight(true);
     this.addBall();
     this.addCatcher();
     this.sceneHelper.addMessage('Catch the ball and throw it!', renderer.capabilities.getMaxAnisotropy());
-    this.handPoseManager = new HandPoseManager(scene, physicsHandler);
   }
 
   addBall(){
@@ -109,13 +100,6 @@ export default class SceneManager implements SceneManagerInterface {
     if (this.handPoseManager) {
       this.handPoseManager.renderHands(result);
     }
-  }
-
-  handleGesture(gesture: GestureType) {
-  }
-
-  getInitialCameraAngle(): number {
-    return 0;
   }
 
   getInitialCameraPosition(): Vector3 {

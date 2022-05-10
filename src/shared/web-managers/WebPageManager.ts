@@ -1,4 +1,4 @@
-import { Clock, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three/src/Three';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/PhysicsHandler';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -38,6 +38,7 @@ export default class WebPageManager {
     this.controls.update();
     this.physicsHandler.updatePhysics();
     this.renderer.render(this.scene, this.camera);
+    this.sceneBuilder.postUpdate();
   };
 
   private addTrackBallControls() {

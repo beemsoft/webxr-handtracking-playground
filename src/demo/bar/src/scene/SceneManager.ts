@@ -1,7 +1,6 @@
 import {
   AnimationClip,
   AnimationMixer,
-  Clock,
   LoopOnce,
   LoopRepeat,
   NumberKeyframeTrack,
@@ -9,11 +8,9 @@ import {
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three';
+} from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import HandPoseManager from '../../../../shared/hands/HandPoseManager';
-import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
@@ -21,13 +18,9 @@ import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
+import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
-export default class SceneManager implements SceneManagerInterface {
-  private scene: Scene;
-  private sceneHelper: SceneHelper;
-  private physicsHandler: PhysicsHandler;
-  private handPoseManager: HandPoseManager;
-  private clock = new Clock();
+export default class SceneManager extends SceneManagerParent {
   private mixerBlink1: AnimationMixer;
   private mixerBlink2: AnimationMixer;
   private mixerDance1: AnimationMixer;
@@ -80,16 +73,13 @@ export default class SceneManager implements SceneManagerInterface {
   private bvh2: BVH;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
-    this.scene = scene;
-    this.sceneHelper = new SceneHelper(scene);
-    this.physicsHandler = physicsHandler;
+    super.build(camera, scene, renderer, physicsHandler);
     this.sceneHelper.addLight(false);
     this.audioHandler.initAudio(AudioDemo.salsaDanceFast);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = false;
     this.loadBar(scene);
     this.loadModels();
-    this.handPoseManager = new HandPoseManager(scene, physicsHandler);
   }
 
   private loadBar(scene: Scene) {
@@ -237,10 +227,6 @@ export default class SceneManager implements SceneManagerInterface {
         this.startShow();
       }
     }
-  }
-
-  getInitialCameraAngle(): number {
-    return 0;
   }
 
   getInitialCameraPosition(): Vector3 {

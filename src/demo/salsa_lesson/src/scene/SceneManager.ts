@@ -1,7 +1,7 @@
 import {
   AnimationClip,
-  AnimationMixer, AxesHelper,
-  Clock,
+  AnimationMixer,
+  AxesHelper,
   GridHelper,
   Group,
   LoopOnce,
@@ -16,24 +16,18 @@ import {
   TextureLoader,
   Vector3,
   WebGLRenderer
-} from 'three';
+} from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import HandPoseManager from '../../../../shared/hands/HandPoseManager';
-import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
+import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
-export default class SceneManager implements SceneManagerInterface {
-  private scene: Scene;
-  private sceneHelper: SceneHelper;
-  private physicsHandler: PhysicsHandler;
-  private handPoseManager: HandPoseManager;
-  private clock = new Clock();
+export default class SceneManager extends SceneManagerParent {
   private mixerBlink2: AnimationMixer;
   private mixerDance1: AnimationMixer;
   private mixerDance2: AnimationMixer;
@@ -94,9 +88,7 @@ export default class SceneManager implements SceneManagerInterface {
   private boneContainer: Group;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
-    this.scene = scene;
-    this.sceneHelper = new SceneHelper(scene);
-    this.physicsHandler = physicsHandler;
+    super.build(camera, scene, renderer, physicsHandler);
     this.sceneHelper.addLight(false);
     this.loadShoes(scene);
     this.loadModels();
@@ -104,8 +96,6 @@ export default class SceneManager implements SceneManagerInterface {
     this.scene.add( axesHelper );
     const gridHelper = new GridHelper( 10, 10 );
     this.scene.add( gridHelper );
-
-    this.handPoseManager = new HandPoseManager(scene, physicsHandler);
  }
 
   private loadShoes(scene: Scene) {

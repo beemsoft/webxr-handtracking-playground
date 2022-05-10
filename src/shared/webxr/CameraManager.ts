@@ -1,4 +1,4 @@
-import { ArrayCamera, PerspectiveCamera, Vector4 } from 'three';
+import { ArrayCamera, PerspectiveCamera, Vector4 } from 'three/src/Three';
 import { XRDevicePose, XRView, XRViewport } from './WebXRDeviceAPI';
 
 const FIELD_OF_VIEW_DEGREES = 75;
@@ -21,8 +21,10 @@ export default class CameraManager {
   }
 
   public updateArrayCamera(index: number, view: XRView, viewport: XRViewport) {
+    console.log('Update camera ' + index);
     let viewMatrix = view.transform.inverse.matrix;
     let camera = this.cameraVR.cameras[index];
+    console.log('Projection matrix: ' + JSON.stringify(camera.projectionMatrix));
     camera.projectionMatrix.fromArray(view.projectionMatrix);
     camera.matrixWorldInverse.fromArray(viewMatrix);
     // @ts-ignore

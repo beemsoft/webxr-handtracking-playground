@@ -27,7 +27,7 @@ import {
     Mesh,
     PlaneBufferGeometry,
     RawShaderMaterial
-} from 'three';
+} from 'three/src/Three';
 
 /**
  * A wrapper of THREE.CanvasTexture to easily draw text,

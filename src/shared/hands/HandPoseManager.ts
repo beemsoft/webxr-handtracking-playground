@@ -1,5 +1,5 @@
 import { Body, Box, Vec3 } from 'cannon-es';
-import { BoxGeometry, MathUtils, Mesh, Scene, Vector3 } from 'three';
+import { BoxGeometry, MathUtils, Mesh, Scene, Vector3 } from 'three/src/Three';
 import PhysicsHandler from '../physics/PhysicsHandler';
 import BallManager from './BallManager';
 

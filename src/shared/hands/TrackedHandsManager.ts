@@ -1,5 +1,5 @@
 import { Body, Box, Vec3 } from 'cannon-es';
-import { ArrayCamera, BoxGeometry, MathUtils, Mesh, MeshPhongMaterial, Scene, Vector3 } from 'three';
+import { ArrayCamera, BoxGeometry, MathUtils, Mesh, MeshPhongMaterial, Scene, Vector3 } from 'three/src/Three';
 import PhysicsHandler from '../physics/PhysicsHandler';
 import { XRDevicePose, XRFrameOfReference, XRReferenceSpace } from '../webxr/WebXRDeviceAPI';
 import BallManager from './BallManager';

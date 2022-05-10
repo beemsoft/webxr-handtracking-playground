@@ -1,4 +1,4 @@
-import {Quaternion, Vector3} from 'three';
+import {Quaternion, Vector3} from 'three/src/Three';
 
 export interface XR extends EventTarget {
   requestDevice(): Promise<XRDevice>;

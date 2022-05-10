@@ -2,7 +2,6 @@ import {
   AnimationClip,
   AnimationMixer,
   AxesHelper,
-  Clock,
   Euler,
   GridHelper,
   LoopOnce,
@@ -14,22 +13,15 @@ import {
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three';
+} from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import HandPoseManager from '../../../../shared/hands/HandPoseManager';
-import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
+import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
-export default class SceneManager implements SceneManagerInterface {
-  private scene: Scene;
-  private sceneHelper: SceneHelper;
-  private physicsHandler: PhysicsHandler;
-  private handPoseManager: HandPoseManager;
-  private clock = new Clock();
-  private mixer: AnimationMixer;
+export default class SceneManager extends SceneManagerParent {
   private player: any;
   private isAnimationStarted: boolean;
   private currentVrm: VRM;
@@ -37,13 +29,10 @@ export default class SceneManager implements SceneManagerInterface {
   private animationAction: AnimationAction;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
-    this.scene = scene;
-    this.sceneHelper = new SceneHelper(scene);
-    this.physicsHandler = physicsHandler;
+    super.build(camera, scene, renderer, physicsHandler);
     this.sceneHelper.addLight(false);
     this.loadModel(scene);
     this.sceneHelper.addMessage('Show open hand to start the animation!', renderer.capabilities.getMaxAnisotropy());
-    this.handPoseManager = new HandPoseManager(scene, physicsHandler);
     camera.add(this.lookAtTarget);
     const gridHelper = new GridHelper( 10, 10 );
     this.scene.add( gridHelper );
@@ -137,10 +126,6 @@ export default class SceneManager implements SceneManagerInterface {
         this.startShow();
       }
     }
-  }
-
-  getInitialCameraAngle(): number {
-    return 0;
   }
 
   getInitialCameraPosition(): Vector3 {

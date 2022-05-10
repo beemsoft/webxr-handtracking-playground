@@ -1,6 +1,5 @@
 import {
   AnimationMixer,
-  Clock,
   Color,
   GridHelper,
   Group,
@@ -9,24 +8,17 @@ import {
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three';
+} from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { SceneHelper } from '../../../../shared/scene/SceneHelper';
-import HandPoseManager from '../../../../shared/hands/HandPoseManager';
-import { GestureType, SceneManagerInterface } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonUtils from '../../../../shared/model/SkeletonUtils';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
+import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
-export default class SceneManager implements SceneManagerInterface {
-  private scene: Scene;
-  private sceneHelper: SceneHelper;
-  private physicsHandler: PhysicsHandler;
-  private handPoseManager: HandPoseManager;
-  private clock = new Clock();
-  private mixer: AnimationMixer;
+export default class SceneManager extends SceneManagerParent {
   private player: any;
   private skeletonHelper: SkeletonHelper;
   private boneContainer: Group;
@@ -66,10 +58,8 @@ export default class SceneManager implements SceneManagerInterface {
   private bvh: BVH;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
-    this.scene = scene;
-    this.sceneHelper = new SceneHelper(scene);
-    this.physicsHandler = physicsHandler;
-    this.sceneHelper.addLight(false);
+    super.build(camera, scene, renderer, physicsHandler);
+    this.sceneHelper.addLight(true);
     this.audioHandler.initAudio(AudioDemo.dance);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = false;
@@ -78,7 +68,6 @@ export default class SceneManager implements SceneManagerInterface {
     this.scene.add( grid );
     this.loadModel(scene);
     this.sceneHelper.addMessage('Show open hand to start the dance!', renderer.capabilities.getMaxAnisotropy());
-    this.handPoseManager = new HandPoseManager(scene, physicsHandler);
   }
 
   private loadModel(scene: Scene) {
@@ -157,10 +146,6 @@ export default class SceneManager implements SceneManagerInterface {
         this.startShow(this.bvh);
       }
     }
-  }
-
-  getInitialCameraAngle(): number {
-    return 0;
   }
 
   getInitialCameraPosition(): Vector3 {

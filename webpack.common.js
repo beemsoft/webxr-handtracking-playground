@@ -20,7 +20,9 @@ module.exports = {
         bar: './src/demo/bar/src',
         bar2: './src/demo/bar2/src',
         salsa_lesson: './src/demo/salsa_lesson/src',
-        elements: './src/demo/elements/src'
+        elements: './src/demo/elements/src',
+        ocean: './src/demo/ocean/src',
+        ship: './src/demo/ship/src'
     },
     module: {
         rules: [

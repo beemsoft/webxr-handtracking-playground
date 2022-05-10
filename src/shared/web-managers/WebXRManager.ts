@@ -1,4 +1,4 @@
-import { Quaternion, Scene, Vector3, WebGLRenderer } from 'three';
+import { Quaternion, Scene, Vector3, WebGLRenderer } from 'three/src/Three';
 import PhysicsHandler from '../physics/PhysicsHandler';
 import { GestureType, SceneManagerInterface } from '../scene/SceneManagerInterface';
 import CameraManager from '../webxr/CameraManager';
@@ -47,7 +47,7 @@ export default class WebXRManager {
 
   private initRenderer() {
     let glCanvas: HTMLCanvasElement = document.createElement('canvas');
-    this.gl = <WebGLRenderingContext>glCanvas.getContext('webgl', {xrCompatible: true});
+    this.gl = <WebGLRenderingContext>glCanvas.getContext('webgl2', {xrCompatible: true});
     this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl});
     // @ts-ignore
     this.session.updateRenderState({baseLayer: new XRWebGLLayer(this.session, this.gl)});
@@ -125,6 +125,7 @@ export default class WebXRManager {
     this.cameraManager.update(pose);
     this.physicsHandler.updatePhysics();
     this.renderer.render(this.scene, this.cameraManager.cameraVR);
+    this.sceneBuilder.postUpdate();
   }
 
   private setInitialCameraPosition(direction: Vector3) {
