@@ -79,7 +79,7 @@ export default class SceneManager extends SceneManagerParent  {
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
-    this.sceneHelper.addLight(false);
+    this.sceneHelper.addLight(true);
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(new Vector3(-3, 2, 1));
     this.audioElement = this.audioHandler.audioElement;
