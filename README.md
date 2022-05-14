@@ -26,6 +26,10 @@ Wait for a few seconds for the video stream to start.
 In the control panel, you can pause the video stream to get a higher FPS in the
 three.js scene rendering.
 
+## Demo
+
+https://www.beemsoft.nl/vr/
+
 ## WebXR development
 Below are a few useful links for WebXR development
 
