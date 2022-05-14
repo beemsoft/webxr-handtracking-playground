@@ -34,13 +34,13 @@
     "babelify": "^7.3.0",
     "file-loader": "^4.3.0",
     "fs": "0.0.1-security",
-    "ts-loader": "^5.4.5",
+    "ts-loader": "^9.3.0",
     "typescript": "^4.1.2",
     "uglify-js": "^2.7.5",
     "watchify": "^4.0.0",
-    "webpack": "^5.71.0",
+    "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.7.4",
+    "webpack-dev-server": "^4.9.0",
     "webpack-merge": "^4.2.2"
   }
 }
