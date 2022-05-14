@@ -8,9 +8,12 @@ module.exports = merge(common, {
     devServer: {
         host: 'localhost',
         port: 8081,
-        https: {
-            key: fs.readFileSync('certs/key.pem'),
-            cert: fs.readFileSync('certs/cert.pem')
+        server: {
+            type: 'https',
+            options: {
+                key: fs.readFileSync('certs/key.pem'),
+                cert: fs.readFileSync('certs/cert.pem')
+            }
         },
         allowedHosts: "all"
     }
