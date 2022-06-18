@@ -1,0 +1,46 @@
+# Blender MTL File: ''
+# Material Count: 4
+newmtl default_material_texture000.png
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.235294 0.235294 0.235294
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd texture000.png
+
+
+newmtl default_material_texture001.png
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.235294 0.235294 0.235294
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd texture001.png
+
+
+newmtl default_material_texture002.png
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.235294 0.235294 0.235294
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd texture002.png
+
+
+newmtl default_material_texture003.png
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.235294 0.235294 0.235294
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd texture003.png
+
+

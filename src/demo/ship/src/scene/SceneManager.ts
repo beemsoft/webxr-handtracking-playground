@@ -1,10 +1,15 @@
 import {
   ACESFilmicToneMapping,
+  AnimationMixer,
   DirectionalLight,
+  DoubleSide,
+  Group,
+  LoopRepeat,
   MathUtils,
   PerspectiveCamera,
   PlaneGeometry,
   PMREMGenerator,
+  Quaternion,
   RepeatWrapping,
   Scene,
   TextureLoader,
@@ -14,9 +19,13 @@ import {
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import { ColladaLoader } from 'three/examples/jsm/loaders/ColladaLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Water } from '../../../../shared/scene/water/Water';
 import { Sky } from '../../../../shared/scene/sky/Sky';
 import WaterManager from '../../../../shared/web-managers/WaterManager';
+import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
+import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
+import VrmSkeletonUtils from '../../../bvh_test/src/model/VrmSkeletonUtils';
 
 export default class SceneManager extends SceneManagerParent {
   private loader: TextureLoader = new TextureLoader();
@@ -26,10 +35,54 @@ export default class SceneManager extends SceneManagerParent {
   private pmremGenerator: PMREMGenerator;
   private sun: Vector3;
   private ship: Scene;
+  private ship2: Scene;
+  private jackSparrow: any;
   private waterManager: WaterManager;
+  private sourceSkeletonHelper: SkeletonHelper;
+  private targetSkeletonHelper: SkeletonHelper;
+  private boneContainer: Group;
+  private isAnimationStarted: boolean;
+  private options = {
+    hip: "hip",
+    preservePosition: false,
+    preserveHipPosition: false,
+    useTargetMatrix: true,
+    names: {
+      "spine": "hip",          // 0
+      "spine001": "abdomen",       // 1
+      "spine002": "chest",       // 2
+      "spine003": "abdomen",    // 3
+      "spine004": "chest",     // 4
+      "spine005": "neck",        //5
+      "spine006": "head",       // 6
+
+      "shoulderR": "rCollar",  // 22
+      "upper_armR": "rShldr",   // 23
+      "forearmR": "rForeArm", // 24
+      "handR": "rHand",        // 25
+
+      "shoulderL": "lCollar",  // 7
+      "upper_armL": "lShldr",    // 8
+      "forearmL": "lForeArm",  // 9
+      "handL": "lHand",        // 10
+
+      "pelvisL": "lButtock", // 39
+      "pelvisR": "rButtock", // 40
+
+      "thighR": "rThigh",    // 46
+      "shinR": "rShin",       // 47
+      "footR": "rFoot",      // 48
+
+      "thighL": "lThigh",   // 41
+      "shinL": "lShin",     // 42
+      "footL": "lFoot"     // 43
+    }
+  };
+  private bvh: BVH;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
+    this.sceneHelper.addLight(true);
     this.waterManager = new WaterManager();
     let light = new DirectionalLight( 0xffffff, 0.8 );
     this.light = light;
@@ -41,6 +94,19 @@ export default class SceneManager extends SceneManagerParent {
     this.addSky();
     this.loadModels();
  }
+
+  addJackSparrow() {
+    const loader = new GLTFLoader();
+    loader.load('models/JackSparrow/jack_sparrow.glb', (gltf) => {
+      let model = gltf.scene;
+      this.jackSparrow = gltf;
+      this.targetSkeletonHelper = new SkeletonHelper(gltf.scene.children[0].children[0]);
+      this.targetSkeletonHelper.visible = true;
+      console.log(model);
+      this.ship2.add(this.jackSparrow.scene);
+      this.loadBVH();
+    });
+  }
 
   addWater() {
     let waterGeometry = new PlaneGeometry( 10000, 10000 );
@@ -100,35 +166,58 @@ export default class SceneManager extends SceneManagerParent {
 
   private loadModels() {
     new ColladaLoader()
-          .load('models/black pearl retextured revised.dae', (obj) => {
+          .load('models/pinnace/ship_pinnace_1k_resaved.dae', (obj) => {
             console.log(obj);
-            obj.scene.position.y -= 2.5;
+            obj.scene.children[0].material.side = DoubleSide;
+            obj.scene.position.y -= 0.8;
+            obj.scene.setRotationFromQuaternion(new Quaternion().setFromAxisAngle(new Vector3(0,0,1), -Math.PI/2));
             this.scene.add(obj.scene);
             this.ship = obj.scene;
           });
     new ColladaLoader()
-      .load('models/black pearl retextured revised.dae', (obj) => {
+      .load('models/black pearl moved to origin.dae', (obj) => {
         console.log(obj);
-        obj.scene.position.y -= 2.5;
-        obj.scene.position.z = -150;
+        obj.scene.position.z = -55;
+        for (let child of obj.scene.children) {
+          if (child.material) {
+            child.material.side = DoubleSide
+          }
+        }
         this.scene.add(obj.scene);
+        this.ship2 = obj.scene;
+        this.addJackSparrow();
       });
-    new ColladaLoader()
-      .load('models/black pearl retextured revised.dae', (obj) => {
-        console.log(obj);
-        obj.scene.position.y -= 2.5;
-        obj.scene.position.z = -150;
-        obj.scene.position.x = -100;
-        this.scene.add(obj.scene);
-      });
-    new ColladaLoader()
-      .load('models/black pearl retextured revised.dae', (obj) => {
-        console.log(obj);
-        obj.scene.position.y -= 2.5;
-        obj.scene.position.z = 0;
-        obj.scene.position.x = -100;
-        this.scene.add(obj.scene);
-      });
+  }
+
+  loadBVH = () => {
+    let loader = new BVHLoader();
+    loader.load( "/shared/bvh/91_09_scaled_down7.bvh", (bvh) => {
+      this.bvh = bvh;
+      this.sourceSkeletonHelper = new SkeletonHelper( bvh.skeleton.bones[0]);
+      this.sourceSkeletonHelper.skeleton = bvh.skeleton;
+      this.boneContainer = new Group();
+      this.boneContainer.add( bvh.skeleton.bones[ 0 ] );
+      this.boneContainer.rotation.y = Math.PI/2;
+      this.boneContainer.rotation.x = Math.PI/2;
+      this.boneContainer.position.z = 4.9;
+      this.boneContainer.position.y = -3.7;
+      this.ship2.add(this.boneContainer);
+      this.startShow();
+    } );
+  }
+
+  private startShow() {
+    this.isAnimationStarted = true;
+    this.mixer = new AnimationMixer( this.sourceSkeletonHelper );
+    setTimeout(() => {
+        console.log("Start animation");
+        this.mixer.clipAction(this.bvh.clip).setEffectiveWeight(1.0).setLoop(LoopRepeat, 10).play();
+        setTimeout( () => {
+          console.log("Stop animation");
+          this.isAnimationStarted = false;
+        }, this.bvh.clip.duration * 1000 * 10)
+      }, 5
+    )
   }
 
   update() {
@@ -139,8 +228,19 @@ export default class SceneManager extends SceneManagerParent {
     const time = performance.now() * 0.001;
 
     if (this.ship) {
-      this.ship.rotation.x = Math.sin(time) * 0.01 - Math.PI/2;
-      this.ship.rotation.y = Math.sin(time) * 0.01;
+      this.ship.rotation.x = Math.sin(time) * 0.02 - Math.PI/2;
+      this.ship.rotation.y = Math.sin(time) * 0.02;
+    }
+    if (this.ship2) {
+      this.ship2.rotation.x = Math.sin(time-5) * 0.02 - Math.PI/2;
+      this.ship2.rotation.y = Math.sin(time-5) * 0.02;
+    }
+    let delta = this.clock.getDelta();
+    if (this.mixer) {
+      this.mixer.update(delta);
+      if (this.isAnimationStarted && this.jackSparrow) {
+        VrmSkeletonUtils.retarget(this.jackSparrow.scene.children[0].children[1], this.sourceSkeletonHelper, this.options);
+      }
     }
   }
 
@@ -153,7 +253,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   getInitialCameraPosition(): Vector3 {
-    return new Vector3(-10, 25, 80);
+    return new Vector3(0, 10, -40);
   }
 
 }
