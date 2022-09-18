@@ -4,7 +4,8 @@ export enum AudioDemo {
   "basketball",
   "dance",
   "salsaDanceFast",
-  "salsaDanceSlow"
+  "salsaDanceSlow",
+  "ocean"
 }
 
 export default class AudioHandler {
@@ -42,6 +43,8 @@ export default class AudioHandler {
       this.audioElement.src = '/vr/sound/fast salsa music mix.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceSlow) {
       this.audioElement.src = '/vr/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
+    } else if (audioDemo == AudioDemo.ocean) {
+      this.audioElement.src = '/vr/sound/ocean-waves-sounds.mp3';
     }
     this.audioElement.load();
     this.audioElement.loop = true;

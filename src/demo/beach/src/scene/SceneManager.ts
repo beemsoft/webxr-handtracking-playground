@@ -23,6 +23,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { Water } from '../../../../shared/scene/water/Water';
 import { Sky } from '../../../../shared/scene/sky/Sky';
 import WaterManager from '../../../../shared/web-managers/WaterManager';
+import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 
 export default class SceneManager extends SceneManagerParent {
   private isAnimationStarted: boolean;
@@ -37,6 +38,8 @@ export default class SceneManager extends SceneManagerParent {
   private sun: Vector3;
   private light: DirectionalLight;
   private waterManager: WaterManager;
+  private audioHandler = new AudioHandler();
+  private audioElement: HTMLAudioElement;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
@@ -45,6 +48,9 @@ export default class SceneManager extends SceneManagerParent {
     this.light = light;
     this.scene.add(light);
     this.addWater();
+    this.audioHandler.initAudio(AudioDemo.ocean);
+    this.audioElement = this.audioHandler.audioElement;
+    this.audioElement.loop = true;
     this.sun = new Vector3();
     renderer.toneMapping = ACESFilmicToneMapping;
     this.pmremGenerator = new PMREMGenerator( renderer );
@@ -61,6 +67,7 @@ export default class SceneManager extends SceneManagerParent {
       model.position.x = 0;
       model.rotateY(Math.PI/2);
       scene.add(model);
+      this.audioElement.play();
     });
   }
 

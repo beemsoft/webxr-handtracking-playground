@@ -16,4 +16,10 @@ by [Jef Belmans](https://sketchfab.com/belmansjef) licensed under [CC-BY-4.0](ht
 
 [Resolved texture loading issue](https://discourse.threejs.org/t/how-can-i-resolve-issue-with-fbx-not-loading-textures-and-colors/20987/4)
 
+### Ambient sound
 
+[Ocean waves sounds](https://www.freesoundslibrary.com/ocean-waves-sounds/)
+
+Licence: License: Attribution 4.0 International (CC BY 4.0). You are allowed to use sound effects free of charge and royalty free in your multimedia projects for commercial or non-commercial purposes.
+
+[http://www.freesoundslibrary.com](http://www.freesoundslibrary.com)
