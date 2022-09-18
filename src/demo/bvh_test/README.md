@@ -1,8 +1,12 @@
-# BVH test 1
+# BVH test
 
 ## Credits
 
-10-minutes rigged pirate
+### Low-poly pirate
+
+[Let's MODEL and RIG a Pirate in 10 MINUTES in Blender 2.82 - ep. 11](https://www.youtube.com/watch?v=lBAkjGLE-Xs)
+
+By [Imphenzia](https://www.imphenzia.com/)
 
 ### BVH files
 

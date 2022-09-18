@@ -2,7 +2,9 @@
 
 ## Credits
 
-Jack sparrow model
+### Jack Sparrow
+
+[models-resource-com](https://www.models-resource.com/playstation_2/kingdomhearts2/model/1488/)
 
 ### BVH files
 
