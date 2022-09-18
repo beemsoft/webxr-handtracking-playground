@@ -172,8 +172,12 @@ export default class SceneManager extends SceneManagerParent {
     }
   }
 
+  getInitialCameraAngle(): number {
+    return Math.PI;
+  }
+
   getInitialCameraPosition(): Vector3 {
-    return new Vector3(-0.5, 1.75, 4);
+    return new Vector3(-3, 2, -18);
   }
 
   postUpdate() {
