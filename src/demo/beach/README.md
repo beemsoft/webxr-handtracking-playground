@@ -8,9 +8,9 @@
 
 ### Beach themed diorama
 
-This work is based on "Let's go to the beach! - Beach themed diorama" (https://sketchfab.com/3d-models/lets-go-to-the-beach-beach-themed-diorama-b8784396e5f6424e88b036949164a473) by Jef Belmans (https://sketchfab.com/belmansjef) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+This work is based on ["Let's go to the beach! - Beach themed diorama"](https://sketchfab.com/3d-models/lets-go-to-the-beach-beach-themed-diorama-b8784396e5f6424e88b036949164a473)
 
-[Let's go to the beach! - Beach themed diorama](https://sketchfab.com/3d-models/lets-go-to-the-beach-beach-themed-diorama-b8784396e5f6424e88b036949164a473)
+by [Jef Belmans](https://sketchfab.com/belmansjef) licensed under [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/)
 
 ### Blender
 
