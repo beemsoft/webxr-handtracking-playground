@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>WebXR Beach</title>
+    <link rel='shortcut icon' type='image/x-icon' href='/img/favicon.ico' />
+</head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0, user-scalable=no">
+<style>
+    #canvas-wrapper {
+        position: relative;
+    }
+    #canvas-wrapper {
+        display: inline-block;
+        vertical-align: top;
+    }
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0, user-scalable=no">
+<body>
+<div id="info" style="display:none"></div>
+<div id="predictions"></div>
+<div id="canvas-wrapper">
+    <canvas id="output"></canvas>
+    <video id="video" playsinline=""
+           style="-webkit-transform:scaleX(-1);transform:scaleX(-1);visibility:hidden;width:auto;height:auto;position:absolute;"></video>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+<script src="../commons/dist/bundle.js"></script>
+<script src="dist/bundle.js"></script>
+</body>
+</html>
