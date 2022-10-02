@@ -20,11 +20,11 @@ import {
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
+import { VRM, VRMExpressionPresetName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
-import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
+import VrmSkeletonUtils from '../../../../shared/model/VrmSkeletonUtils';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
 export default class SceneManager extends SceneManagerParent {
@@ -51,30 +51,29 @@ export default class SceneManager extends SceneManagerParent {
     preserveHipPosition: false,
     useTargetMatrix: true,
     names: {
-      "J_Bip_C_Hips": "hip",                    // 9
-     // "J_Bip_C_Spine": "abdomen",             // 8
-      "J_Bip_C_Chest": "abdomen",               // 5
-      "J_Bip_C_UpperChest": "chest",            // 4
-      "J_Bip_C_Neck": "neck",                   // 2
-      "J_Bip_C_Head": "head",                   // 0
+      "Normalized_J_Bip_C_Hips": "hip",
+      "Normalized_J_Bip_C_Chest": "abdomen",
+      "Normalized_J_Bip_C_UpperChest": "chest",
+      "Normalized_J_Bip_C_Neck": "neck",
+      "Normalized_J_Bip_C_Head": "head",
 
-      "J_Bip_R_Shoulder": "rCollar",            // 7
-      "J_Bip_R_UpperArm": "rShldr",             // 22
-      "J_Bip_R_LowerArm": "rForeArm",           // 14
-      "J_Bip_R_Hand": "rHand",                  // 23
+      "Normalized_J_Bip_R_Shoulder": "rCollar",
+      "Normalized_J_Bip_R_UpperArm": "rShldr",
+      "Normalized_J_Bip_R_LowerArm": "rForeArm",
+      "Normalized_J_Bip_R_Hand": "rHand",
 
-      "J_Bip_L_Shoulder": "lCollar",            // 1
-      "J_Bip_L_UpperArm": "lShldr",             // 20
-      "J_Bip_L_LowerArm": "lForeArm",           // 3
-      "J_Bip_L_Hand": "lHand",                  // 21
+      "Normalized_J_Bip_L_Shoulder": "lCollar",
+      "Normalized_J_Bip_L_UpperArm": "lShldr",
+      "Normalized_J_Bip_L_LowerArm": "lForeArm",
+      "Normalized_J_Bip_L_Hand": "lHand",
 
-      "J_Bip_R_UpperLeg": "rThigh",             // 12
-      "J_Bip_R_LowerLeg": "rShin",              // 18
-      "J_Bip_R_Foot": "rFoot",                  // 19
+      "Normalized_J_Bip_R_UpperLeg": "rThigh",
+      "Normalized_J_Bip_R_LowerLeg": "rShin",
+      "Normalized_J_Bip_R_Foot": "rFoot",
 
-      "J_Bip_L_UpperLeg": "lThigh",             // 10
-      "J_Bip_L_LowerLeg": "lShin",              // 16
-      "J_Bip_L_Foot": "lFoot"                   // 17
+      "Normalized_J_Bip_L_UpperLeg": "lThigh",
+      "Normalized_J_Bip_L_LowerLeg": "lShin",
+      "Normalized_J_Bip_L_Foot": "lFoot"
     }
   };
   private bvh1: BVH;
@@ -154,24 +153,23 @@ export default class SceneManager extends SceneManagerParent {
 
   private loadModels() {
     let gltfLoader = new GLTFLoader();
-    gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
+    gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
+    gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+      VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
-      VRM.from(gltf).then( (vrm) => {
-        this.person1 = vrm;
-        vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-        this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-        this.target1Skeleton = this.person1.scene.children[4].children[0];
-        gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
-          VRMUtils.removeUnnecessaryJoints(gltf.scene);
-          VRM.from(gltf).then( (vrm) => {
-            this.person2 = vrm;
-            vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-            this.playBlinkAnimationPerson2();
-            this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-            this.target2Skeleton = this.person2.scene.children[4].children[0];
-            this.loadBVH(1);
-          })
-        });
+      const vrm = gltf.userData.vrm;
+      this.person1 = vrm;
+      this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
+      this.target1Skeleton = this.person1.scene.children[5]
+      gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+        VRMUtils.removeUnnecessaryVertices(gltf.scene);
+        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        const vrm = gltf.userData.vrm;
+        this.person2 = vrm;
+        this.playBlinkAnimationPerson2();
+        this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
+        this.target2Skeleton = this.person2.scene.children[5]
+        this.loadBVH(1);
       })
     });
   }
@@ -180,7 +178,7 @@ export default class SceneManager extends SceneManagerParent {
     this.mixerBlink2 = new AnimationMixer( this.person2.scene );
 
     const blinkTrack = new NumberKeyframeTrack(
-      this.person2.blendShapeProxy.getBlendShapeTrackName( VRMSchema.BlendShapePresetName.Blink ), // name
+      this.person2.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
       [ 0.0, 0.5, 1.0 ], // times
       [ 0.0, 1.0, 0.0 ] // values
     );
@@ -244,52 +242,52 @@ export default class SceneManager extends SceneManagerParent {
       if (!this.isAnimationPaused && this.isModelsLoaded && this.target1Skeleton && this.target2Skeleton) {
         this.mixerDance1.update(delta/this.slowDownFactor);
         this.mixerDance2.update(delta/this.slowDownFactor);
-        VrmSkeletonUtils.retarget(this.target1Skeleton, this.source1SkeletonHelper, this.options, true);
-        let leftHandPosition = new Vector3();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[23].getWorldPosition(leftHandPosition);
-        this.leftHand.position.x = leftHandPosition.x;
-        this.leftHand.position.y = leftHandPosition.y;
-        this.leftHand.position.z = leftHandPosition.z;
-        let leftHandQuaternion = new Quaternion();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[23].getWorldQuaternion(leftHandQuaternion);
-        this.leftHand.setRotationFromQuaternion(leftHandQuaternion);
+        VrmSkeletonUtils.retarget(this.target1Skeleton, this.source1SkeletonHelper, this.options);
+        // let leftHandPosition = new Vector3();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[23].getWorldPosition(leftHandPosition);
+        // this.leftHand.position.x = leftHandPosition.x;
+        // this.leftHand.position.y = leftHandPosition.y;
+        // this.leftHand.position.z = leftHandPosition.z;
+        // let leftHandQuaternion = new Quaternion();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[23].getWorldQuaternion(leftHandQuaternion);
+        // this.leftHand.setRotationFromQuaternion(leftHandQuaternion);
+        //
+        // let rightHandPosition = new Vector3();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[21].getWorldPosition(rightHandPosition);
+        // this.rightHand.position.x = rightHandPosition.x;
+        // this.rightHand.position.y = rightHandPosition.y;
+        // this.rightHand.position.z = rightHandPosition.z;
+        // let rightHandQuaternion = new Quaternion();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[21].getWorldQuaternion(rightHandQuaternion);
+        // this.rightHand.setRotationFromQuaternion(rightHandQuaternion);
+        //
+        // let rightFootPosition = new Vector3();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[19].getWorldPosition(rightFootPosition);
+        // this.rightFoot.position.x = rightFootPosition.x;
+        // this.rightFoot.position.y = rightFootPosition.y + 0.17;
+        // this.rightFoot.position.z = rightFootPosition.z;
+        // let rightFootQuaternion = new Quaternion();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[19].getWorldQuaternion(rightFootQuaternion);
+        // this.rightFoot.setRotationFromQuaternion(rightFootQuaternion);
+        //
+        // let leftFootPosition = new Vector3();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[17].getWorldPosition(leftFootPosition);
+        // this.leftFoot.position.x = leftFootPosition.x;
+        // this.leftFoot.position.y = leftFootPosition.y + 0.17;
+        // this.leftFoot.position.z = leftFootPosition.z;
+        // let leftFootQuaternion = new Quaternion();
+        // // @ts-ignore
+        // this.target1Skeleton.skeleton.bones[17].getWorldQuaternion(leftFootQuaternion);
+        // this.leftFoot.setRotationFromQuaternion(leftFootQuaternion);
 
-        let rightHandPosition = new Vector3();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[21].getWorldPosition(rightHandPosition);
-        this.rightHand.position.x = rightHandPosition.x;
-        this.rightHand.position.y = rightHandPosition.y;
-        this.rightHand.position.z = rightHandPosition.z;
-        let rightHandQuaternion = new Quaternion();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[21].getWorldQuaternion(rightHandQuaternion);
-        this.rightHand.setRotationFromQuaternion(rightHandQuaternion);
-
-        let rightFootPosition = new Vector3();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[19].getWorldPosition(rightFootPosition);
-        this.rightFoot.position.x = rightFootPosition.x;
-        this.rightFoot.position.y = rightFootPosition.y + 0.17;
-        this.rightFoot.position.z = rightFootPosition.z;
-        let rightFootQuaternion = new Quaternion();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[19].getWorldQuaternion(rightFootQuaternion);
-        this.rightFoot.setRotationFromQuaternion(rightFootQuaternion);
-
-        let leftFootPosition = new Vector3();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[17].getWorldPosition(leftFootPosition);
-        this.leftFoot.position.x = leftFootPosition.x;
-        this.leftFoot.position.y = leftFootPosition.y + 0.17;
-        this.leftFoot.position.z = leftFootPosition.z;
-        let leftFootQuaternion = new Quaternion();
-        // @ts-ignore
-        this.target1Skeleton.skeleton.bones[17].getWorldQuaternion(leftFootQuaternion);
-        this.leftFoot.setRotationFromQuaternion(leftFootQuaternion);
-
-        VrmSkeletonUtils.retarget(this.target2Skeleton, this.source2SkeletonHelper, this.options, false);
+        VrmSkeletonUtils.retarget(this.target2Skeleton, this.source2SkeletonHelper, this.options);
       }
     }
     if (this.person1) {

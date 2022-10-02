@@ -1,4 +1,4 @@
-import { Matrix4, Quaternion, Vector3 } from 'three/src/Three';
+import { Matrix4, Quaternion } from 'three/src/Three';
 
 export default class VrmSkeletonUtils {
 
@@ -13,26 +13,10 @@ export default class VrmSkeletonUtils {
     options.names = options.names || {};
 
     let sourceBones = source.isObject3D ? source.skeleton.bones : this.getBones(source),
-      bones = target.isObject3D ? target.skeleton.bones : this.getBones(target),
       bindBones,
       bone, name,
-      bonesPosition, i;
+      i;
 
-    // reset bones
-    if (target.isObject3D) {
-      target.skeleton.pose();
-    } else {
-      options.useTargetMatrix = true;
-      options.preserveMatrix = false;
-    }
-
-    if (options.preservePosition) {
-      bonesPosition = [];
-      for (i = 0; i < bones.length; i++) {
-        let pos = bones[i].position.clone();
-        bonesPosition.push(pos);
-      }
-    }
 
     if (options.preserveMatrix) {
       // reset matrix
@@ -46,8 +30,7 @@ export default class VrmSkeletonUtils {
 
     if (options.offsets) {
       bindBones = [];
-      for (i = 0; i < bones.length; ++i) {
-        bone = bones[i];
+        bone = target;
         name = options.names[bone.name] || bone.name;
         if (options.offsets && options.offsets[name]) {
           bone.matrix.multiply(options.offsets[name]);
@@ -55,39 +38,36 @@ export default class VrmSkeletonUtils {
           bone.updateMatrixWorld();
         }
         bindBones.push(bone.matrixWorld.clone());
-      }
     }
 
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 9);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 8);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 5);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 4);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 2);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 0);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 7);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 14);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 22);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 23);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 1);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 3);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 20);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 21);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 12);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 18);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 19);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 10);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 16);
-    this.retargetBone(bones, options, sourceBones, target, bindBones, 17);
+    this.retargetBone(options, sourceBones, target.children[0]);   // Hip
+    this.retargetBone(options, sourceBones, target.children[0].children[0]);   // Spine
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0]);   // Chest
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0]);   // Upper chest
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0]);   // Neck
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0].children[0]);   // Head
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[2]);   // Right upper leg
+    this.retargetBone(options, sourceBones, target.children[0].children[2].children[0]);   // Right leg
+    this.retargetBone(options, sourceBones, target.children[0].children[2].children[0].children[0]);   // Right foot
+    this.retargetBone(options, sourceBones, target.children[0].children[1]);   // Left upper leg
+    this.retargetBone(options, sourceBones, target.children[0].children[1].children[0]);   // Left leg
+    this.retargetBone(options, sourceBones, target.children[0].children[1].children[0].children[0]);   // Left foot
   };
 
-  static retargetBone(bones, options, sourceBones, target, bindBones, i) {
-    const pos = new Vector3(),
-      quat = new Quaternion(),
-      bindBoneMatrix = new Matrix4(),
+  static retargetBone(options, sourceBones, target) {
+    const quat = new Quaternion(),
       relativeMatrix = new Matrix4(),
       globalMatrix = new Matrix4();
 
-    let bone = bones[i];
+    let bone = target;
     let name = options.names[bone.name] || bone.name;
     let boneTo = this.getBoneByName(name, sourceBones);
     globalMatrix.copy(bone.matrixWorld);
@@ -100,22 +80,13 @@ export default class VrmSkeletonUtils {
         relativeMatrix.multiply(boneTo.matrixWorld);
       }
       globalMatrix.makeRotationFromQuaternion(quat.setFromRotationMatrix(relativeMatrix));
-      if (target.isObject3D) {
-        const boneIndex = bones.indexOf(bone),
-          wBindMatrix = bindBones ? bindBones[ boneIndex ] : bindBoneMatrix.copy( target.skeleton.boneInverses[ boneIndex ] ).invert();
-        globalMatrix.multiply(wBindMatrix);
-      }
       globalMatrix.copyPosition(relativeMatrix);
     }
 
     bone.matrix.copy(bone.parent.matrixWorld).invert();
     bone.matrix.multiply(globalMatrix);
 
-    if (options.preserveHipPosition && name === options.hip) {
-      bone.matrix.setPosition(pos.set(0, bone.position.y, 0));
-    }
     bone.matrix.decompose(bone.position, bone.quaternion, bone.scale);
-    bone.quaternion.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
     bone.updateMatrixWorld();
   }
 

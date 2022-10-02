@@ -17,7 +17,7 @@ import {
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
+import { VRM, VRMExpressionPresetName, VRMHumanBoneName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
@@ -41,19 +41,20 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   private loadModel(scene: Scene) {
-    new GLTFLoader().load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
+    let gltfLoader = new GLTFLoader();
+    gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
+    gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+      const vrm = gltf.userData.vrm;
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
-      VRM.from(gltf).then( (vrm) => {
-        console.log( vrm );
-        let model = vrm.scene;
-        scene.add(model);
-        this.currentVrm = vrm;
-        vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-        vrm.lookAt.target = this.lookAtTarget;
-        this.prepareAnimation(vrm);
-        this.player = model;
-      })
+      let model = vrm.scene;
+      scene.add(model);
+      this.currentVrm = vrm;
+      // vrm.humanoid.getBoneNode( VRMHumanBoneName.Hips ).rotation.y = Math.PI;
+      // VRMUtils.rotateVRM0(vrm);
+      vrm.lookAt.target = this.lookAtTarget;
+      this.prepareAnimation(vrm);
+      this.player = model;
     });
   }
 
@@ -66,21 +67,21 @@ export default class SceneManager extends SceneManagerParent {
     quatB.setFromEuler( new Euler( 0.0, 0.0, 0.1 * Math.PI ) );
 
     const armTrack = new QuaternionKeyframeTrack(
-      vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.LeftUpperArm ).name + '.quaternion', // name
+      vrm.humanoid.getNormalizedBoneNode(VRMHumanBoneName.LeftUpperArm ).name + '.quaternion', // name
       [ 0.0, 0.5, 1.0 ], // times
       [ ...quatA.toArray(), ...quatB.toArray(), ...quatA.toArray() ] // values
     );
 
     const headTrack = new QuaternionKeyframeTrack(
-      vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Head ).name + '.quaternion', // name
+      vrm.humanoid.getNormalizedBoneNode( VRMHumanBoneName.Head ).name + '.quaternion', // name
       [ 0.0, 0.5, 1.0 ], // times
       [ ...quatA.toArray(), ...quatB.toArray(), ...quatA.toArray() ] // values
     );
 
     const blinkTrack = new NumberKeyframeTrack(
-      vrm.blendShapeProxy.getBlendShapeTrackName( VRMSchema.BlendShapePresetName.Blink ), // name
-      [ 0.0, 0.5, 1.0 ], // times
-      [ 0.0, 1.0, 0.0 ] // values
+      vrm.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Happy ),
+      [ 0.0, 1.0, 1.0 ], // times
+      [ 1.0, 1.0, 1.0 ] // values
     );
 
     const clip = new AnimationClip( 'blink', 1.0, [ headTrack, blinkTrack, armTrack ] );

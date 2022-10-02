@@ -11,7 +11,8 @@
   "author": "Hans Beemsterboer",
   "license": "Apache-2.0",
   "dependencies": {
-    "@pixiv/three-vrm": "^0.6.11",
+    "@pixiv/three-vrm": "^1.0.3",
+    "@pixiv/types-vrmc-vrm-1.0": "^1.0.0",
     "@tensorflow-models/handpose": "^0.0.7",
     "@tensorflow/tfjs": "^2.7.0",
     "@tensorflow/tfjs-backend-cpu": "^2.7.0",

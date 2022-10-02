@@ -15,7 +15,7 @@ import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import HandPoseManager from '../../../../shared/hands/HandPoseManager';
 import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
+import { VRM, VRMExpressionPresetName, VRMLoaderPlugin } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
@@ -39,30 +39,30 @@ export default class SceneManager extends SceneManagerParent {
     preserveHipPosition: false,
     useTargetMatrix: true,
     names: {
-      "J_Bip_C_Hips": "hips_JNT",                    // 9
-      "J_Bip_C_Spine": "spine_JNT",                  // 8
-      "J_Bip_C_Chest": "spine1_JNT",                 // 5
-      "J_Bip_C_UpperChest": "spine2_JNT",            // 4
-      "J_Bip_C_Neck": "neck_JNT",                    // 2
-      "J_Bip_C_Head": "head_JNT",                    // 0
+      "Normalized_J_Bip_C_Hips": "hips_JNT",
+      "Normalized_J_Bip_C_Spine": "spine_JNT",
+      "Normalized_J_Bip_C_Chest": "spine1_JNT",
+      "Normalized_J_Bip_C_UpperChest": "spine2_JNT",
+      "Normalized_J_Bip_C_Neck": "neck_JNT",
+      "Normalized_J_Bip_C_Head": "head_JNT",
 
-      "J_Bip_R_Shoulder": "r_shoulder_JNT",          // 7
-      "J_Bip_R_UpperArm": "r_arm_JNT",               // 22
-      "J_Bip_R_LowerArm": "r_forearm_JNT",           // 14
-      "J_Bip_R_Hand": "r_hand_JNT",                  // 23
+      "Normalized_J_Bip_R_Shoulder": "r_shoulder_JNT",
+      "Normalized_J_Bip_R_UpperArm": "r_arm_JNT",
+      "Normalized_J_Bip_R_LowerArm": "r_forearm_JNT",
+      "Normalized_J_Bip_R_Hand": "r_hand_JNT",
 
-      "J_Bip_L_Shoulder": "l_shoulder_JNT",          // 1
-      "J_Bip_L_UpperArm": "l_arm_JNT",               // 20
-      "J_Bip_L_LowerArm": "l_forearm_JNT",           // 3
-      "J_Bip_L_Hand": "l_hand_JNT",                  // 21
+      "Normalized_J_Bip_L_Shoulder": "l_shoulder_JNT",
+      "Normalized_J_Bip_L_UpperArm": "l_arm_JNT",
+      "Normalized_J_Bip_L_LowerArm": "l_forearm_JNT",
+      "Normalized_J_Bip_L_Hand": "l_hand_JNT",
 
-      "J_Bip_R_UpperLeg": "r_upleg_JNT",            // 12
-      "J_Bip_R_LowerLeg": "r_leg_JNT",              // 18
-      "J_Bip_R_Foot": "r_foot_JNT",                 // 19
+      "Normalized_J_Bip_R_UpperLeg": "r_upleg_JNT",
+      "Normalized__Bip_R_LowerLeg": "r_leg_JNT",
+      "Normalized_J_Bip_R_Foot": "r_foot_JNT",
 
-      "J_Bip_L_UpperLeg": "l_upleg_JNT",            // 10
-      "J_Bip_L_LowerLeg": "l_leg_JNT",              // 16
-      "J_Bip_L_Foot": "l_foot_JNT"                  // 17
+      "Normalized_J_Bip_L_UpperLeg": "l_upleg_JNT",
+      "Normalized_J_Bip_L_LowerLeg": "l_leg_JNT",
+      "Normalized_J_Bip_L_Foot": "l_foot_JNT"
     }
   };
   private audioHandler = new AudioHandler();
@@ -84,19 +84,18 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   private loadModel(scene: Scene) {
-    new GLTFLoader().load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
-      VRMUtils.removeUnnecessaryJoints(gltf.scene);
-      VRM.from(gltf).then( (vrm) => {
-        console.log( vrm );
-        let model = vrm.scene;
-        scene.add(model);
-        this.currentVrm = vrm;
-        vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-        vrm.lookAt.target = this.lookAtTarget;
-        this.prepareAnimation();
-        this.targetSkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-        this.loadBVH();
-      })
+    let gltfLoader = new GLTFLoader();
+    gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
+    gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+      const vrm = gltf.userData.vrm;
+      let model = vrm.scene;
+      console.log(vrm);
+      scene.add(model);
+      this.currentVrm = vrm;
+      vrm.lookAt.target = this.lookAtTarget;
+      this.prepareAnimation();
+      this.targetSkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
+      this.loadBVH();
     });
   }
 
@@ -108,7 +107,7 @@ export default class SceneManager extends SceneManagerParent {
     this.mixer1 = new AnimationMixer( this.currentVrm.scene );
 
     const blinkTrack = new NumberKeyframeTrack(
-      this.currentVrm.blendShapeProxy.getBlendShapeTrackName( VRMSchema.BlendShapePresetName.Blink ), // name
+      this.currentVrm.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
       [ 0.0, 0.5, 1.0 ], // times
       [ 0.0, 1.0, 0.0 ] // values
     );
@@ -144,7 +143,7 @@ export default class SceneManager extends SceneManagerParent {
         }, this.bvh.clip.duration * 1000)
       }, 3200
     )
-    this.audioElement.play();
+    // this.audioElement.play();
   }
 
   update() {
@@ -152,7 +151,7 @@ export default class SceneManager extends SceneManagerParent {
     if (this.mixer2) {
       this.mixer2.update(delta);
       if (this.isAnimationStarted) {
-        VrmSkeletonUtils.retarget(this.currentVrm.scene.children[4].children[0], this.sourceSkeletonHelper, this.options);
+        VrmSkeletonUtils.retarget(this.currentVrm.scene.children[5], this.sourceSkeletonHelper, this.options);
       }
     }
     if (this.mixer1) {

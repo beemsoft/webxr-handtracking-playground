@@ -12,17 +12,19 @@ import {
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { VRM, VRMSchema, VRMUtils } from '@pixiv/three-vrm';
+import { VRM, VRMExpressionPresetName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
-import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
+import VrmSkeletonUtils from '../../../../shared/model/VrmSkeletonUtils';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
 export default class SceneManager extends SceneManagerParent  {
   private mixerBlink1: AnimationMixer;
   private mixerBlink2: AnimationMixer;
+  private mixerHappy1: AnimationMixer;
+  private mixerHappy2: AnimationMixer;
   private mixerDance1: AnimationMixer;
   private mixerDance2: AnimationMixer;
   private isAnimationStarted: boolean;
@@ -36,37 +38,35 @@ export default class SceneManager extends SceneManagerParent  {
   private target1Skeleton: Object3D;
   private target2Skeleton: Object3D;
 
-  // TODO: leftEye, rightEye mapping
   private options = {
     hip: "hip",
     preservePosition: false,
     preserveHipPosition: false,
     useTargetMatrix: true,
     names: {
-      "J_Bip_C_Hips": "hip",                    // 9
-     // "J_Bip_C_Spine": "abdomen",             // 8
-      "J_Bip_C_Chest": "abdomen",               // 5
-      "J_Bip_C_UpperChest": "chest",            // 4
-      "J_Bip_C_Neck": "neck",                   // 2
-      "J_Bip_C_Head": "head",                   // 0
+      "Normalized_J_Bip_C_Hips": "hip",
+      "Normalized_J_Bip_C_Chest": "abdomen",
+      "Normalized_J_Bip_C_UpperChest": "chest",
+      "Normalized_J_Bip_C_Neck": "neck",
+      "Normalized_J_Bip_C_Head": "head",
 
-      "J_Bip_R_Shoulder": "rCollar",            // 7
-      "J_Bip_R_UpperArm": "rShldr",             // 22
-      "J_Bip_R_LowerArm": "rForeArm",           // 14
-      "J_Bip_R_Hand": "rHand",                  // 23
+      "Normalized_J_Bip_R_Shoulder": "rCollar",
+      "Normalized_J_Bip_R_UpperArm": "rShldr",
+      "Normalized_J_Bip_R_LowerArm": "rForeArm",
+      "Normalized_J_Bip_R_Hand": "rHand",
 
-      "J_Bip_L_Shoulder": "lCollar",            // 1
-      "J_Bip_L_UpperArm": "lShldr",             // 20
-      "J_Bip_L_LowerArm": "lForeArm",           // 3
-      "J_Bip_L_Hand": "lHand",                  // 21
+      "Normalized_J_Bip_L_Shoulder": "lCollar",
+      "Normalized_J_Bip_L_UpperArm": "lShldr",
+      "Normalized_J_Bip_L_LowerArm": "lForeArm",
+      "Normalized_J_Bip_L_Hand": "lHand",
 
-      "J_Bip_R_UpperLeg": "rThigh",             // 12
-      "J_Bip_R_LowerLeg": "rShin",              // 18
-      "J_Bip_R_Foot": "rFoot",                  // 19
+      "Normalized_J_Bip_R_UpperLeg": "rThigh",
+      "Normalized_J_Bip_R_LowerLeg": "rShin",
+      "Normalized_J_Bip_R_Foot": "rFoot",
 
-      "J_Bip_L_UpperLeg": "lThigh",             // 10
-      "J_Bip_L_LowerLeg": "lShin",              // 16
-      "J_Bip_L_Foot": "lFoot"                   // 17
+      "Normalized_J_Bip_L_UpperLeg": "lThigh",
+      "Normalized_J_Bip_L_LowerLeg": "lShin",
+      "Normalized_J_Bip_L_Foot": "lFoot"
     }
   };
   private audioHandler = new AudioHandler();
@@ -79,7 +79,7 @@ export default class SceneManager extends SceneManagerParent  {
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
-    this.sceneHelper.addLight(true);
+    this.sceneHelper.addLight(false);
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(new Vector3(-3, 2, 1));
     this.audioElement = this.audioHandler.audioElement;
@@ -93,7 +93,7 @@ export default class SceneManager extends SceneManagerParent  {
     loader.load('models/gltf/Bar scene.glb', (gltf) => {
       let model = gltf.scene;
       model.scale.set(0.35, 0.35, 0.35);
-      model.position.y = -0.23;
+      model.position.y = -0.43;
       model.position.z = -0.5;
       model.position.x = 0.3;
       scene.add(model);
@@ -102,39 +102,35 @@ export default class SceneManager extends SceneManagerParent  {
 
   private loadModels() {
     let gltfLoader = new GLTFLoader();
-    gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
+    gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
+    gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+      VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
-      VRM.from(gltf).then( (vrm) => {
-        this.person1 = vrm;
-        vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-        this.playBlinkAnimationPerson1();
-        this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-        this.target1Skeleton = this.person1.scene.children[4].children[0];
-        gltfLoader.load('/shared/vrm/three-vrm-girl.vrm', (gltf) => {
-          VRMUtils.removeUnnecessaryJoints(gltf.scene);
-          VRM.from(gltf).then( (vrm) => {
-            this.person2 = vrm;
-            vrm.humanoid.getBoneNode( VRMSchema.HumanoidBoneName.Hips ).rotation.y = Math.PI;
-            this.playBlinkAnimationPerson2();
-            this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-            this.target2Skeleton = this.person2.scene.children[4].children[0];
-            this.loadBVH(1);
-            this.audioElement.play();
-          })
-        });
+      const vrm = gltf.userData.vrm;
+      this.person1 = vrm;
+      this.playBlinkAnimationPerson1();
+      this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
+      this.target1Skeleton = this.person1.scene.children[5]
+      gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+        VRMUtils.removeUnnecessaryVertices(gltf.scene);
+        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        this.person2 = gltf.userData.vrm;
+        this.playBlinkAnimationPerson2();
+        this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
+        this.target2Skeleton = this.person2.scene.children[5]
+        this.loadBVH(1);
+        this.audioElement.play();
       })
     });
   }
 
   private playBlinkAnimationPerson1() {
     this.mixerBlink1 = new AnimationMixer( this.person1.scene );
-
     const blinkTrack = new NumberKeyframeTrack(
-      this.person1.blendShapeProxy.getBlendShapeTrackName( VRMSchema.BlendShapePresetName.Blink ), // name
+      this.person1.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
       [ 0.0, 0.5, 1.0 ], // times
       [ 0.0, 1.0, 0.0 ] // values
     );
-
     const clip = new AnimationClip( 'blink', 1, [ blinkTrack ] );
     this.animationAction = this.mixerBlink1.clipAction( clip ).setLoop(LoopOnce, 1)
     this.animationAction.play();
@@ -144,15 +140,37 @@ export default class SceneManager extends SceneManagerParent  {
     )
   }
 
+  private playHappyAnimationPerson1() {
+    this.mixerHappy1 = new AnimationMixer( this.person1.scene );
+    const happyTrack = new NumberKeyframeTrack(
+      this.person1.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Happy ),
+      [ 0.0, 0.5, 1.0 ], // times
+      [ 0.0, 0.5, 1.0 ] // values
+    );
+    const clip = new AnimationClip( 'happy', 1, [ happyTrack ] );
+    this.animationAction = this.mixerHappy1.clipAction( clip ).setLoop(LoopOnce, 1)
+    this.animationAction.play();
+  }
+
+  private playHappyAnimationPerson2() {
+    this.mixerHappy2 = new AnimationMixer( this.person2.scene );
+    const happyTrack = new NumberKeyframeTrack(
+      this.person2.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Happy ),
+      [ 0.0, 0.5, 1.0 ], // times
+      [ 0.0, 0.5, 1.0 ] // values
+    );
+    const clip = new AnimationClip( 'happy', 1, [ happyTrack ] );
+    this.animationAction = this.mixerHappy2.clipAction( clip ).setLoop(LoopOnce, 1)
+    this.animationAction.play();
+  }
+
   private playBlinkAnimationPerson2() {
     this.mixerBlink2 = new AnimationMixer( this.person2.scene );
-
     const blinkTrack = new NumberKeyframeTrack(
-      this.person2.blendShapeProxy.getBlendShapeTrackName( VRMSchema.BlendShapePresetName.Blink ), // name
+      this.person2.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
       [ 0.0, 0.5, 1.0 ], // times
       [ 0.0, 1.0, 0.0 ] // values
     );
-
     const clip = new AnimationClip( 'blink', 1, [ blinkTrack ] );
     this.animationAction = this.mixerBlink2.clipAction( clip ).setLoop(LoopOnce, 1)
     this.animationAction.play();
@@ -193,6 +211,11 @@ export default class SceneManager extends SceneManagerParent  {
     this.source2SkeletonHelper = new SkeletonHelper(this.bvh2.skeleton.bones[0]);
     this.source2SkeletonHelper.skeleton = this.bvh2.skeleton;
     this.startShow(move);
+    setTimeout(() => {
+      console.log("animation happy");
+      this.playHappyAnimationPerson1();
+      this.playHappyAnimationPerson2();
+    }, (this.bvh1.clip.duration * 1000 * this.slowDownFactor) - 2000)
   }
 
   preloadBVH(move) {
@@ -219,6 +242,11 @@ export default class SceneManager extends SceneManagerParent  {
     this.scene.add(this.person2.scene);
     this.mixerDance1.clipAction(this.bvh1.clip).play();
     this.mixerDance2.clipAction(this.bvh2.clip).play();
+    setTimeout(() => {
+      console.log("animation happy");
+      this.playHappyAnimationPerson1();
+      this.playHappyAnimationPerson2();
+    }, (this.bvh1.clip.duration * 1000 * this.slowDownFactor) - 2000)
     setTimeout(() => {
       console.log("Stop animation");
       if (move < 15) {
@@ -250,6 +278,12 @@ export default class SceneManager extends SceneManagerParent  {
     }
     if (this.person2) {
       this.person2.update(delta);
+    }
+    if (this.mixerHappy1) {
+      this.mixerHappy1.update(delta);
+    }
+    if (this.mixerHappy2) {
+      this.mixerHappy2.update(delta);
     }
   }
 
