@@ -11,7 +11,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
-import PhysicsHandler from '../../../../shared/physics/physicsHandler';
+import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
 import { Water } from '../../../../shared/scene/water/Water';
 import { Sky } from '../../../../shared/scene/sky/Sky';
 import WaterManager from '../../../../shared/web-managers/WaterManager';
