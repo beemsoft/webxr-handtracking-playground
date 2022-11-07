@@ -25,7 +25,7 @@ import { Sky } from '../../../../shared/scene/sky/Sky';
 import WaterManager from '../../../../shared/web-managers/WaterManager';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
-import VrmSkeletonUtils from '../../../bvh_test/src/model/VrmSkeletonUtils';
+import VrmSkeletonUtils from '../model/VrmSkeletonUtils';
 
 export default class SceneManager extends SceneManagerParent {
   private loader: TextureLoader = new TextureLoader();
