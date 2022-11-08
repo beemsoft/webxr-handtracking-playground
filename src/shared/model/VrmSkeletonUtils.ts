@@ -1,4 +1,4 @@
-import { Matrix4, Quaternion } from 'three/src/Three';
+import { Matrix4, Quaternion, Vector3 } from 'three/src/Three';
 
 export default class VrmSkeletonUtils {
 
@@ -41,7 +41,9 @@ export default class VrmSkeletonUtils {
     }
 
     this.retargetBone(options, sourceBones, target.children[0]);   // Hip
-    this.retargetBone(options, sourceBones, target.children[0].children[0]);   // Spine
+    if (!options.rotateModel) {
+      this.retargetBone(options, sourceBones, target.children[0].children[0]);   // Spine
+    }
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0]);   // Chest
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0]);   // Upper chest
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0]);   // Neck
@@ -87,6 +89,9 @@ export default class VrmSkeletonUtils {
     bone.matrix.multiply(globalMatrix);
 
     bone.matrix.decompose(bone.position, bone.quaternion, bone.scale);
+    if (options.rotateModel) {
+      bone.quaternion.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
+    }
     bone.updateMatrixWorld();
   }
 
