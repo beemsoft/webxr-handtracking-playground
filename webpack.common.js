@@ -22,7 +22,10 @@ module.exports = {
         salsa_lesson: './src/demo/salsa_lesson/src',
         elements: './src/demo/elements/src',
         ocean: './src/demo/ocean/src',
-        ship: './src/demo/ship/src'
+        ship: './src/demo/ship/src',
+        beach: './src/demo/beach/src',
+        bvh_test: './src/demo/bvh_test/src',
+        bvh_test_2: './src/demo/bvh_test_2/src',
     },
     module: {
         rules: [
