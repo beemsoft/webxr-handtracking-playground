@@ -26,6 +26,7 @@ module.exports = {
         beach: './src/demo/beach/src',
         bvh_test: './src/demo/bvh_test/src',
         bvh_test_2: './src/demo/bvh_test_2/src',
+        salsa_party: './src/demo/salsa_party/src',
     },
     module: {
         rules: [

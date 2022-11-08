@@ -11,7 +11,7 @@
   "author": "Hans Beemsterboer",
   "license": "Apache-2.0",
   "dependencies": {
-    "@pixiv/three-vrm": "^1.0.3",
+    "@pixiv/three-vrm": "^1.0.4",
     "@pixiv/types-vrmc-vrm-1.0": "^1.0.0",
     "@tensorflow-models/handpose": "^0.0.7",
     "@tensorflow/tfjs": "^2.7.0",
@@ -27,7 +27,7 @@
     "rgbcolor": "^1.0.1",
     "stackblur-canvas": "^2.2.0",
     "systemjs": "0.21.5",
-    "three": "^0.140.2"
+    "three": "^0.146.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.7.5",
