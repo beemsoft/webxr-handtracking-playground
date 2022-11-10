@@ -16,7 +16,7 @@ import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
-import VrmSkeletonUtils from '../../../../shared/model/VrmSkeletonUtils';
+import VrmSkeletonUtils from '../worker/VrmSkeletonUtils';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import DanceCouple from './DanceCouple';
 import Stats from "three/examples/jsm/libs/stats.module";
