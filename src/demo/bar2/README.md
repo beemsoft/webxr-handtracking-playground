@@ -25,8 +25,9 @@ from NSF EIA-0196217."
 [bvhacker 1.9.1](https://www.bvhacker.com/) by [davedub](http://davedub.co.uk/davedub/wordpress/)
 
 
-### VRM model
+### VRM models
 
+#### Three VRM girl
 * author: "pixiv Inc."
 * commercialUssageName: "Allow"
 * contactInformation: "https://github.com/pixiv/three-vrm"

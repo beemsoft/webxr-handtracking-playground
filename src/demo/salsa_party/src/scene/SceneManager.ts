@@ -22,31 +22,14 @@ import DanceCouple from './DanceCouple';
 import Stats from "three/examples/jsm/libs/stats.module";
 
 export default class SceneManager extends SceneManagerParent  {
-  private mixerBlink1: AnimationMixer;
-  private mixerBlink2: AnimationMixer;
-  private mixerHappy1: AnimationMixer;
-  private mixerHappy2: AnimationMixer;
   private mixerDance1: AnimationMixer;
   private mixerDance2: AnimationMixer;
   private isAnimationStarted: boolean;
   private person1: VRM;
   private person2: VRM;
-  private animationAction: AnimationAction;
   private source1SkeletonHelper: SkeletonHelper;
   private source2SkeletonHelper: SkeletonHelper;
   private stats = new Stats();
-  // private myWorker = new Worker('worker.js');
-  //
-  // myWorker.postMessage(["hello"]);
-  // console.log('Message posted to worker');
-  //
-  //
-  // myWorker.postMessage(["world"]);
-  // console.log('Message posted to worker');
-  //
-  // myWorker.onmessage = (e) => {
-  //   console.log('Message received from worker: ' + e.data);
-  // }
 
   private options1 = {
     hip: "hip",
@@ -121,21 +104,25 @@ export default class SceneManager extends SceneManagerParent  {
   private slowDownFactor = 1.8;
   private danceCouples: {leader: VRM, follower: VRM}[] = [];
   private modelNames: DanceCouple[] = [
-    // // // { leader: "kenji", follower: "zombie", offsetX: -2.2, offsetZ: 0 },
-    { leader: "kenji", follower: "female_redshirt", offsetX: -2.3, offsetZ: 0 },
+    // { leader: "kenji", follower: "zombie", offsetX: -2.3, offsetZ: 0 },
+    { leader: "kenji", follower: "female_redshirt", offsetX: -2.2, offsetZ: -1.5 },
     // { leader: "frost", follower: "kiku", offsetX: 0, offsetZ: 1.5 },
-    // { leader: "emerald", follower: "soul_eon", offsetX: 0, offsetZ: -1.5 },
-    { leader: "keiichi", follower: "naomi", offsetX: 2.3, offsetZ: 0 },
+    // { leader: "emerald", follower: "soul_eon", offsetX: 2.2, offsetZ: -3 },
+    { leader: "keiichi", follower: "naomi", offsetX: 2.2, offsetZ: -1.5 },
     // // // { leader: "shiro", follower: "female_redshirt", offsetX: 2.2, offsetZ: 1.5 },
-    // { leader: "shiro", follower: "blackshirt", offsetX: 2.3, offsetZ: 1.5 },
+    // { leader: "shiro", follower: "blackshirt", offsetX: 1, offsetZ: -1 },
     // // // { leader: "male_chinstripe", follower: "zombie", offsetX: 2.3, offsetZ: -1.5 },
-    // // // { leader: "eric", follower: "kat", offsetX: -2.3, offsetZ: -1.5 },
+    { leader: "eric", follower: "kat", offsetX: 0, offsetZ: -3 },
     // { leader: "davdino", follower: "vampire", offsetX: -2.3, offsetZ: 1.5 }
   ];
+  private animationActionsEndOfDance: VRM[] = [];
+  private animationMixersEndOfDance: AnimationMixer[] = [];
+  private animationActionsBlink: VRM[] = [];
+  private animationMixersBlink: AnimationMixer[] = [];
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
-    this.stats.showPanel(0);
+    // this.stats.showPanel(0); // TODO: not for XR mode
     document.body.appendChild(this.stats.dom);
     this.sceneHelper.addLight(false);
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
@@ -173,12 +160,26 @@ export default class SceneManager extends SceneManagerParent  {
         this.scene.add(gltf.userData.vrm.scene);
         gltf.scene.children[5].position.x = modelNames[i].offsetX;
         gltf.scene.children[5].position.z = modelNames[i].offsetZ;
+        gltf.scene.traverse( function( object ) {
+
+          object.frustumCulled = false;
+
+        } );
+        this.initHappyAnimation(gltf.userData.vrm);
+        this.initBlinkAnimation(gltf.userData.vrm);
         console.log('Loading model ' + modelNames[i].follower);
         gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
           VRMUtils.removeUnnecessaryJoints(gltf2.scene);
           gltf2.scene.children[5].position.x = modelNames[i].offsetX;
           gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
+          gltf2.scene.traverse( function( object ) {
+
+            object.frustumCulled = false;
+
+          } );
+          this.initHappyAnimation(gltf2.userData.vrm);
+          this.initBlinkAnimation(gltf2.userData.vrm);
           this.danceCouples.push({ leader: gltf.userData.vrm, follower: gltf2.userData.vrm });
           this.scene.add(gltf2.userData.vrm.scene);
         });
@@ -187,6 +188,15 @@ export default class SceneManager extends SceneManagerParent  {
   }
 
   private loadModels() {
+    const loader = new GLTFLoader();
+    loader.load('models/scene.gltf', (gltf) => {
+      let model = gltf.scene;
+      model.position.y = +3.65;
+      model.position.z = -1;
+      // model.position.x = -2;
+      // model.rotateY(Math.PI/2);
+      this.scene.add(model);
+    });
     this.loadModels2(this.modelNames);
     let gltfLoader = new GLTFLoader();
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
@@ -196,72 +206,73 @@ export default class SceneManager extends SceneManagerParent  {
       const vrm = gltf.userData.vrm;
       console.log(vrm);
       this.person1 = vrm;
-      this.playBlinkAnimationPerson1();
+      gltf.scene.traverse( function( object ) {
+
+        object.frustumCulled = false;
+
+      } );
+      this.initBlinkAnimation(vrm);
+      this.initHappyAnimation(vrm);
       gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
         VRMUtils.removeUnnecessaryJoints(gltf.scene);
         this.person2 = gltf.userData.vrm;
-        this.playBlinkAnimationPerson2();
+        this.initBlinkAnimation(gltf.userData.vrm);
+        this.initHappyAnimation(gltf.userData.vrm);
         this.loadBVH(1);
-        // this.audioElement.play();
+        gltf.scene.traverse( function( object ) {
+
+          object.frustumCulled = false;
+
+        } );
+        this.playBlinkAnimations();
+        this.audioElement.play();
       })
     });
   }
 
-  private playBlinkAnimationPerson1() {
-    this.mixerBlink1 = new AnimationMixer( this.person1.scene );
-    const blinkTrack = new NumberKeyframeTrack(
-      this.person1.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
-      [ 0.0, 0.5, 1.0 ], // times
-      [ 0.0, 1.0, 0.0 ] // values
-    );
-    const clip = new AnimationClip( 'blink', 1, [ blinkTrack ] );
-    this.animationAction = this.mixerBlink1.clipAction( clip ).setLoop(LoopOnce, 1)
-    this.animationAction.play();
+  private playBlinkAnimations() {
+    for (let i = 0; i < this.animationMixersBlink.length; i++) {
+      const blinkTrack = new NumberKeyframeTrack(
+        this.animationActionsBlink[i].expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
+        [ 0.0, 0.5, 1.0 ], // times
+        [ 0.0, 1.0, 0.0 ] // values
+      );
+      const clip = new AnimationClip( 'blink', 1, [ blinkTrack ] );
+      let animationAction = this.animationMixersBlink[i].clipAction( clip ).setLoop(LoopOnce, 1);
+      animationAction.play();
+      // console.log('blink ' + i);
+    }
     setTimeout( () => {
-        this.playBlinkAnimationPerson1()
+        this.playBlinkAnimations();
       }, 4000
     )
   }
 
-  private playHappyAnimationPerson1() {
-    this.mixerHappy1 = new AnimationMixer( this.person1.scene );
-    const happyTrack = new NumberKeyframeTrack(
-      this.person1.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Happy ),
-      [ 0.0, 0.5, 1.0 ], // times
-      [ 0.0, 0.5, 1.0 ] // values
-    );
-    const clip = new AnimationClip( 'happy', 1, [ happyTrack ] );
-    this.animationAction = this.mixerHappy1.clipAction( clip ).setLoop(LoopOnce, 1)
-    this.animationAction.play();
+  private initBlinkAnimation(dancer: VRM) {
+    let mixerBlink = new AnimationMixer( dancer.scene );
+    this.animationActionsBlink.push(dancer);
+    this.animationMixersBlink.push(mixerBlink);
   }
 
-  private playHappyAnimationPerson2() {
-    this.mixerHappy2 = new AnimationMixer( this.person2.scene );
-    const happyTrack = new NumberKeyframeTrack(
-      this.person2.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Happy ),
-      [ 0.0, 0.5, 1.0 ], // times
-      [ 0.0, 0.5, 1.0 ] // values
-    );
-    const clip = new AnimationClip( 'happy', 1, [ happyTrack ] );
-    this.animationAction = this.mixerHappy2.clipAction( clip ).setLoop(LoopOnce, 1)
-    this.animationAction.play();
+  private initHappyAnimation(dancer: VRM) {
+    let mixerHappy = new AnimationMixer( dancer.scene );
+    this.animationActionsEndOfDance.push(dancer);
+    this.animationMixersEndOfDance.push(mixerHappy);
   }
 
-  private playBlinkAnimationPerson2() {
-    this.mixerBlink2 = new AnimationMixer( this.person2.scene );
-    const blinkTrack = new NumberKeyframeTrack(
-      this.person2.expressionManager.getExpressionTrackName( VRMExpressionPresetName.Blink ),
-      [ 0.0, 0.5, 1.0 ], // times
-      [ 0.0, 1.0, 0.0 ] // values
-    );
-    const clip = new AnimationClip( 'blink', 1, [ blinkTrack ] );
-    this.animationAction = this.mixerBlink2.clipAction( clip ).setLoop(LoopOnce, 1)
-    this.animationAction.play();
-    setTimeout( () => {
-        this.playBlinkAnimationPerson2()
-      }, 4000
-    )
+  private playHappyAnimations() {
+    console.log('Play happy animations: ' + this.animationMixersEndOfDance.length);
+    for (let i = 0; i < this.animationMixersEndOfDance.length; i++) {
+      const happyTrack = new NumberKeyframeTrack(
+        this.animationActionsEndOfDance[i].expressionManager.getExpressionTrackName( VRMExpressionPresetName.Happy ),
+        [ 0.0, 0.5, 1.0 ], // times
+        [ 0.0, 0.5, 1.0 ] // values
+      );
+      const clip = new AnimationClip( 'happy', 1, [ happyTrack ] );
+      let animationAction = this.animationMixersEndOfDance[i].clipAction( clip ).setLoop(LoopOnce, 1);
+      animationAction.play();
+    }
   }
 
   loadBVH(move) {
@@ -297,8 +308,7 @@ export default class SceneManager extends SceneManagerParent  {
     this.startShow(move);
     setTimeout(() => {
       console.log("animation happy");
-      this.playHappyAnimationPerson1();
-      this.playHappyAnimationPerson2();
+      this.playHappyAnimations();
     }, (this.bvh1.clip.duration * 1000 * this.slowDownFactor) - 2000)
   }
 
@@ -328,8 +338,7 @@ export default class SceneManager extends SceneManagerParent  {
     this.mixerDance2.clipAction(this.bvh2.clip).play();
     setTimeout(() => {
       console.log("animation happy");
-      this.playHappyAnimationPerson1();
-      this.playHappyAnimationPerson2();
+      this.playHappyAnimations();
     }, (this.bvh1.clip.duration * 1000 * this.slowDownFactor) - 2000)
     setTimeout(() => {
       console.log("Stop animation");
@@ -342,19 +351,12 @@ export default class SceneManager extends SceneManagerParent  {
   }
 
   update() {
-    this.stats.begin();
+    // this.stats.begin();
     let delta = this.clock.getDelta();
     if (this.mixerDance1 && this.mixerDance2) {
       this.mixerDance1.update(delta/this.slowDownFactor);
       this.mixerDance2.update(delta/this.slowDownFactor);
       if (this.isAnimationStarted) {
-        // this.myWorker.postMessage([delta]);
-        // console.log('Message posted to worker2');
-        // this.myWorker.onmessage = (e) => {
-          //   let delta2 = this.clock.getDelta();
-          //   console.log('Message received from worker2: ' + e.data + ' ms: ' + (delta2 - delta));
-          //
-        // }
         VrmSkeletonUtils.retarget(this.person1.scene.children[5], this.source1SkeletonHelper, this.options1);
         VrmSkeletonUtils.retarget(this.person2.scene.children[5], this.source2SkeletonHelper, this.options);
         if (this.danceCouples && this.danceCouples.length > 0) {
@@ -377,19 +379,17 @@ export default class SceneManager extends SceneManagerParent  {
         }
       }
     }
-    if (this.mixerBlink1) {
-      this.mixerBlink1.update(delta);
+    if (this.animationMixersEndOfDance.length > 0) {
+      for (let i = 0; i < this.animationMixersEndOfDance.length; i++) {
+        this.animationMixersEndOfDance[i].update(delta);
+      }
     }
-    if (this.mixerBlink2) {
-      this.mixerBlink2.update(delta);
+    if (this.animationMixersBlink.length > 0) {
+      for (let i = 0; i < this.animationMixersBlink.length; i++) {
+        this.animationMixersBlink[i].update(delta);
+      }
     }
-    if (this.mixerHappy1) {
-      this.mixerHappy1.update(delta);
-    }
-    if (this.mixerHappy2) {
-      this.mixerHappy2.update(delta);
-    }
-    this.stats.end();
+    // this.stats.end();
   }
 
   updateHandPose(result) {
@@ -412,6 +412,6 @@ export default class SceneManager extends SceneManagerParent  {
   }
 
   getInitialCameraPosition(): Vector3 {
-    return new Vector3(-0.5, 1.75, 4);
+    return new Vector3(0, 0.75, -1.5);
   }
 }

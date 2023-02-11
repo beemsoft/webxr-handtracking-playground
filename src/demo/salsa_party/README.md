@@ -1,12 +1,20 @@
-# Salsa bar demo 2
+# Salsa party
 
 ## Credits
 
-### Bar
+### Scene
+Victorian Greenhouse: https://sketchfab.com/3d-models/greenhouse-victorian-e00471c89eec45ae8ddb9b06e3f1966e
 
-[poly.pizza](https://poly.pizza/m/cEbi0acnY23): Bar scene
-* [Poly by Google](https://poly.pizza/u/Poly%20by%20Google)
-* [Creative Commons Attribution](https://creativecommons.org/licenses/by/3.0/)
+### VRM models
+
+#### Kenji
+https://hub.vroid.com/en/characters/4465509309807593694/models/3101141729964094573
+
+#### Free to use!
+https://hub.vroid.com/en/characters/3290802251988442316/models/8742459269624930046
+
+#### KAT By Dyzium
+https://hub.vroid.com/en/characters/297224759854973652/models/7255311897741307023
 
 ### BVH files
 
