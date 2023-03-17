@@ -99,6 +99,9 @@ export default class SceneManager extends SceneManagerParent {
     const loader = new GLTFLoader();
     loader.load('models/JackSparrow/jack_sparrow.glb', (gltf) => {
       let model = gltf.scene;
+      gltf.scene.traverse( function( object ) {
+        object.frustumCulled = false;
+      } );
       this.jackSparrow = gltf;
       this.targetSkeletonHelper = new SkeletonHelper(gltf.scene.children[0].children[0]);
       this.targetSkeletonHelper.visible = true;
