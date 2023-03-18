@@ -16,17 +16,9 @@ export default class WaterManager {
   private q = new Vector4();
 
   private mirrorCamera = new PerspectiveCamera();
-  private renderer: WebGLRenderer;
 
-  constructor() {
-    this.renderer = new WebGLRenderer({alpha: false});
-    this.renderer.autoClear = false;
-    this.renderer.xr.enabled = false
-  }
-
-  update(water: Water, renderer2: WebGLRenderer, scene: Scene, camera: PerspectiveCamera) {
-    this.renderer = renderer2;
-    this.renderer.setRenderTarget( water.renderTarget );
+  update(water: Water, renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera) {
+    renderer.setRenderTarget( water.renderTarget );
 
     // @ts-ignore
     this.mirrorWorldPosition.setFromMatrixPosition( water.matrixWorld );
@@ -107,14 +99,14 @@ export default class WaterManager {
     // @ts-ignore
     water.visible = false;
 
-    this.renderer.setRenderTarget( water.renderTarget );
-    this.renderer.state.buffers.depth.setMask( true ); // make sure the depth buffer is writable so it can be properly cleared, see #18897
-    this.renderer.clear();
-    this.renderer.render(scene, this.mirrorCamera);
+    renderer.setRenderTarget( water.renderTarget );
+    renderer.state.buffers.depth.setMask( true ); // make sure the depth buffer is writable so it can be properly cleared, see #18897
+    renderer.clear();
+    renderer.render(scene, this.mirrorCamera);
 
     // @ts-ignore
     water.visible = true;
 
-    renderer2.setRenderTarget(null);
+    renderer.setRenderTarget(null);
   }
 }
