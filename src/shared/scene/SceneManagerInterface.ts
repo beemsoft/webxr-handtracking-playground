@@ -7,7 +7,12 @@ export enum GestureType {
 }
 
 export interface SceneManagerInterface {
-  build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler);
+  build(
+    camera: PerspectiveCamera,
+    scene: Scene,
+    renderer: WebGLRenderer,
+    physicsHandler: PhysicsHandler
+  );
 
   update();
 

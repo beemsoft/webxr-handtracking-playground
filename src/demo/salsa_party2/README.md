@@ -1,9 +1,18 @@
-# Salsa party
+# Salsa party 2
 
 ## Credits
 
 ### Scene
-Victorian Greenhouse: https://sketchfab.com/3d-models/greenhouse-victorian-e00471c89eec45ae8ddb9b06e3f1966e
+Ehemalige Kleeblat Tankstelle Hannover: https://sketchfab.com/3d-models/ehemalige-kleeblat-tankstelle-hannover-955e1ad9c5c646a68480e103be28b5a4
+
+### Lighting
+
+Video: https://www.youtube.com/watch?v=XAJW8kaasGU
+
+Threejs example
+https://threejs.org/examples/#webgl_lights_spotlights
+
+### VRM models
 
 ### VRM models
 
@@ -39,7 +48,6 @@ from NSF EIA-0196217."
 ### BVH hacker
 
 [bvhacker 1.9.1](https://www.bvhacker.com/) by [davedub](http://davedub.co.uk/davedub/wordpress/)
-
 
 ### Music
 

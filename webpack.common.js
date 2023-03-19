@@ -27,6 +27,9 @@ module.exports = {
         bvh_test: './src/demo/bvh_test/src',
         bvh_test_2: './src/demo/bvh_test_2/src',
         salsa_party: './src/demo/salsa_party/src',
+        salsa_party2: './src/demo/salsa_party2/src',
+        salsa_party3: './src/demo/salsa_party3/src',
+        handinput_profiles: './src/demo/handinput_profiles/src',
     },
     module: {
         rules: [
