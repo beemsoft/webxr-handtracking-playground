@@ -124,7 +124,7 @@ export default class SceneManager extends SceneManagerParent  {
     super.build(camera, scene, renderer, physicsHandler);
     // this.stats.showPanel(0); // TODO: not for XR mode
     document.body.appendChild(this.stats.dom);
-    this.sceneHelper.addLight(false);
+    this.sceneHelper.addLight(true);
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(new Vector3(-3, 2, 1));
     this.audioElement = this.audioHandler.audioElement;
