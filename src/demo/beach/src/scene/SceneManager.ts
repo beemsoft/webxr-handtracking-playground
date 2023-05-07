@@ -15,7 +15,7 @@ import {
   WebGLRenderer
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { BVH } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
@@ -170,8 +170,8 @@ export default class SceneManager extends SceneManagerParent {
     }
   }
 
-  handleGesture(gesture: GestureType) {
-    if (gesture == GestureType.openHand) {
+  handleGesture(gesture: HandTrackingResult) {
+    if (gesture.gestureType == GestureType.Open_Hand) {
       if (!this.isAnimationStarted) {
         this.isAnimationStarted = true;
         this.startShow();

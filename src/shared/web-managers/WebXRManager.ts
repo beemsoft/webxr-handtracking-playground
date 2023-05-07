@@ -1,6 +1,6 @@
 import { Quaternion, Scene, Vector3, WebGLRenderer } from 'three/src/Three';
 import PhysicsHandler from '../physics/PhysicsHandler';
-import { GestureType, SceneManagerInterface } from '../scene/SceneManagerInterface';
+import { GestureType, HandTrackingResult, SceneManagerInterface } from '../scene/SceneManagerInterface';
 import CameraManager from '../webxr/CameraManager';
 import { XRDevicePose, XRFrameOfReference, XRReferenceSpace, XRRigidTransform } from '../webxr/WebXRDeviceAPI';
 import TrackedHandsManager from '../hands/TrackedHandsManager';
@@ -15,13 +15,15 @@ export default class WebXRManager {
   private session = null;
   private physicsHandler = new PhysicsHandler();
   private sceneBuilder: SceneManagerInterface;
+  private useDefaultHandGestures: boolean;
   private cameraManager = new CameraManager();
   private trackedHandsManager = new TrackedHandsManager(this.scene, this.physicsHandler, this.cameraManager.cameraVR);
   private timestamp = null;
 
-  constructor(sceneBuilder: SceneManagerInterface) {
+  constructor(sceneBuilder: SceneManagerInterface, useDefaultHandGestures: boolean) {
     this.cameraManager.createVrCamera();
     this.sceneBuilder = sceneBuilder;
+    this.useDefaultHandGestures = useDefaultHandGestures;
 
     navigator.xr.requestSession('immersive-vr', {optionalFeatures: ["hand-tracking"]})
       .then(session => {
@@ -92,35 +94,51 @@ export default class WebXRManager {
   }
 
   private renderScene(frame: XRFrameOfReference, pose: XRDevicePose) {
-    if (this.trackedHandsManager.isTrackedHandAvailable(frame)) {
-      this.trackedHandsManager.snapFinger(frame, this.xrReferenceSpace);
-      let pinchPosition = this.trackedHandsManager.pinchFinger(frame, this.xrReferenceSpace);
-      if (pinchPosition) {
-        let direction = new Vector3(pinchPosition.x - this.cameraManager.cameraVR.position.x, pinchPosition.y - this.cameraManager.cameraVR.position.y, pinchPosition.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)
-        this.moveInDirection(direction);
-      }
-
-      this.trackedHandsManager.ringFinger(frame, this.xrReferenceSpace);
-      if (this.trackedHandsManager.isCameraRotationEnabled) {
-        this.rotateView(this.trackedHandsManager.offsetAngle, this.trackedHandsManager.rotationPosition);
-      }
-      this.trackedHandsManager.pinkyFinger(frame, this.xrReferenceSpace);
-      if (this.trackedHandsManager.isOriginRotationEnabled) {
-        this.rotateOrigin(this.trackedHandsManager.offsetAngle);
-      }
-
-      if (this.physicsHandler.bodyControlledByHandGesture) {
-        this.trackedHandsManager.checkFixedBall(frame, this.xrReferenceSpace);
-        this.trackedHandsManager.openHand(frame, this.xrReferenceSpace);
-        this.trackedHandsManager.thumbsJoining(frame, this.xrReferenceSpace);
-      }
-      if (this.trackedHandsManager.isOpenHand(frame, this.xrReferenceSpace)) {
-        this.sceneBuilder.handleGesture(GestureType.openHand);
-      } else if (this.trackedHandsManager.isStopHand(frame, this.xrReferenceSpace)) {
-        this.sceneBuilder.handleGesture(GestureType.stopHand);
+    let handTrackingResult: HandTrackingResult = this.trackedHandsManager.renderHandsAndDetectGesture(frame, pose, this.xrReferenceSpace);
+    if (handTrackingResult.gestureType == GestureType.None) {
+      this.trackedHandsManager.isCameraRotationEnabled = false;
+      this.trackedHandsManager.isOriginRotationEnabled = false;
+    } else {
+      if (this.useDefaultHandGestures) {
+        if (handTrackingResult.gestureType == GestureType.Index_Thumb) {
+          let direction = new Vector3(handTrackingResult.position.x - this.cameraManager.cameraVR.position.x, handTrackingResult.position.y - this.cameraManager.cameraVR.position.y, handTrackingResult.position.z - this.cameraManager.cameraVR.position.z).multiplyScalar(0.1)
+          this.moveInDirection(direction);
+        } else if (handTrackingResult.gestureType == GestureType.Ring_Thumb) {
+          if (!this.trackedHandsManager.isPinchingEnabled) {
+            if (!this.trackedHandsManager.isCameraRotationEnabled) {
+              let vector1 = new Vector3(this.cameraManager.cameraVR.position.x, this.cameraManager.cameraVR.position.y, this.cameraManager.cameraVR.position.z);
+              this.trackedHandsManager.rotationStartPos = new Vector3(this.cameraManager.cameraVR.position.x, 0, this.cameraManager.cameraVR.position.z);
+              this.trackedHandsManager.rotationStartVector = vector1.sub(this.trackedHandsManager.rotationStartPos);
+              this.trackedHandsManager.rotationPosition = new Vector3(this.cameraManager.cameraVR.position.x, 0, this.cameraManager.cameraVR.position.z)
+            } else {
+              this.trackedHandsManager.offsetAngle = Math.PI / 140;
+            }
+            this.trackedHandsManager.isCameraRotationEnabled = true;
+            if (this.trackedHandsManager.isCameraRotationEnabled) {
+              this.rotateView(this.trackedHandsManager.offsetAngle, this.trackedHandsManager.rotationPosition);
+            }
+          }
+        } else if (handTrackingResult.gestureType == GestureType.Pinky_Thumb) {
+          if (this.trackedHandsManager.isOriginRotationEnabled) {
+            this.trackedHandsManager.offsetAngle = Math.PI / 140;
+          }
+          this.trackedHandsManager.isOriginRotationEnabled = true;
+          if (this.trackedHandsManager.isOriginRotationEnabled) {
+            this.rotateOrigin(this.trackedHandsManager.offsetAngle);
+          }
+        } else if (handTrackingResult.gestureType == GestureType.Middle_Thumb) {
+          if (this.trackedHandsManager.isPinchingEnabled) {
+            this.trackedHandsManager.material.color.set(0xdd00cc);
+            this.trackedHandsManager.isPinchingEnabled = false;
+          } else {
+            this.trackedHandsManager.material.color.set(0xFF3333);
+            this.trackedHandsManager.isPinchingEnabled = true;
+          }
+        }
+      } else {
+        this.sceneBuilder.handleGesture(handTrackingResult);
       }
     }
-    this.trackedHandsManager.renderHands(frame, pose, this.xrReferenceSpace);
     this.sceneBuilder.update();
     this.cameraManager.update(pose);
     this.physicsHandler.updatePhysics();

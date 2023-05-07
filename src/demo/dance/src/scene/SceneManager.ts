@@ -10,7 +10,7 @@ import {
   WebGLRenderer
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
@@ -139,8 +139,8 @@ export default class SceneManager extends SceneManagerParent {
     }
   }
 
-  handleGesture(gesture: GestureType) {
-    if (gesture == GestureType.openHand) {
+  handleGesture(gesture: HandTrackingResult) {
+    if (gesture.gestureType == GestureType.Open_Hand) {
       if (!this.isAnimationStarted) {
         this.isAnimationStarted = true;
         this.startShow(this.bvh);

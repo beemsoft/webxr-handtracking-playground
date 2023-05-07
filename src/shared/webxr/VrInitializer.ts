@@ -6,12 +6,12 @@ let element: HTMLElement;
 export class VrInitializer {
   private readonly sceneManager: SceneManagerInterface;
 
-  constructor(sceneManager: SceneManagerInterface) {
+  constructor(sceneManager: SceneManagerInterface, useDefaultHandGestures: boolean) {
     this.sceneManager = sceneManager;
-    this.addVrButton();
+    this.addVrButton(useDefaultHandGestures);
   }
 
-  addVrButton() {
+  addVrButton(useDefaultHandGestures: boolean) {
     element = document.createElement('div');
     document.body.appendChild(element);
     const button = document.createElement('button');
@@ -29,7 +29,7 @@ export class VrInitializer {
     button.style.textAlign = 'center';
     button.textContent = 'ENTER VR';
     button.addEventListener('click', () => {
-      new WebXRManager(this.sceneManager);
+      new WebXRManager(this.sceneManager, useDefaultHandGestures);
     });
     element.appendChild(button);
     return button;

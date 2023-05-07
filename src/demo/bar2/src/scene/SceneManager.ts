@@ -10,7 +10,7 @@ import {
   WebGLRenderer
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMExpressionPresetName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
@@ -79,7 +79,7 @@ export default class SceneManager extends SceneManagerParent  {
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
-    this.sceneHelper.addLight(false);
+    this.sceneHelper.addLight(true);
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(new Vector3(-3, 2, 1));
     this.audioElement = this.audioHandler.audioElement;
@@ -108,6 +108,9 @@ export default class SceneManager extends SceneManagerParent  {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       const vrm = gltf.userData.vrm;
       this.person1 = vrm;
+      gltf.scene.traverse( function( object ) {
+        object.frustumCulled = false;
+      } );
       this.playBlinkAnimationPerson1();
       this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
       this.target1Skeleton = this.person1.scene.children[5]
@@ -115,6 +118,9 @@ export default class SceneManager extends SceneManagerParent  {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
         VRMUtils.removeUnnecessaryJoints(gltf.scene);
         this.person2 = gltf.userData.vrm;
+        gltf.scene.traverse( function( object ) {
+          object.frustumCulled = false;
+        } );
         this.playBlinkAnimationPerson2();
         this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.target2Skeleton = this.person2.scene.children[5]
@@ -298,8 +304,8 @@ export default class SceneManager extends SceneManagerParent  {
     }
   }
 
-  handleGesture(gesture: GestureType) {
-    if (gesture == GestureType.openHand) {
+  handleGesture(gesture: HandTrackingResult) {
+    if (gesture.gestureType == GestureType.Open_Hand) {
       if (!this.isAnimationStarted) {
         this.startShow(1);
       }

@@ -7,12 +7,12 @@ function nonVrSetup(sceneManager, useMediaPipeStuff) {
     new WebPageManager(sceneManager);
 }
 
-export function determineVrOrNonVrSetup(sceneManager, useMediaPipeStuff) {
+export function determineVrOrNonVrSetup(sceneManager, useMediaPipeStuff, useDefaultHandGestures) {
     if (navigator.xr) {
         navigator.xr.isSessionSupported('immersive-vr')
             .then(isSupported => {
                 if (isSupported) {
-                    new VrInitializer(sceneManager);
+                    new VrInitializer(sceneManager, useDefaultHandGestures);
                 } else {
                     nonVrSetup(sceneManager, useMediaPipeStuff);
                 }

@@ -29,6 +29,7 @@ module.exports = {
         salsa_party: './src/demo/salsa_party/src',
         salsa_party2: './src/demo/salsa_party2/src',
         salsa_party3: './src/demo/salsa_party3/src',
+        salsa_party4: './src/demo/salsa_party4/src',
         handinput_profiles: './src/demo/handinput_profiles/src',
     },
     module: {

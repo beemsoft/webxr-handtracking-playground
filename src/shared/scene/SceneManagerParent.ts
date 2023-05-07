@@ -1,5 +1,5 @@
-import { AnimationMixer, Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three/src/Three';
-import { GestureType, SceneManagerInterface } from './SceneManagerInterface';
+import { AnimationMixer, Clock, PerspectiveCamera, Quaternion, Scene, Vector3, WebGLRenderer } from 'three/src/Three';
+import { GestureType, HandTrackingResult, SceneManagerInterface } from './SceneManagerInterface';
 import PhysicsHandler from '../physics/PhysicsHandler';
 import { SceneHelper } from './SceneHelper';
 import HandPoseManager from '../hands/HandPoseManager';
@@ -31,7 +31,7 @@ export default class SceneManagerParent implements SceneManagerInterface {
     return undefined;
   }
 
-  handleGesture(gesture: GestureType) {
+  handleGesture(gesture: HandTrackingResult) {
   }
 
   postUpdate() {

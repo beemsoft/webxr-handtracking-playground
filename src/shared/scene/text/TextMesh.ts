@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Hans Beemsterboer
+ * Copyright 2023 Hans Beemsterboer
  *
  * This file has been modified by Hans Beemsterboer to be used in
  * the webxr-physics project.
@@ -43,12 +43,16 @@ export class TextMesh {
     private texture: CanvasTexture;
     private material: RawShaderMaterial;
     mesh: Mesh;
+    private fontBorder = 4;
+    private fontHeight = 50;
 
-    constructor( maxAnisotropy: number, width: number, height: number ) {
+    constructor( maxAnisotropy: number, width: number, height: number, fontBorder: number, fontHeight) {
 
         this.multiplier = 1;
         this.width = width * this.multiplier;
         this.height = height * this.multiplier;
+        if (fontBorder) this.fontBorder = fontBorder;
+        if (fontHeight) this.fontHeight = fontHeight;
 
         this.canvas = document.createElement( 'canvas' );
         this.ctx = this.canvas.getContext( '2d' );
@@ -109,6 +113,10 @@ void main() {
 
     }
 
+    fadeOut(opacity) {
+        this.material.uniforms['opacity'].value = opacity;
+    }
+
     /**
      * Internal method to split sentences
      *
@@ -152,6 +160,7 @@ void main() {
      */
 
     set ( sentences ) {
+        this.material.uniforms['opacity'].value = 1;
 
         if( typeof sentences !== 'object' ) sentences = [ sentences ];
         let splitSentences = [];
@@ -159,8 +168,8 @@ void main() {
             splitSentences = splitSentences.concat( this.fitSplit( s ) );
         });
 
-        const border = 4;
-        const h = 50 * this.multiplier;
+        const border = this.fontBorder;
+        const h = this.fontHeight * this.multiplier;
 
         const fw = this.width;
         const fh = this.height;

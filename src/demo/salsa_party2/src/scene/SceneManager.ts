@@ -1,9 +1,7 @@
 import {
   AnimationClip,
   AnimationMixer,
-  BasicShadowMap,
   BoxGeometry,
-  DirectionalLight,
   LoopOnce,
   Mesh,
   MeshNormalMaterial,
@@ -11,22 +9,17 @@ import {
   NumberKeyframeTrack,
   PerspectiveCamera,
   PlaneGeometry,
-  PCFSoftShadowMap,
   sRGBEncoding,
   Scene,
-  ShadowMaterial,
   PointLight,
   Quaternion,
-  SpotLight,
-  SpotLightHelper,
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMExpressionPresetName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
-import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
@@ -120,8 +113,8 @@ export default class SceneManager extends SceneManagerParent  {
   private slowDownFactor = 1.8;
   private danceCouples: {leader: VRM, follower: VRM}[] = [];
   private modelNames: DanceCouple[] = [
-    { leader: "kenji", follower: "female_redshirt", offsetX: -2.2, offsetZ: -1.5, rotationY: Math.PI / 6 },
-    { leader: "eric", follower: "kat", offsetX: 0, offsetZ: -3, rotationY: Math.PI / 6 },
+    { leader: "kenji", follower: "PartyGirl1", offsetX: -2.2, offsetZ: -1.5 },
+    { leader: "eric", follower: "B2", offsetX: 0, offsetZ: -3 },
   ];
   private animationActionsEndOfDance: VRM[] = [];
   private animationMixersEndOfDance: AnimationMixer[] = [];
@@ -164,15 +157,15 @@ export default class SceneManager extends SceneManagerParent  {
     scene.add( pointLight1, pointLight2, pointLight3 );
     // scene.add( pointLight1);
 
-    const planeGeometry = new PlaneGeometry( 20, 20, 32, 32 );
-    const planeMaterial = new MeshStandardMaterial( { color: 0x777777 } )
-    const plane = new Mesh( planeGeometry, planeMaterial );
-    plane.receiveShadow = true;
-    plane.position.y = -0.4;
-    plane.rotateX(-Math.PI /2 );
-    scene.add( plane );
+    // const planeGeometry = new PlaneGeometry( 20, 20, 32, 32 );
+    // const planeMaterial = new MeshStandardMaterial( { color: 0x777777 } )
+    // const plane = new Mesh( planeGeometry, planeMaterial );
+    // plane.receiveShadow = true;
+    // plane.position.y = -0.4;
+    // plane.rotateX(-Math.PI /2 );
+    // scene.add( plane );
 
-    this.audioHandler.initAudio(AudioDemo.salsaDanceSlow2);
+    this.audioHandler.initAudio(AudioDemo.salsaDanceSlow3);
     this.audioHandler.setPosition(this.audioLocation);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = true;
@@ -188,8 +181,8 @@ export default class SceneManager extends SceneManagerParent  {
     newObj.penumbra = 0.2;
     newObj.decay = 2;
     newObj.distance = 10;
-    newObj.shadow.mapSize.width = 512;
-    newObj.shadow.mapSize.height = 512;
+    // newObj.shadow.mapSize.width = 512;
+    // newObj.shadow.mapSize.height = 512;
     return newObj;
 
   }
@@ -254,7 +247,7 @@ export default class SceneManager extends SceneManagerParent  {
       // model.position.y = +3.65;
       // model.position.z = -1;
       model.scale.set(0.03, 0.03, 0.03);
-      model.position.y = -0.2;
+      model.position.y = -0.35;
       // model.position.z = -13;
       // model.position.x = 9;
       // model.rotateY(Math.PI/2);
@@ -511,8 +504,8 @@ export default class SceneManager extends SceneManagerParent  {
     }
   }
 
-  handleGesture(gesture: GestureType) {
-    if (gesture == GestureType.openHand) {
+  handleGesture(gesture: HandTrackingResult) {
+    if (gesture.gestureType == GestureType.Open_Hand) {
       if (this.isAnimationPaused) {
         this.startShow(1);
       }

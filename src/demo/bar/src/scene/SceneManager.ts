@@ -10,7 +10,7 @@ import {
   WebGLRenderer
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
+import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMExpressionPresetName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationAction } from 'three/src/animation/AnimationAction';
@@ -72,7 +72,7 @@ export default class SceneManager extends SceneManagerParent {
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
-    this.sceneHelper.addLight(false);
+    this.sceneHelper.addLight(true);
     this.audioHandler.initAudio(AudioDemo.salsaDanceFast);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = false;
@@ -99,6 +99,9 @@ export default class SceneManager extends SceneManagerParent {
       VRMUtils.removeUnnecessaryJoints(gltf.scene);
       const vrm = gltf.userData.vrm;
       this.person1 = vrm;
+      gltf.scene.traverse( function( object ) {
+        object.frustumCulled = false;
+      } );
       this.playBlinkAnimationPerson1();
       this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
       gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
@@ -106,6 +109,9 @@ export default class SceneManager extends SceneManagerParent {
         VRMUtils.removeUnnecessaryJoints(gltf.scene);
         const vrm = gltf.userData.vrm;
         this.person2 = vrm;
+        gltf.scene.traverse( function( object ) {
+          object.frustumCulled = false;
+        } );
         this.playBlinkAnimationPerson2();
         this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
         this.loadBVH();
@@ -218,8 +224,8 @@ export default class SceneManager extends SceneManagerParent {
     }
   }
 
-  handleGesture(gesture: GestureType) {
-    if (gesture == GestureType.openHand) {
+  handleGesture(gesture: HandTrackingResult) {
+    if (gesture.gestureType == GestureType.Open_Hand) {
       if (!this.isAnimationStarted) {
         this.startShow();
       }
