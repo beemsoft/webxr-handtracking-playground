@@ -5,10 +5,8 @@ import {
   LoopOnce,
   Mesh,
   MeshNormalMaterial,
-  MeshStandardMaterial,
   NumberKeyframeTrack,
   PerspectiveCamera,
-  PlaneGeometry,
   sRGBEncoding,
   Scene,
   PointLight,
@@ -113,8 +111,8 @@ export default class SceneManager extends SceneManagerParent  {
   private slowDownFactor = 1.8;
   private danceCouples: {leader: VRM, follower: VRM}[] = [];
   private modelNames: DanceCouple[] = [
-    { leader: "kenji", follower: "PartyGirl1", offsetX: -2.2, offsetZ: -1.5 },
-    { leader: "eric", follower: "B2", offsetX: 0, offsetZ: -3 },
+    { leader: "kenji", follower: "female_redshirt", offsetX: -2.2, offsetZ: -1.5 },
+    { leader: "eric", follower: "kat", offsetX: 0, offsetZ: -3 },
   ];
   private animationActionsEndOfDance: VRM[] = [];
   private animationMixersEndOfDance: AnimationMixer[] = [];
@@ -147,23 +145,12 @@ export default class SceneManager extends SceneManagerParent  {
     const pointLight2 = SceneManager.createPointLight( 0x00FF7F );
     const pointLight3 = SceneManager.createPointLight( 0x7F00FF );
     renderer.shadowMap.enabled = false
-    // renderer.shadowMap.type = BasicShadowMap;
     renderer.xr.enabled = false;
-    // renderer.shadowMap.type = PCFSoftShadowMap;
     renderer.outputEncoding = sRGBEncoding;
     pointLight1.position.set( 3, 2, 3 );
     pointLight2.position.set( 4, 2, 0 );
     pointLight3.position.set( -3, 2, -3 );
     scene.add( pointLight1, pointLight2, pointLight3 );
-    // scene.add( pointLight1);
-
-    // const planeGeometry = new PlaneGeometry( 20, 20, 32, 32 );
-    // const planeMaterial = new MeshStandardMaterial( { color: 0x777777 } )
-    // const plane = new Mesh( planeGeometry, planeMaterial );
-    // plane.receiveShadow = true;
-    // plane.position.y = -0.4;
-    // plane.rotateX(-Math.PI /2 );
-    // scene.add( plane );
 
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow3);
     this.audioHandler.setPosition(this.audioLocation);
@@ -181,28 +168,9 @@ export default class SceneManager extends SceneManagerParent  {
     newObj.penumbra = 0.2;
     newObj.decay = 2;
     newObj.distance = 10;
-    // newObj.shadow.mapSize.width = 512;
-    // newObj.shadow.mapSize.height = 512;
     return newObj;
 
   }
-
-  // kenji + three vrm girl
-  // black shirt (lang) + ?
-  // zombie
-  // frost
-  // kiku
-  // kat
-  // valentine (open rug)
-  // eric (too warm cloths, open spots at shoulder)
-  // male_chinstripe
-  // female_redshirt
-  // shiro (1.89m)
-  // naomi
-  // keiichi
-  // soul eon
-  // emerald
-  // mawi
 
   private loadModels2(modelNames: DanceCouple[]) {
     let gltfLoader = new GLTFLoader();
