@@ -31,6 +31,8 @@ module.exports = {
         salsa_party3: './src/demo/salsa_party3/src',
         salsa_party4: './src/demo/salsa_party4/src',
         handinput_profiles: './src/demo/handinput_profiles/src',
+        mediapipe_face: './src/demo/mediapipe_face/src',
+        mediapipe_face_vrm: './src/demo/mediapipe_face_vrm/src',
     },
     module: {
         rules: [

@@ -2,7 +2,7 @@
  * Copyright 2023 Hans Beemsterboer
  *
  * This file has been modified by Hans Beemsterboer to be used in
- * the webxr-physics project.
+ * the webxr-handracking-playground project.
  *
  * Copyright 2015 Google Inc. All rights reserved.
  *
