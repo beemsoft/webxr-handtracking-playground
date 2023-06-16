@@ -57,6 +57,9 @@ export interface XRSession extends EventTarget {
   onselect?: Function;
   onselectstart?: Function;
   onselectennd?: Function;
+
+  updateRenderState(): void;
+  updateRenderState(state: {}): void;
 }
 declare global  {
   interface Window {
@@ -224,8 +227,6 @@ export interface XRWebGLLayer extends XRLayer {
   readonly framebufferHeight: number;
   getViewport(view: XRView): XRViewport | null;
   requestViewportScaling(viewportScaleFactor: number): void;
-
-  // static getNativeFramebufferScaleFactor(session: XRSession): number;
 }
 declare global  {
   interface Window {
@@ -306,4 +307,17 @@ export interface XRHand extends Iterable<XRJointSpace> {
   [index: number]: XRJointSpace;
 
   get(key: String): XRJointSpace;
+}
+
+export interface XRProjectionLayer {
+  textureWidth
+  textureHeight
+}
+
+export interface XRWebGLBinding {
+  constructor(session: XRSession, gl: WebGLRenderingContext);
+
+  getViewSubImage(layer: XRProjectionLayer, view: XRView );
+
+  createProjectionLayer(options);
 }

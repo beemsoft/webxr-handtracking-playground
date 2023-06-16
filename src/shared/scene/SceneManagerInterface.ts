@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Quaternion, Scene, Vector3, WebGLRenderer } from 'three/src/Three';
+import { PerspectiveCamera, Quaternion, Scene, ToneMapping, Vector3, WebGLRenderer } from 'three/src/Three';
 import PhysicsHandler from '../physics/PhysicsHandler';
 
 export enum GestureType {
@@ -14,8 +14,21 @@ export enum GestureType {
 
 export interface HandTrackingResult {
   gestureType: GestureType
-  position: Vector3;
-  orientation: Quaternion;
+  position: Vector3
+  orientation: Quaternion
+}
+
+export enum PostProcessingType {
+  "Bloom"
+}
+
+export interface PostProcessingConfig {
+  postProcessingType: PostProcessingType
+  toneMapping: ToneMapping
+  threshold: number,
+  strength: number,
+  radius: number,
+  exposure: number
 }
 
 export interface SceneManagerInterface {
@@ -35,4 +48,7 @@ export interface SceneManagerInterface {
   getInitialCameraAngle(): number;
 
   getInitialCameraPosition(): Vector3;
+
+  getPostProcessingConfig(): PostProcessingConfig;
+
 }

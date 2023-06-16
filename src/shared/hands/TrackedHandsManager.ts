@@ -67,7 +67,9 @@ export default class TrackedHandsManager {
     this.ballManager = new BallManager(physicsHandler);
   }
 
-  public renderHandsAndDetectGesture(frame: XRFrameOfReference, pose: XRDevicePose, xrReferenceSpace: XRReferenceSpace): HandTrackingResult {
+  public
+
+  renderHandsAndDetectGesture(frame: XRFrameOfReference, pose: XRDevicePose, xrReferenceSpace: XRReferenceSpace): HandTrackingResult {
     let wristPose;
     for (let inputSource of frame.session.inputSources) {
       if (inputSource.hand) {

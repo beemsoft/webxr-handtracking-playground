@@ -33,6 +33,8 @@ module.exports = {
         handinput_profiles: './src/demo/handinput_profiles/src',
         mediapipe_face: './src/demo/mediapipe_face/src',
         mediapipe_face_vrm: './src/demo/mediapipe_face_vrm/src',
+        webxr_vr_postprocessing: './src/demo/webxr_vr_postprocessing/src',
+        webxr_vr_postprocessing_unreal_bloom: './src/demo/webxr_vr_postprocessing_unreal_bloom/src',
     },
     module: {
         rules: [
