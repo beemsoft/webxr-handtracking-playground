@@ -6,7 +6,7 @@ import {
   LoopOnce,
   MathUtils,
   PerspectiveCamera,
-  PlaneBufferGeometry,
+  PlaneGeometry,
   PMREMGenerator,
   RepeatWrapping,
   Scene,
@@ -72,7 +72,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   addWater() {
-    let waterGeometry = new PlaneBufferGeometry( 10000, 10000 );
+    let waterGeometry = new PlaneGeometry( 10000, 10000 );
     let water = new Water(
       waterGeometry,
       {

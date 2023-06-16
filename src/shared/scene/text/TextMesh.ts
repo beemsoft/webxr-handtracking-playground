@@ -25,7 +25,7 @@ import {
     LinearFilter,
     LinearMipMapLinearFilter,
     Mesh,
-    PlaneBufferGeometry,
+    PlaneGeometry,
     RawShaderMaterial
 } from 'three/src/Three';
 
@@ -109,7 +109,7 @@ void main() {
         } );
         let w = width / 512;
         let h = height / 512;
-        this.mesh = new Mesh( new PlaneBufferGeometry( w, h ), this.material );
+        this.mesh = new Mesh( new PlaneGeometry( w, h ), this.material );
 
     }
 

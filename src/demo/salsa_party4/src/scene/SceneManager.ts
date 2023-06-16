@@ -123,7 +123,6 @@ export default class SceneManager extends SceneManagerParent  {
     const pointLight3 = SceneManager.createPointLight( 0x7F00FF );
     renderer.shadowMap.enabled = false
     renderer.xr.enabled = false;
-    renderer.outputEncoding = sRGBEncoding;
     pointLight1.position.set( 3, 2, 3 );
     pointLight2.position.set( 4, 2, 0 );
     pointLight3.position.set( -3, 2, -3 );

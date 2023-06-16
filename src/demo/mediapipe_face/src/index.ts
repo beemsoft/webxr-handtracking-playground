@@ -113,7 +113,7 @@ class BasicScene {
         this.renderer = new WebGLRenderer({ antialias: true });
         this.renderer.setSize(this.width, this.height);
         ColorManagement.legacy = false;
-        this.renderer.outputEncoding = sRGBEncoding;
+        this.renderer.outputColorSpace = sRGBEncoding;
         document.body.appendChild(this.renderer.domElement);
 
         // Set up the basic lighting for the scene
@@ -137,7 +137,6 @@ class BasicScene {
         if (!inputFrameTexture) {
             throw new Error("Failed to get the 'input_frame' texture!");
         }
-        inputFrameTexture.encoding = sRGBEncoding;
         const inputFramesDepth = 500;
         const inputFramesPlane = createCameraPlaneMesh(
             this.camera,
