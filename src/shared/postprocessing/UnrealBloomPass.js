@@ -225,9 +225,9 @@ class UnrealBloomPass extends Pass {
 			renderer.setRenderTarget( this.baseRenderTarget );
 			let renderTarget = renderer.getRenderTarget();
 			if (renderTarget && renderTarget.texture) {
-				console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+				// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 			} else {
-				console.log('Rendertarget is set to : ' + renderTarget);
+				// console.log('Rendertarget is set to : ' + renderTarget);
 			}
 			renderer.clear();
 			this.fsQuad.render( renderer, this.camera );
@@ -243,9 +243,9 @@ class UnrealBloomPass extends Pass {
 		renderer.setRenderTarget( this.renderTargetBright );
 		let renderTarget = renderer.getRenderTarget();
 		if (renderTarget && renderTarget.texture) {
-			console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+			// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 		} else {
-			console.log('Rendertarget is set to : ' + renderTarget);
+			// console.log('Rendertarget is set to : ' + renderTarget);
 		}
 		renderer.clear();
 		this.fsQuad.render( renderer, this.camera );
@@ -263,9 +263,9 @@ class UnrealBloomPass extends Pass {
 			renderer.setRenderTarget( this.renderTargetsHorizontal[ i ] );
 			let renderTarget = renderer.getRenderTarget();
 			if (renderTarget && renderTarget.texture) {
-				console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+				// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 			} else {
-				console.log('Rendertarget is set to : ' + renderTarget);
+				// console.log('Rendertarget is set to : ' + renderTarget);
 			}
 			renderer.clear();
 			this.fsQuad.render( renderer, this.camera );
@@ -275,9 +275,9 @@ class UnrealBloomPass extends Pass {
 			renderer.setRenderTarget( this.renderTargetsVertical[ i ] );
 			renderTarget = renderer.getRenderTarget();
 			if (renderTarget && renderTarget.texture) {
-				console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+				// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 			} else {
-				console.log('Rendertarget is set to : ' + renderTarget);
+				// console.log('Rendertarget is set to : ' + renderTarget);
 			}
 			renderer.clear();
 			this.fsQuad.render( renderer, this.camera );
@@ -296,9 +296,9 @@ class UnrealBloomPass extends Pass {
 		renderer.setRenderTarget( this.renderTargetsHorizontal[ 0 ] );
 		renderTarget = renderer.getRenderTarget();
 		if (renderTarget && renderTarget.texture) {
-			console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+			// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 		} else {
-			console.log('Rendertarget is set to : ' + renderTarget);
+			// console.log('Rendertarget is set to : ' + renderTarget);
 		}
 		renderer.clear();
 		this.fsQuad.render( renderer, this.camera );
@@ -323,9 +323,9 @@ class UnrealBloomPass extends Pass {
 		}
 		renderTarget = renderer.getRenderTarget();
 		if (renderTarget && renderTarget.texture) {
-			console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+			// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 		} else {
-			console.log('Rendertarget is set to : ' + renderTarget);
+			// console.log('Rendertarget is set to : ' + renderTarget);
 		}
 
 		// Restore renderer settings

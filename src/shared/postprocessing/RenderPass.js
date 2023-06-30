@@ -60,9 +60,9 @@ class RenderPass extends Pass {
 
 		let renderTarget = renderer.getRenderTarget();
 		if (renderTarget && renderTarget.texture) {
-			console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+			// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 		} else {
-			console.log('Rendertarget is set to : ' + renderTarget);
+			// console.log('Rendertarget is set to : ' + renderTarget);
 		}
 
 		// TODO: Avoid using autoClear properties, see https://github.com/mrdoob/three.js/pull/15571#issuecomment-465669600

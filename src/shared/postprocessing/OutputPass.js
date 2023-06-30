@@ -60,9 +60,9 @@ class OutputPass extends Pass {
 				}
 			let renderTarget = renderer.getRenderTarget();
 			if (renderTarget && renderTarget.texture) {
-				console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+				// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 			} else {
-				console.log('Rendertarget is set to : ' + renderTarget);
+				// console.log('Rendertarget is set to : ' + renderTarget);
 			}
 
 			this.fsQuad.render( renderer, this.camera );
@@ -70,9 +70,9 @@ class OutputPass extends Pass {
 		} else {
 			let renderTarget = renderer.getRenderTarget();
 			if (renderTarget && renderTarget.texture) {
-				console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
+				// console.log('Set rendertarget: ' + renderTarget.texture.name + ' (' + renderTarget.texture.uuid + ')');
 			} else {
-				console.log('Rendertarget is set to : ' + renderTarget);
+				// console.log('Rendertarget is set to : ' + renderTarget);
 			}
 
 			renderer.setRenderTarget( writeBuffer );

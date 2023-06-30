@@ -131,9 +131,9 @@ class EffectComposer {
 
         const currentRenderTarget = this.renderer.getRenderTarget();
         if (currentRenderTarget && currentRenderTarget.texture) {
-            console.log('currentRenderTarget: ' + currentRenderTarget.texture.name + ' (' + currentRenderTarget.texture.uuid + ')');
+            // console.log('currentRenderTarget: ' + currentRenderTarget.texture.name + ' (' + currentRenderTarget.texture.uuid + ')');
         } else {
-            console.log('currentRenderTarget : ' + currentRenderTarget);
+            // console.log('currentRenderTarget : ' + currentRenderTarget);
         }
 
         let maskActive = false;
@@ -186,10 +186,10 @@ class EffectComposer {
         }
 
         if (currentRenderTarget) {
-            console.log('Set rendertarget: ' + currentRenderTarget.texture.name + ' (' + currentRenderTarget.texture.uuid + ')');
+            // console.log('Set rendertarget: ' + currentRenderTarget.texture.name + ' (' + currentRenderTarget.texture.uuid + ')');
             this.renderer.setRenderTarget( currentRenderTarget );
         } else {
-            console.log('Set rendertarget: ' + currentRenderTarget);
+            // console.log('Set rendertarget: ' + currentRenderTarget);
             this.renderer.setRenderTarget( this.baseRenderTarget );
         }
 
