@@ -35,6 +35,7 @@ module.exports = {
         mediapipe_face_vrm: './src/demo/mediapipe_face_vrm/src',
         webxr_vr_postprocessing: './src/demo/webxr_vr_postprocessing/src',
         webxr_vr_postprocessing_unreal_bloom: './src/demo/webxr_vr_postprocessing_unreal_bloom/src',
+        moon_walk: './src/demo/moon_walk/src',
     },
     module: {
         rules: [
