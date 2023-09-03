@@ -128,7 +128,7 @@ export default class SceneManager extends SceneManagerParent  {
     pointLight3.position.set( -3, 2, -3 );
     scene.add( pointLight1, pointLight2, pointLight3 );
 
-    this.audioHandler.initAudio(AudioDemo.salsaDanceSlow3);
+    this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(this.audioLocation);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = true;
@@ -143,8 +143,6 @@ export default class SceneManager extends SceneManagerParent  {
   private static createPointLight(color ) {
     const newObj = new PointLight( color, 0.6 );
     newObj.castShadow = true;
-    newObj.angle = 0.1;
-    newObj.penumbra = 0.2;
     newObj.decay = 2;
     newObj.distance = 10;
     newObj.shadow.mapSize.width = 512;
@@ -292,10 +290,10 @@ export default class SceneManager extends SceneManagerParent  {
     this.mixerDance2 = new AnimationMixer(this.source2SkeletonHelper);
     console.log("Start animation");
     this.action1 = this.mixerDance1.clipAction(this.bvh1.clip);
-    this.action1.clampWhenFinshed = true;
+    this.action1.clampWhenFinished = true;
     this.action1.play();
     this.action2 = this.mixerDance2.clipAction(this.bvh2.clip);
-    this.action2.clampWhenFinshed = true;
+    this.action2.clampWhenFinished = true;
     this.action2.play();
     this.slowDownFactor = 1.83
     this.audioElement.play();

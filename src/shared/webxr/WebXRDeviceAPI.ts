@@ -6,11 +6,7 @@ export interface XR extends EventTarget {
 
   requestSession(mode: string, optionalFeatures?: Object): Promise<XRSession>;
 }
-declare global  {
-  interface Navigator {
-    xr: XR;
-  }
-}
+
 export interface XRDevice extends EventTarget {
   supportsSession(options?: XRSessionCreationOptions): Promise<void>;
   requestSession(options?: XRSessionCreationOptions): Promise<XRSession>;

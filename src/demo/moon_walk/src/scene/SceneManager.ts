@@ -105,7 +105,7 @@ export default class SceneManager extends SceneManagerParent {
         object.castShadow = true;
       } );
       scene.add(model);
-      this.rightHand = model;
+      // this.rightHand = model;
     });
 
     const loader3 = new OBJLoader();
@@ -121,10 +121,10 @@ export default class SceneManager extends SceneManagerParent {
           object.position.z = 4.5;
           object.scale.setScalar(0.0004);
           object.traverse( function ( child ) {
-            if ( child.isMesh ) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-            }
+            // if ( child.isMesh ) {
+            //   child.castShadow = true;
+            //   child.receiveShadow = true;
+            // }
           } );
           scene.add(object);
           materialLoader
@@ -137,10 +137,10 @@ export default class SceneManager extends SceneManagerParent {
                 object.position.z = 4.5;
                 object.scale.setScalar(0.0004);
                 object.traverse( function ( child ) {
-                  if ( child.isMesh ) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                  }
+                  // if ( child.isMesh ) {
+                  //   child.castShadow = true;
+                  //   child.receiveShadow = true;
+                  // }
                 } );
                 scene.add(object);
                 materialLoader
@@ -153,10 +153,10 @@ export default class SceneManager extends SceneManagerParent {
                       object.position.z = 4.5;
                       object.scale.setScalar(0.0004);
                       object.traverse( function ( child ) {
-                        if ( child.isMesh ) {
-                          child.castShadow = true;
-                          child.receiveShadow = true;
-                        }
+                        // if ( child.isMesh ) {
+                        //   child.castShadow = true;
+                        //   child.receiveShadow = true;
+                        // }
                       } );
                       scene.add(object);
                     })

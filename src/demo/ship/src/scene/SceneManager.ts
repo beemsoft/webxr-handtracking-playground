@@ -171,6 +171,7 @@ export default class SceneManager extends SceneManagerParent {
     new ColladaLoader()
           .load('models/pinnace/ship_pinnace_1k_resaved.dae', (obj) => {
             console.log(obj);
+              // @ts-ignore
             obj.scene.children[0].material.side = DoubleSide;
             obj.scene.position.y -= 0.8;
             obj.scene.setRotationFromQuaternion(new Quaternion().setFromAxisAngle(new Vector3(0,0,1), -Math.PI/2));
@@ -182,7 +183,9 @@ export default class SceneManager extends SceneManagerParent {
         console.log(obj);
         obj.scene.position.z = -55;
         for (let child of obj.scene.children) {
-          if (child.material) {
+          // @ts-ignore
+            if (child.material) {
+            // @ts-ignore
             child.material.side = DoubleSide
           }
         }

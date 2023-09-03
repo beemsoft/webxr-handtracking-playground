@@ -16,7 +16,6 @@ import {
     AmbientLight,
     Bone,
     Clock,
-    ColorManagement,
     DirectionalLight,
     Euler,
     Material,
@@ -28,7 +27,7 @@ import {
     PlaneGeometry,
     Quaternion,
     Scene,
-    sRGBEncoding,
+    SRGBColorSpace,
     Vector2,
     Vector3,
     VideoTexture,
@@ -112,8 +111,7 @@ class BasicScene {
 
         this.renderer = new WebGLRenderer({ antialias: true });
         this.renderer.setSize(this.width, this.height);
-        ColorManagement.legacy = false;
-        this.renderer.outputColorSpace = sRGBEncoding;
+        this.renderer.outputColorSpace = SRGBColorSpace;
         document.body.appendChild(this.renderer.domElement);
 
         // Set up the basic lighting for the scene
