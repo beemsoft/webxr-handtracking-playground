@@ -149,11 +149,15 @@ export default class TrackedHandsManager {
   private isThumbPinchingWithOtherFingerTip(inputSource: XRInputSource, fingerTip: string, thumbTipPose: XRJointPose, xrReferenceSpace: XRReferenceSpace, frame: XRFrameOfReference) {
     let fingerTipJoint = inputSource.hand.get(fingerTip);
     let fingerTipPose = frame.getJointPose(fingerTipJoint, xrReferenceSpace);
-    if (fingerTipPose) {
-      let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
-      let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
-      if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.01) {
-        return true;
+    let wrist = inputSource.hand.get('wrist');
+    let wristPose = frame.getJointPose(wrist, xrReferenceSpace);
+    if (fingerTipPose && wristPose) {
+      if (this.camera.position.distanceTo(wristPose.transform.position) < this.camera.position.distanceTo(fingerTipPose.transform.position)) {
+        let vector1 = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
+        let vector2 = new Vector3(fingerTipPose.transform.position.x, fingerTipPose.transform.position.y, fingerTipPose.transform.position.z);
+        if (vector1.distanceTo(vector2) < thumbTipPose.radius + fingerTipPose.radius + 0.01) {
+          return true;
+        }
       }
     }
     return false;
