@@ -37,6 +37,7 @@ module.exports = {
         webxr_vr_postprocessing_unreal_bloom: './src/demo/webxr_vr_postprocessing_unreal_bloom/src',
         moon_walk: './src/demo/moon_walk/src',
         webgl_water: './src/demo/webgl_water/src',
+        threejs_water: './src/demo/threejs_water/src',
     },
     module: {
         rules: [

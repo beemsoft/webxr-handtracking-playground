@@ -1,0 +1,139 @@
+import {
+    CubeTextureLoader,
+    FrontSide,
+    Mesh,
+    PlaneGeometry,
+    ShaderMaterial,
+    TextureLoader
+} from "three/src/Three";
+
+export class Water extends Mesh {
+    constructor() {
+        const cubetextureloader = new CubeTextureLoader();
+
+        const textureCube = cubetextureloader.load([
+            'xpos.jpg', 'xneg.jpg',
+            'ypos.jpg', 'ypos.jpg',
+            'zpos.jpg', 'zneg.jpg',
+        ]);
+
+        const textureloader = new TextureLoader();
+
+        const tiles = textureloader.load('tiles.jpg');
+        const light = [0.7559289460184544, 0.7559289460184544, -0.3779644730092272];
+
+        const material = new ShaderMaterial( {
+            name: 'WaterShader',
+            uniforms: {
+                light: { value: light },
+                tiles: { value: tiles },
+                sky: { value: textureCube },
+                water: { value: null },
+                causticTex: { value: null },
+                underwater: { value: false },
+            },
+            vertexShader: /* glsl */`
+uniform sampler2D water;
+
+varying vec3 eye;
+varying vec3 pos;
+
+
+void main() {
+  vec4 info = texture2D(water, position.xy * 0.5 + 0.5);
+  pos = position.xzy;
+  pos.y += info.r;
+
+  vec3 axis_x = vec3(modelViewMatrix[0].x, modelViewMatrix[0].y, modelViewMatrix[0].z);
+  vec3 axis_y = vec3(modelViewMatrix[1].x, modelViewMatrix[1].y, modelViewMatrix[1].z);
+  vec3 axis_z = vec3(modelViewMatrix[2].x, modelViewMatrix[2].y, modelViewMatrix[2].z);
+  vec3 offset = vec3(modelViewMatrix[3].x, modelViewMatrix[3].y, modelViewMatrix[3].z);
+
+  eye = vec3(dot(-offset, axis_x), dot(-offset, axis_y), dot(-offset, axis_z));
+
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+}
+		`,
+
+            fragmentShader: /* glsl */`
+precision highp float;
+precision highp int;
+
+#include <utils>
+
+uniform float underwater;
+uniform samplerCube sky;
+
+varying vec3 eye;
+varying vec3 pos;
+
+
+vec3 getSurfaceRayColor(vec3 origin, vec3 ray, vec3 waterColor) {
+  vec3 color;
+
+  if (ray.y < 0.0) {
+    vec2 t = intersectCube(origin, ray, vec3(-1.0, -poolHeight, -1.0), vec3(1.0, 2.0, 1.0));
+    color = getWallColor(origin + ray * t.y);
+  } else {
+    vec2 t = intersectCube(origin, ray, vec3(-1.0, -poolHeight, -1.0), vec3(1.0, 2.0, 1.0));
+    vec3 hit = origin + ray * t.y;
+    if (hit.y < 7.0 / 12.0) {
+      color = getWallColor(hit);
+    } else {
+      color = textureCube(sky, ray).rgb;
+      color += 0.01 * vec3(pow(max(0.0, dot(light, ray)), 20.0)) * vec3(10.0, 8.0, 6.0);
+    }
+  }
+
+  if (ray.y < 0.0) color *= waterColor;
+
+  return color;
+}
+
+
+void main() {
+  vec2 coord = pos.xz * 0.5 + 0.5;
+  vec4 info = texture2D(water, coord);
+
+  /* make water look more "peaked" */
+  for (int i = 0; i < 5; i++) {
+    coord += info.ba * 0.005;
+    info = texture2D(water, coord);
+  }
+
+  vec3 normal = vec3(info.b, sqrt(1.0 - dot(info.ba, info.ba)), info.a);
+  vec3 incomingRay = normalize(pos - eye);
+
+  if (underwater == 1.) {
+    normal = -normal;
+    vec3 reflectedRay = reflect(incomingRay, normal);
+    vec3 refractedRay = refract(incomingRay, normal, IOR_WATER / IOR_AIR);
+    float fresnel = mix(0.5, 1.0, pow(1.0 - dot(normal, -incomingRay), 3.0));
+
+    vec3 reflectedColor = getSurfaceRayColor(pos, reflectedRay, underwaterColor);
+    vec3 refractedColor = getSurfaceRayColor(pos, refractedRay, vec3(1.0)) * vec3(0.8, 1.0, 1.1);
+
+    gl_FragColor = vec4(mix(reflectedColor, refractedColor, (1.0 - fresnel) * length(refractedRay)), 1.0);
+  } else {
+    vec3 reflectedRay = reflect(incomingRay, normal);
+    vec3 refractedRay = refract(incomingRay, normal, IOR_AIR / IOR_WATER);
+    float fresnel = mix(0.25, 1.0, pow(1.0 - dot(normal, -incomingRay), 3.0));
+
+    vec3 reflectedColor = getSurfaceRayColor(pos, reflectedRay, abovewaterColor);
+    vec3 refractedColor = getSurfaceRayColor(pos, refractedRay, abovewaterColor);
+
+    gl_FragColor = vec4(mix(refractedColor, reflectedColor, fresnel), 1.0);
+  }
+}
+
+		`,
+            side: FrontSide
+        } );
+
+
+
+        let waterGeometry = new PlaneGeometry(2, 2, 200, 200);
+        super(waterGeometry, material);
+    }
+
+}

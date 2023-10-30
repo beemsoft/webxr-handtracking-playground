@@ -164,7 +164,7 @@ export default class TrackedHandsManager {
   }
 
   private renderHandWithPhysicsEnabled(inputSource: XRInputSource, frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
-    console.log("Gesture: " + this.handGesture);
+    // console.log("Gesture: " + this.handGesture);
     let meshIndex = 0;
     for (let finger of orderedJoints) {
       for (let joint1 of finger) {
