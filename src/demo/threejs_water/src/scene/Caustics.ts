@@ -42,7 +42,6 @@ export class Caustics {
                         // @ts-ignore
                         fragmentShader: fragmentShader,
                     });
-                    material.extensions.derivatives = true;
                     this._causticMesh = new Mesh(this._geometry, material);
                 });
         });
@@ -53,7 +52,6 @@ export class Caustics {
     update(renderer, waterTexture) {
         if (this.loaded && this._causticMesh && this._causticMesh.material) {
             this._causticMesh.material.uniforms['water'].value = waterTexture;
-            this._causticMesh.material.extensions.derivatives = true;
 
             renderer.setRenderTarget(this.texture);
 

@@ -12,7 +12,6 @@ import {
   PointLight,
   Quaternion,
   Scene,
-  sRGBEncoding,
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';

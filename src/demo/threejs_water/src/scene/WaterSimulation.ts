@@ -72,9 +72,6 @@ export class WaterSimulation {
                     // @ts-ignore
                     fragmentShader: updateFragmentShader,
                 });
-                dropMaterial.extensions.derivatives = true;
-                normalMaterial.extensions.derivatives = true;
-                updateMaterial.extensions.derivatives = true;
                 this._dropMesh = new Mesh(this._geometry, dropMaterial);
                 this._normalMesh = new Mesh(this._geometry, normalMaterial);
                 this._updateMesh = new Mesh(this._geometry, updateMaterial);
