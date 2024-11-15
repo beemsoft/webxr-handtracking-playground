@@ -68,6 +68,7 @@ class Reflector extends Mesh {
         material.uniforms[ 'color' ].value = color;
         material.uniforms[ 'textureMatrix' ].value = textureMatrix;
 
+        // @ts-ignore
         this.material = material;
 
     }
@@ -80,9 +81,11 @@ class Reflector extends Mesh {
 
     render( renderer, scene, camera ) {
 
+        // @ts-ignore
         this.reflectorWorldPosition.setFromMatrixPosition( this.matrixWorld );
         this.cameraWorldPosition.setFromMatrixPosition( camera.matrixWorld );
 
+        // @ts-ignore
         this.rotationMatrix.extractRotation( this.matrixWorld );
 
         this.normal.set( 0, 0, 1 );
@@ -127,6 +130,7 @@ class Reflector extends Mesh {
         );
         this.textureMatrix.multiply( this.virtualCamera.projectionMatrix );
         this.textureMatrix.multiply( this.virtualCamera.matrixWorldInverse );
+        // @ts-ignore
         this.textureMatrix.multiply( this.matrixWorld );
 
         // Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
@@ -153,6 +157,7 @@ class Reflector extends Mesh {
         projectionMatrix.elements[ 14 ] = this.clipPlane.w;
 
         // Render
+        // @ts-ignore
         this.visible = false;
 
         const currentRenderTarget = renderer.getRenderTarget();
@@ -185,6 +190,7 @@ class Reflector extends Mesh {
 
         }
 
+        // @ts-ignore
         this.visible = true;
 
     };

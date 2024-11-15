@@ -53,7 +53,7 @@ class Refractor extends Mesh {
         this.renderTarget = new WebGLRenderTarget( textureWidth, textureHeight, { samples: multisample, type: HalfFloatType } );
 
         // material
-
+        // @ts-ignore
         this.material = new ShaderMaterial( {
             uniforms: UniformsUtils.clone( shader.uniforms ),
             vertexShader: shader.vertexShader,
@@ -78,12 +78,12 @@ class Refractor extends Mesh {
         const view = new Vector3();
         const normal = new Vector3();
 
-
+        // @ts-ignore
         refractorWorldPosition.setFromMatrixPosition(this.matrixWorld);
         cameraWorldPosition.setFromMatrixPosition(camera.matrixWorld);
 
         view.subVectors(refractorWorldPosition, cameraWorldPosition);
-
+        // @ts-ignore
         rotationMatrix.extractRotation(this.matrixWorld);
 
         normal.set(0, 0, 1);
@@ -93,7 +93,7 @@ class Refractor extends Mesh {
     }
 
         render( renderer, scene, camera ) {
-
+            // @ts-ignore
             this.visible = false;
 
             const currentRenderTarget = renderer.getRenderTarget();
@@ -122,7 +122,7 @@ class Refractor extends Mesh {
             //     renderer.state.viewport( viewport );
             //
             // }
-
+            // @ts-ignore
             this.visible = true;
 
         }
@@ -134,7 +134,7 @@ class Refractor extends Mesh {
             const quaternion = new Quaternion();
             const scale = new Vector3();
 
-
+            // @ts-ignore
                 this.matrixWorld.decompose( position, quaternion, scale );
                 normal.set( 0, 0, 1 ).applyQuaternion( quaternion ).normalize();
 
@@ -211,15 +211,10 @@ class Refractor extends Mesh {
 
             this.textureMatrix.multiply( camera.projectionMatrix );
             this.textureMatrix.multiply( camera.matrixWorldInverse );
+            // @ts-ignore
             this.textureMatrix.multiply( this.matrixWorld );
 
         }
-
-        //
-
-
-
-        //
 
         onBeforeRender2( renderer, scene, camera ) {
 

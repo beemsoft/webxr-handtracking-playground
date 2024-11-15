@@ -46,6 +46,7 @@ export default class WebXRManager {
     this.sceneBuilder = sceneBuilder;
     this.useDefaultHandGestures = useDefaultHandGestures;
 
+    // @ts-ignore
     navigator.xr.requestSession('immersive-vr', {
       optionalFeatures: ["hand-tracking"]
     })

@@ -50,10 +50,6 @@ const OutputShader = {
 
 			#endif
 
-			// color space
-
-			gl_FragColor = LinearTosRGB( gl_FragColor );
-
 		}`
 
 };

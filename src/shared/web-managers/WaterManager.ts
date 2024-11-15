@@ -20,9 +20,11 @@ export default class WaterManager {
   update(water: Water, renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera) {
     renderer.setRenderTarget( water.renderTarget );
 
+    // @ts-ignore
     this.mirrorWorldPosition.setFromMatrixPosition( water.matrixWorld );
     this.cameraWorldPosition.setFromMatrixPosition( camera.matrixWorld );
 
+    // @ts-ignore
     this.rotationMatrix.extractRotation( water.matrixWorld );
 
     this.normal.set( 0, 0, 1 );
@@ -94,6 +96,7 @@ export default class WaterManager {
 
     // Render
 
+    // @ts-ignore
     water.visible = false;
 
     renderer.setRenderTarget( water.renderTarget );
@@ -101,6 +104,7 @@ export default class WaterManager {
     renderer.clear();
     renderer.render(scene, this.mirrorCamera);
 
+    // @ts-ignore
     water.visible = true;
 
     renderer.setRenderTarget(null);

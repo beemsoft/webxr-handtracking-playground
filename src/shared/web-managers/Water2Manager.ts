@@ -43,6 +43,7 @@ export default class Water2Manager {
 
     water.textureMatrix.multiply( camera.projectionMatrix );
     water.textureMatrix.multiply( camera.matrixWorldInverse );
+    // @ts-ignore
     water.textureMatrix.multiply( water.matrixWorld );
 
   }
@@ -51,15 +52,19 @@ export default class Water2Manager {
     this.updateTextureMatrix( water, camera );
     this.updateFlow(water);
 
+    // @ts-ignore
     water.visible = false;
 
+    // @ts-ignore
     water.reflector.matrixWorld.copy( water.matrixWorld );
+    // @ts-ignore
     water.refractor.matrixWorld.copy( water.matrixWorld );
 
 
     water.reflector.render( renderer, scene, camera );
     water.refractor.onBeforeRender2( renderer, scene, camera );
 
+    // @ts-ignore
     water.visible = true;
 
     renderer.setRenderTarget(null);

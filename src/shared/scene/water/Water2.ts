@@ -100,11 +100,13 @@ class Water extends Mesh {
             multisample: undefined
         } );
 
+        // @ts-ignore
         this.reflector.matrixAutoUpdate = false;
+        // @ts-ignore
         this.refractor.matrixAutoUpdate = false;
 
         // material
-
+        // @ts-ignore
         this.material = new ShaderMaterial( {
             uniforms: UniformsUtils.merge( [
                 UniformsLib[ 'fog' ],
@@ -118,6 +120,7 @@ class Water extends Mesh {
 
         if ( flowMap !== undefined ) {
 
+            // @ts-ignore
             this.material.defines.USE_FLOWMAP = '';
             // @ts-ignore
             this.material.uniforms[ 'tFlowMap' ] = {
