@@ -325,7 +325,7 @@ function loadModels2(modelNames) {
         console.log('Loading model ' + modelNames[i].leader);
         gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].leader + '.vrm').then((gltf) => {
             VRMUtils.removeUnnecessaryVertices(gltf.scene);
-            VRMUtils.removeUnnecessaryJoints(gltf.scene);
+            VRMUtils.combineSkeletons(gltf.scene);
             scene.add(gltf.userData.vrm.scene);
             gltf.scene.children[5].position.x = modelNames[i].offsetX;
             gltf.scene.children[5].position.z = modelNames[i].offsetZ;
@@ -338,7 +338,7 @@ function loadModels2(modelNames) {
             console.log('Loading model ' + modelNames[i].follower);
             gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
                 VRMUtils.removeUnnecessaryVertices(gltf2.scene);
-                VRMUtils.removeUnnecessaryJoints(gltf2.scene);
+                VRMUtils.combineSkeletons(gltf.scene);
                 gltf2.scene.children[5].position.x = modelNames[i].offsetX;
                 gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
                 gltf2.scene.traverse( function( object ) {
@@ -372,7 +372,7 @@ function loadModels() {
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
     gltfLoader.loadAsync('/shared/vrm/mawi.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
-        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        VRMUtils.combineSkeletons(gltf.scene);
         const vrm = gltf.userData.vrm;
         console.log(vrm);
         gltf.scene.children[5].position.x = 2;
@@ -387,7 +387,7 @@ function loadModels() {
         // this.initHappyAnimation(vrm);
         gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
             VRMUtils.removeUnnecessaryVertices(gltf.scene);
-            VRMUtils.removeUnnecessaryJoints(gltf.scene);
+            VRMUtils.combineSkeletons(gltf.scene);
             gltf.scene.children[5].position.x = 2;
             gltf.scene.children[5].position.z = 1;
             person2 = gltf.userData.vrm;

@@ -157,7 +157,7 @@ export default class SceneManager extends SceneManagerParent  {
       console.log('Loading model ' + modelNames[i].leader);
       gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].leader + '.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
-        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        VRMUtils.combineSkeletons(gltf.scene);
         this.scene.add(gltf.userData.vrm.scene);
         gltf.scene.children[5].position.x = modelNames[i].offsetX;
         gltf.scene.children[5].position.z = modelNames[i].offsetZ;
@@ -169,7 +169,7 @@ export default class SceneManager extends SceneManagerParent  {
         console.log('Loading model ' + modelNames[i].follower);
         gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
-          VRMUtils.removeUnnecessaryJoints(gltf2.scene);
+          VRMUtils.combineSkeletons(gltf.scene);;
           gltf2.scene.children[5].position.x = modelNames[i].offsetX;
           gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
           gltf2.scene.traverse( function( object ) {

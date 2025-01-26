@@ -156,14 +156,14 @@ export default class SceneManager extends SceneManagerParent {
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
     gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
-      VRMUtils.removeUnnecessaryJoints(gltf.scene);
+      VRMUtils.combineSkeletons(gltf.scene);
       const vrm = gltf.userData.vrm;
       this.person1 = vrm;
       this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
       this.target1Skeleton = this.person1.scene.children[5]
       gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
-        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        VRMUtils.combineSkeletons(gltf.scene);
         const vrm = gltf.userData.vrm;
         this.person2 = vrm;
         this.playBlinkAnimationPerson2();

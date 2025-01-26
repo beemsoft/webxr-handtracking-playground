@@ -46,7 +46,7 @@ export default class SceneManager extends SceneManagerParent {
     gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
       const vrm = gltf.userData.vrm;
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
-      VRMUtils.removeUnnecessaryJoints(gltf.scene);
+      VRMUtils.combineSkeletons(gltf.scene);
       let model = vrm.scene;
       scene.add(model);
       this.currentVrm = vrm;

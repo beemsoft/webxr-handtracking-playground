@@ -96,7 +96,7 @@ export default class SceneManager extends SceneManagerParent {
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
     gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
-      VRMUtils.removeUnnecessaryJoints(gltf.scene);
+      VRMUtils.combineSkeletons(gltf.scene);
       const vrm = gltf.userData.vrm;
       this.person1 = vrm;
       gltf.scene.traverse( function( object ) {
@@ -106,7 +106,7 @@ export default class SceneManager extends SceneManagerParent {
       this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
       gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
-        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        VRMUtils.combineSkeletons(gltf.scene);
         const vrm = gltf.userData.vrm;
         this.person2 = vrm;
         gltf.scene.traverse( function( object ) {
