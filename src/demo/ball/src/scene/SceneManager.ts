@@ -11,14 +11,13 @@ import {
   WebGLRenderer
 } from 'three/src/Three';
 import { Body, Material, Sphere, Vec3 } from 'cannon-es';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
 export default class SceneManager extends SceneManagerParent {
   private loader: TextureLoader = new TextureLoader();
   private ball: Body;
   private ballMaterial: Material;
-  private hand: Body;
   private handSettings = { handRadius: .15 };
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
@@ -81,7 +80,6 @@ export default class SceneManager extends SceneManagerParent {
       body.addShape(new Sphere(0.05), relativePosition);
     }
     this.physicsHandler.addToScene(body, null, null, hand_material, this.scene);
-    this.hand = body;
   }
 
   toRadians(angle) {

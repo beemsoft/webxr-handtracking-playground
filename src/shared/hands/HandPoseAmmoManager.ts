@@ -16,7 +16,7 @@ export const VIDEO_HEIGHT = 500;
 
 const handMeshList = Array<Body>();
 
-export default class HandPoseManager {
+export default class HandPoseAmmoManager {
   private scene: Scene;
   private physicsHandler: PhysicsHandler;
   private readonly meshes = Array<Mesh>()

@@ -3,4 +3,4 @@ import {determineVrOrNonVrSetup} from "../../../shared/DetermineVrOrNonVrSetup";
 
 let sceneManager = new SceneManager();
 
-determineVrOrNonVrSetup(sceneManager, true, true);
+determineVrOrNonVrSetup(sceneManager, true, false, true);

@@ -14,7 +14,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { BVH } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';

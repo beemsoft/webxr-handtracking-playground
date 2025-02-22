@@ -1,5 +1,6 @@
 import { PerspectiveCamera, Quaternion, Scene, ToneMapping, Vector3, WebGLRenderer } from 'three/src/Three';
-import PhysicsHandler from '../physics/PhysicsHandler';
+import PhysicsHandler from '../physics/cannon/PhysicsHandler';
+import AmmoHandler from "../physics/ammo/AmmoHandler";
 
 export enum GestureType {
   "None",
@@ -50,5 +51,7 @@ export interface SceneManagerInterface {
   getInitialCameraPosition(): Vector3;
 
   getPostProcessingConfig(): PostProcessingConfig;
+
+  setAmmoHandler(ammoHandler: AmmoHandler);
 
 }

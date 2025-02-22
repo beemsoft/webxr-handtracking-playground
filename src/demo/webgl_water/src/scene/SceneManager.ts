@@ -9,7 +9,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import {ParametricGeometries} from "three/examples/jsm/geometries/ParametricGeometries";
 import TorusKnotGeometry = ParametricGeometries.TorusKnotGeometry;

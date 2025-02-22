@@ -8,7 +8,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';

@@ -1,7 +1,7 @@
 import { Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three/src/Three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
-import PhysicsHandler from '../physics/PhysicsHandler';
+import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import { EffectComposer } from '../postprocessing/EffectComposer';
 import EffectManager from './EffectManager';
 

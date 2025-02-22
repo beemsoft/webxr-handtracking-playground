@@ -1,6 +1,6 @@
 import { AmbientLight, AnimationMixer, PerspectiveCamera, ReinhardToneMapping, Scene, Vector3, WebGLRenderer, } from 'three/src/Three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import { PostProcessingConfig, PostProcessingType } from '../../../../shared/scene/SceneManagerInterface';
 

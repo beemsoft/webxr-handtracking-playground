@@ -9,7 +9,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';

@@ -14,8 +14,7 @@ import {
 } from 'three/src/Three';
 // @ts-ignore
 import { Body, Box, Plane, Quaternion, Vec3 } from 'cannon-es';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
-import { GestureType } from '../../../../shared/scene/SceneManagerInterface';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { BasketballHelper } from '../../../../shared/scene/sport/BasketballHelper';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 

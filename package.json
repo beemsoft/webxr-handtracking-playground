@@ -20,6 +20,7 @@
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
     "@tensorflow/tfjs-converter": "^4.22.0",
     "@tensorflow/tfjs-core": "^4.22.0",
+    "ammo.js": "github:kripken/ammo.js",
     "cannon-es": "^0.20.0",
     "canvg": "^4.0.2",
     "require": "^0.4.4",

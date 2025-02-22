@@ -1,5 +1,5 @@
 import { AnimationMixer, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three/src/Three';
-import PhysicsHandler from '../../../../shared/physics/PhysicsHandler';
+import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 

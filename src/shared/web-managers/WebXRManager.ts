@@ -1,5 +1,5 @@
 import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three/src/Three';
-import PhysicsHandler from '../physics/PhysicsHandler';
+import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   GestureType,
   HandTrackingResult,
@@ -17,8 +17,9 @@ import {
   XRProjectionLayer
 } from '../webxr/WebXRDeviceAPI';
 import { EffectComposer } from '../postprocessing/EffectComposer';
-import TrackedHandsManager from '../hands/TrackedHandsManager';
+import TrackedHandsWithoutPhysicsManager from '../hands/TrackedHandsWithoutPhysicsManager';
 import EffectManager from './EffectManager';
+import TrackedHandsManager from "../hands/TrackedHandsManager";
 
 export default class WebXRManager {
   private renderer: WebGLRenderer;
@@ -32,7 +33,7 @@ export default class WebXRManager {
   private sceneBuilder: SceneManagerInterface;
   private useDefaultHandGestures: boolean;
   private cameraManager = new CameraManager();
-  private trackedHandsManager = new TrackedHandsManager(this.scene, this.physicsHandler, this.cameraManager.cameraVR);
+  private trackedHandsManager: TrackedHandsWithoutPhysicsManager;
   private timestamp = null;
   private composer: EffectComposer;
   private proj_layer: XRProjectionLayer;
@@ -41,10 +42,15 @@ export default class WebXRManager {
   private xrFramebuffer: WebGLFramebuffer;
   private newRenderTarget: WebGLRenderTarget;
 
-  constructor(sceneBuilder: SceneManagerInterface, useDefaultHandGestures: boolean) {
+  constructor(sceneBuilder: SceneManagerInterface, useDefaultHandGestures: boolean, useAmmoLib: boolean) {
     this.cameraManager.createVrCamera();
     this.sceneBuilder = sceneBuilder;
     this.useDefaultHandGestures = useDefaultHandGestures;
+    if (useAmmoLib) {
+      this.trackedHandsManager = new TrackedHandsWithoutPhysicsManager(this.scene, this.cameraManager.cameraVR);
+    } else {
+      this.trackedHandsManager = new TrackedHandsManager(this.scene, this.physicsHandler, this.cameraManager.cameraVR);
+    }
 
     // @ts-ignore
     navigator.xr.requestSession('immersive-vr', {
@@ -52,24 +58,34 @@ export default class WebXRManager {
     })
       .then(session => {
         this.session = session;
-        this.initRenderer();
-        this.session.requestReferenceSpace('local')
-          .then(space => {
-            this.xrReferenceSpace = space;
-            this.rotateOrigin(sceneBuilder.getInitialCameraAngle());
-            this.setInitialCameraPosition(sceneBuilder.getInitialCameraPosition());
+        let glCanvas: HTMLCanvasElement = document.createElement('canvas');
+        this.gl = <WebGLRenderingContext>glCanvas.getContext('webgl2');
+        this.gl.makeXRCompatible()
+            .then(() => {
+          this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, alpha: false});
+          if (!this.composer) {
+            // @ts-ignore
+            this.baseLayer = new XRWebGLLayer(this.session, this.gl)
+            this.session.updateRenderState({baseLayer: this.baseLayer});
+          }
+          this.session.requestReferenceSpace('local')
+              .then(space => {
+                this.xrReferenceSpace = space;
+                this.rotateOrigin(sceneBuilder.getInitialCameraAngle());
+                this.setInitialCameraPosition(sceneBuilder.getInitialCameraPosition());
 
-            let postProcessingConfig = sceneBuilder.getPostProcessingConfig();
-            if (postProcessingConfig) {
-              this.initProjectionLayer(postProcessingConfig);
-            }
-          }, error => {
-            console.log(error.message);
-          })
-          .then(() => {
-            this.sessionActive = true;
-            this.session.requestAnimationFrame(this.onXRFrame);
-          })
+                let postProcessingConfig = sceneBuilder.getPostProcessingConfig();
+                if (postProcessingConfig) {
+                  this.initProjectionLayer(postProcessingConfig);
+                }
+              }, error => {
+                console.log(error.message);
+              })
+              .then(() => {
+                this.sessionActive = true;
+                this.session.requestAnimationFrame(this.onXRFrame);
+              })
+        })
       })
       .catch(error => {
         console.log(error.message);
@@ -94,17 +110,6 @@ export default class WebXRManager {
         this.xrFramebuffer,
         postProcessingConfig
       )
-    }
-  }
-
-  private initRenderer() {
-    let glCanvas: HTMLCanvasElement = document.createElement('canvas');
-    this.gl = <WebGLRenderingContext>glCanvas.getContext('webgl2', {xrCompatible: true});
-    this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, alpha: false});
-    if (!this.composer) {
-      // @ts-ignore
-      this.baseLayer = new XRWebGLLayer(this.session, this.gl)
-      this.session.updateRenderState({baseLayer: this.baseLayer});
     }
   }
 

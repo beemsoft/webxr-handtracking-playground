@@ -38,6 +38,7 @@ module.exports = {
         moon_walk: './src/demo/moon_walk/src',
         webgl_water: './src/demo/webgl_water/src',
         threejs_water: './src/demo/threejs_water/src',
+        threejs_physics_ammo_break: './src/demo/threejs_physics_ammo_break/src',
     },
     module: {
         rules: [
@@ -50,7 +51,11 @@ module.exports = {
     },
     plugins: plugins,
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js' ]
+        extensions: [ '.tsx', '.ts', '.js' ],
+        fallback: {
+            fs: false,
+            'path': false, // ammo.js seems to also use path
+        }
     },
     optimization: {
         splitChunks: {
@@ -64,5 +69,8 @@ module.exports = {
     },
     output: {
         filename: 'src/demo/[name]/dist/bundle.js'
+    },
+    experiments: {
+        topLevelAwait: true
     }
 };

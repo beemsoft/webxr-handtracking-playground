@@ -1,15 +1,11 @@
-import { Body, Box, Vec3 } from 'cannon-es';
 import { ArrayCamera, BoxGeometry, MathUtils, Mesh, MeshPhongMaterial, Scene, Vector3 } from 'three/src/Three';
-import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   XRDevicePose,
   XRFrameOfReference,
   XRInputSource, XRJointPose,
   XRReferenceSpace
 } from '../webxr/WebXRDeviceAPI';
-import BallManager from './BallManager';
 import { GestureType, HandTrackingResult } from '../scene/SceneManagerInterface';
-import TrackedHandsWithoutPhysicsManager from "./TrackedHandsWithoutPhysicsManager";
 
 const orderedJoints = [
   ["wrist"],
@@ -29,7 +25,7 @@ const wristJoint = "wrist";
 const pinkyFingerBase = 'pinky-finger-metacarpal';
 const thumbFingerBase = 'thumb-phalanx-distal';
 
-const handMeshList = Array<Body>();
+const handMeshList = Array<Mesh>();
 
 const fingerJointMaterial: [string, MeshPhongMaterial][] = [];
 
@@ -43,13 +39,10 @@ export enum HandGesture {
   "Pinky_Thumb"
 }
 
-export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManager {
-  private physicsHandler: PhysicsHandler;
+export default class TrackedHandsWithoutPhysicsManager {
+  protected scene: Scene;
+  protected camera: ArrayCamera;
   material = new MeshPhongMaterial({ color: 0xFF3333 });
-  private ballInMotion = false;
-  private canFixBall = true;
-  private fixHand = "";
-  private ballManager: BallManager;
   isPinchingEnabled = true;
   isCameraRotationEnabled = false;
   isOriginRotationEnabled = false;
@@ -59,10 +52,9 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
   public rotationPosition: Vector3;
   public handGesture = GestureType.None;
 
-  constructor(scene: Scene, physicsHandler: PhysicsHandler, camera: ArrayCamera) {
-    super(scene, camera);
-    this.physicsHandler = physicsHandler;
-    this.ballManager = new BallManager(physicsHandler);
+  constructor(scene: Scene, camera: ArrayCamera) {
+    this.scene = scene;
+    this.camera = camera;
   }
 
   public renderHandsAndDetectGesture(frame: XRFrameOfReference, pose: XRDevicePose, xrReferenceSpace: XRReferenceSpace): HandTrackingResult {
@@ -117,7 +109,7 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
         if (joint) {
           let pose = frame.getJointPose(joint, xrReferenceSpace);
           if (pose) {
-            let handBody: Body;
+            let handBody: Mesh;
             if (handMeshList[meshIndex]) {
               handBody = handMeshList[meshIndex];
             } else {
@@ -140,13 +132,9 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
                   mat = this.material;
                   break;
               }
-              let mesh = new Mesh(sphere_geometry, mat);
-              this.scene.add(mesh);
-              handBody = new Body({mass: 0, material: this.physicsHandler.handMaterial});
-              handBody.addShape(new Box(new Vec3(pose.radius, pose.radius, pose.radius)));
+              handBody = new Mesh(sphere_geometry, mat);
+              this.scene.add(handBody);
               handMeshList[meshIndex] = handBody;
-              this.physicsHandler.addBody(handBody);
-              this.physicsHandler.addMesh(mesh);
             }
             handBody.position.x = pose.transform.position.x;
             handBody.position.y = pose.transform.position.y;
@@ -259,46 +247,4 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
     return false;
   }
 
-  checkFixedBall(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
-    if (this.fixHand) {
-      for (let inputSource of frame.session.inputSources) {
-        if (this.fixHand == inputSource.handedness) {
-          let wrist = inputSource.hand.get('wrist');
-          let wristPose = frame.getJointPose(wrist, xrReferenceSpace);
-          if (wristPose) {
-            let wristPosition = new Vector3(wristPose.transform.position.x, wristPose.transform.position.y, wristPose.transform.position.z);
-          }
-        }
-      }
-    }
-  }
-
-  thumbsJoining(frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
-    let thumbTipLeft;
-    let thumbTipRight;
-    let distance;
-    for (let inputSource of frame.session.inputSources) {
-      let wrist = inputSource.hand.get('wrist');
-      let wristPose = frame.getJointPose(wrist, xrReferenceSpace);
-      if (wristPose) {
-        let thumbTip = inputSource.hand.get('thumb-tip');
-        let thumbTipPose = frame.getJointPose(thumbTip, xrReferenceSpace);
-        if (thumbTipPose) {
-          let thumbTipPosition = new Vector3(thumbTipPose.transform.position.x, thumbTipPose.transform.position.y, thumbTipPose.transform.position.z);
-          if (inputSource.handedness == 'left') {
-            thumbTipLeft = thumbTipPosition;
-          } else {
-            thumbTipRight = thumbTipPosition;
-          }
-          distance = thumbTipPose.radius * 2 + 0.02;
-        }
-      }
-    }
-    if (thumbTipLeft && thumbTipRight) {
-      if (thumbTipLeft.distanceTo(thumbTipRight) < distance) {
-        this.material.color.set(0x3455eb);
-        this.canFixBall = true;
-      }
-    }
-  }
 }

@@ -1,6 +1,6 @@
 import { MathUtils, Vector3 } from 'three/src/Three';
-import PhysicsHandler from '../physics/PhysicsHandler';
-import ProjectileMotionHelper from '../physics/ProjectileMotionHelper';
+import PhysicsHandler from '../physics/cannon/PhysicsHandler';
+import ProjectileMotionHelper from '../physics/cannon/ProjectileMotionHelper';
 import { Vec3 } from 'cannon-es';
 
 export default class BallManager {
