@@ -168,20 +168,20 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   private loadModels() {
-    new ColladaLoader()
-          .load('models/pinnace/ship_pinnace_1k_resaved.dae', (obj) => {
-            console.log(obj);
-              // @ts-ignore
-            obj.scene.children[0].material.side = DoubleSide;
-            obj.scene.position.y -= 0.8;
-            obj.scene.setRotationFromQuaternion(new Quaternion().setFromAxisAngle(new Vector3(0,0,1), -Math.PI/2));
-            this.scene.add(obj.scene);
-            this.ship = obj.scene;
-          });
+    // new ColladaLoader()
+    //       .load('models/pinnace/ship_pinnace_1k_resaved.dae', (obj) => {
+    //         console.log(obj);
+    //           // @ts-ignore
+    //         obj.scene.children[0].material.side = DoubleSide;
+    //         obj.scene.position.y -= 0.8;
+    //         obj.scene.setRotationFromQuaternion(new Quaternion().setFromAxisAngle(new Vector3(0,0,1), -Math.PI/2));
+    //         this.scene.add(obj.scene);
+    //         this.ship = obj.scene;
+    //       });
     new ColladaLoader()
       .load('models/black pearl moved to origin.dae', (obj) => {
         console.log(obj);
-        obj.scene.position.z = -55;
+        // obj.scene.position.z = -55;
         for (let child of obj.scene.children) {
           // @ts-ignore
             if (child.material) {
@@ -255,11 +255,15 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   getInitialCameraAngle(): number {
-    return Math.PI/2;
+    return 0;
   }
 
   getInitialCameraPosition(): Vector3 {
-    return new Vector3(0, 10, -40);
+    return new Vector3(0, 10, 40);
+  }
+
+  getInitialCameraTarget(): Vector3 {
+      return new Vector3(0, 10, 10);
   }
 
 }

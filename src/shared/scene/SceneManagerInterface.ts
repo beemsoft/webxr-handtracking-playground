@@ -50,6 +50,8 @@ export interface SceneManagerInterface {
 
   getInitialCameraPosition(): Vector3;
 
+  getInitialCameraTarget(): Vector3;
+
   getPostProcessingConfig(): PostProcessingConfig;
 
   setAmmoHandler(ammoHandler: AmmoHandler);

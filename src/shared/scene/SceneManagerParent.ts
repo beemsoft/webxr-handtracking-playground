@@ -1,4 +1,4 @@
-import { AnimationMixer, Clock, PerspectiveCamera, Scene, WebGLRenderer } from 'three/src/Three';
+import {AnimationMixer, Clock, PerspectiveCamera, Scene, Vector3, WebGLRenderer} from 'three/src/Three';
 import { HandTrackingResult, PostProcessingConfig, SceneManagerInterface } from './SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import { SceneHelper } from './SceneHelper';
@@ -30,7 +30,11 @@ export default class SceneManagerParent implements SceneManagerInterface {
     return 0;
   }
 
-  getInitialCameraPosition() {
+  getInitialCameraPosition(): Vector3 {
+    return undefined;
+  }
+
+  getInitialCameraTarget(): Vector3 {
     return undefined;
   }
 
