@@ -39,6 +39,7 @@ module.exports = {
         webgl_water: './src/demo/webgl_water/src',
         threejs_water: './src/demo/threejs_water/src',
         threejs_physics_ammo_break: './src/demo/threejs_physics_ammo_break/src',
+        threejs_physics_ammo_break_movable: './src/demo/threejs_physics_ammo_break_movable/src',
     },
     module: {
         rules: [

@@ -1,11 +1,12 @@
 import {
-  BoxGeometry,
-  Mesh,
+  BoxGeometry, CylinderGeometry, DoubleSide,
+  Mesh, MeshLambertMaterial,
   MeshPhongMaterial,
-  PerspectiveCamera,
+  PerspectiveCamera, PlaneGeometry,
+  Quaternion,
   RepeatWrapping,
   Scene,
-  SphereGeometry,
+  SphereGeometry, SRGBColorSpace,
   TextureLoader,
   Vector3,
   WebGLRenderer
@@ -15,7 +16,6 @@ import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import HandPoseWithoutPhysicsManager from "../../../../shared/hands/HandPoseWithoutPhysicsManager";
 import {GestureType, HandTrackingResult} from "../../../../shared/scene/SceneManagerInterface";
 import {ConvexGeometry} from "three/examples/jsm/geometries/ConvexGeometry";
-import {Quaternion} from "cannon-es";
 
 export default class SceneManager extends SceneManagerParent {
   private handPoseManager2: HandPoseWithoutPhysicsManager;
@@ -46,9 +46,16 @@ export default class SceneManager extends SceneManagerParent {
     this.ammoHandler.prepareBreakableObject( object, mass, new Vector3(), new Vector3(), true );
   }
 
+  createCylinder(mass, halfExtents, pos, quat, material ) {
+    const object = new Mesh( new CylinderGeometry( halfExtents.x * 2, halfExtents.x * 2, halfExtents.y ), material );
+    object.position.copy( pos );
+    object.quaternion.copy( quat );
+    this.ammoHandler.prepareBreakableObject2( object, mass, new Vector3(), new Vector3(), false );
+  }
+
   createObjects() {
     // Ground
-    this.pos.set( 0, - 0.5, 0 );
+    this.pos.set( 0, - 1, 0 );
     this.quat.set( 0, 0, 0, 1 );
     const ground = this.createParalellepipedWithPhysics( 40, 1, 40, 0, this.pos, this.quat, new MeshPhongMaterial( { color: 0xFFFFFF } ) );
     ground.receiveShadow = true;
@@ -77,7 +84,7 @@ export default class SceneManager extends SceneManagerParent {
     const bridgeHalfExtents = new Vector3( 7, 0.2, 1.5 );
     this.pos.set( 0, 10.2, 0 );
     this.quat.set( 0, 0, 0, 1 );
-    this.createObject( bridgeMass, bridgeHalfExtents, this.pos, this.quat, this.createMaterial( 0xB3B865 ) );
+    // this.createObject( bridgeMass, bridgeHalfExtents, this.pos, this.quat, this.createMaterial( 0xB3B865 ) );
 
     // Stones
     const stoneMass = 120;
@@ -85,8 +92,8 @@ export default class SceneManager extends SceneManagerParent {
     const numStones = 8;
     this.quat.set( 0, 0, 0, 1 );
     for ( let i = 0; i < numStones; i ++ ) {
-      this.pos.set( 0, 2, 15 * ( 0.5 - i / ( numStones + 1 ) ) );
-      this.createObject( stoneMass, stoneHalfExtents, this.pos, this.quat, this.createMaterial( 0xB0B0B0 ) );
+      this.pos.set( 0, 2, 6 * ( 0.5 - i / ( numStones + 1 ) ) );
+      // this.createObject( stoneMass, stoneHalfExtents, this.pos, this.quat, this.createMaterial( 0xB0B0B0 ) );
 
     }
 
@@ -105,6 +112,61 @@ export default class SceneManager extends SceneManagerParent {
     mountain.position.copy( this.pos );
     mountain.quaternion.copy( this.quat );
     this.ammoHandler.prepareBreakableObject( mountain, mountainMass, new Vector3(), new Vector3(), true );
+
+    // Mast box (breakable, kinematic)
+    const boxMass = 120;
+    const bosxHalfExtents = new Vector3( 1, 1, 0.15 );
+    this.quat.set( 0, 0, 0, 1 );
+    this.pos.set( 0, 1.5, -0.6 );
+    this.createObject( stoneMass, stoneHalfExtents, this.pos, this.quat, this.createMaterial( 0xB0B0B0 ) );
+
+    // Mast (unbreakable, moving)
+    const mastMass = 50;
+    const mastHalfExtents = new Vector3( 0.2, 30, 4 );
+    this.pos.set( 0, 14.5, 0 );
+    this.quat.set( 0, 0, 0, 1 );
+    this.createCylinder( mastMass, mastHalfExtents, this.pos, this.quat, this.createMaterial( 0xB03014 ) );
+
+    // this.pos.set( -0.5, 8, 0.5 );
+    // this.quat.set( 0, 0, 0, 1 );
+    // this.createObject2( mastMass, mastHalfExtents, this.pos, this.quat, this.createMaterial( 0xB03014 ) );
+    //
+    // this.pos.set( 0, 8, 0.5 );
+    // this.quat.set( 0, 0, 0, 1 );
+    // this.createObject2( mastMass, mastHalfExtents, this.pos, this.quat, this.createMaterial( 0xB03014 ) );
+    //
+    // this.pos.set( 0, 8, 0 );
+    // this.quat.set( 0, 0, 0, 1 );
+    // this.createObject2( mastMass, mastHalfExtents, this.pos, this.quat, this.createMaterial( 0xB03014 ) );
+
+    // The cloth
+    // Cloth graphic object
+    const clothWidth = 4;
+    const clothHeight = 3;
+    const clothNumSegmentsZ = clothWidth * 5;
+    const clothNumSegmentsY = clothHeight * 5;
+    const clothPos = new Vector3( 0, 3, 10 );
+
+    const clothGeometry = new PlaneGeometry( clothWidth, clothHeight, clothNumSegmentsZ, clothNumSegmentsY );
+    // clothGeometry.rotateY( Math.PI * 0.5 );
+    clothGeometry.translate( clothPos.x, clothPos.y + clothHeight * 0.5, clothPos.z - clothWidth * 0.5 );
+
+    const clothMaterial = new MeshLambertMaterial( { color: 0xFFFFFF, side: DoubleSide } );
+    let cloth = new Mesh( clothGeometry, clothMaterial );
+    cloth.castShadow = true;
+    cloth.receiveShadow = true;
+    this.scene.add( cloth );
+    this.textureLoader.load( '/textures/grid.png', function ( texture ) {
+
+      texture.colorSpace = SRGBColorSpace;
+      texture.wrapS = RepeatWrapping;
+      texture.wrapT = RepeatWrapping;
+      texture.repeat.set( clothNumSegmentsZ, clothNumSegmentsY );
+      cloth.material.map = texture;
+      cloth.material.needsUpdate = true;
+
+    } );
+    this.ammoHandler.createCloth(cloth, clothPos, clothHeight, clothWidth, clothNumSegmentsZ, clothNumSegmentsY);
   }
 
   createParalellepipedWithPhysics( sx, sy, sz, mass, pos, quat, material ) {
@@ -151,7 +213,10 @@ export default class SceneManager extends SceneManagerParent {
     ball.receiveShadow = true;
     ball.position.add(pos);
     this.scene.add(ball);
-    this.ammoHandler.fire(ball, ballRadius)
+    const rndX = Math.floor(Math.random() * 15) - 7;
+    const rndY = Math.floor(Math.random() * 15) - 7;
+    let direction = new Vector3(rndX, rndY, -25);
+    this.ammoHandler.fire(ball, ballRadius, direction)
   }
 
   getInitialCameraPosition(): Vector3 {

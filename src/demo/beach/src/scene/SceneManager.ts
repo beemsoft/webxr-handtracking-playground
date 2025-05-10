@@ -89,7 +89,6 @@ export default class SceneManager extends SceneManagerParent {
         fog: this.scene.fog !== undefined
       }
     );
-    // @ts-ignore
     water.rotation.x = - Math.PI / 2;
     this.scene.add( water );
     this.water = water;
