@@ -5,14 +5,12 @@ import {
   PlaneGeometry,
   RepeatWrapping,
   Scene, SphereGeometry, SRGBColorSpace,
-  TextureLoader, Vector2,
+  TextureLoader, TorusKnotGeometry, Vector2,
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
-import {ParametricGeometries} from "three/examples/jsm/geometries/ParametricGeometries";
-import TorusKnotGeometry = ParametricGeometries.TorusKnotGeometry;
 import {Water} from "../../../../shared/scene/water/Water2";
 import Water2Manager from "../../../../shared/web-managers/Water2Manager";
 
