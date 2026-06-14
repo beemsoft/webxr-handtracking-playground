@@ -1,6 +1,6 @@
 import {
-    Clock,
     HalfFloatType,
+    Timer,
     Vector2,
     WebGLRenderTarget
 } from 'three';
@@ -49,7 +49,7 @@ class EffectComposer {
 
         this.copyPass = new ShaderPass( CopyShader, this.baseRenderTarget );
 
-        this.clock = new Clock();
+        this.timer = new Timer();
 
         this.onSessionStateChange = this.onSessionStateChange.bind( this );
         this.renderer.xr.addEventListener( 'sessionstart', this.onSessionStateChange );
@@ -125,7 +125,8 @@ class EffectComposer {
 
         if ( deltaTime === undefined ) {
 
-            deltaTime = this.clock.getDelta();
+            this.timer.update();
+            deltaTime = this.timer.getDelta();
 
         }
 

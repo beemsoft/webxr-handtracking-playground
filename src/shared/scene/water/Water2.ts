@@ -1,6 +1,5 @@
 import {
     ClampToEdgeWrapping,
-    Clock,
     Color, Matrix3,
     Matrix4,
     Mesh, MirroredRepeatWrapping,

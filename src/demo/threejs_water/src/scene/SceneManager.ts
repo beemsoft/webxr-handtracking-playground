@@ -73,6 +73,7 @@ export default class SceneManager extends SceneManagerParent {
   };
 
   update() {
+    super.update();
     if (this.water && this.waterSimulation.loaded && this.waterSimulation._dropMesh && this.waterSimulation._normalMesh && this.waterSimulation._updateMesh) {
       // console.log('update water');
       // @ts-ignore

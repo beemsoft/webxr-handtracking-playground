@@ -15,7 +15,7 @@ limitations under the License. */
 import {
     AmbientLight,
     Bone,
-    Clock,
+    Timer,
     DirectionalLight,
     Euler,
     Material,
@@ -380,11 +380,12 @@ function retarget(blendshapes: Classifications[]) {
     return coefsMap;
 }
 
-let clock = new Clock();
+let timer = new Timer();
 
 function onVideoFrame(time: DOMHighResTimeStamp): void {
     stats.begin();
-    let delta = clock.getDelta();
+    timer.update();
+    let delta = timer.getDelta();
     // if (vrm) {
     //     vrm.update(delta);
     // }

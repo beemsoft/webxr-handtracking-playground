@@ -120,7 +120,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
-    let delta = this.clock.getDelta();
+    super.update();
+    let delta = this.timer.getDelta();
     if (this.isAnimationStarted && this.mixer) {
       this.mixer.update(delta);
       SkeletonUtils.retarget(this.player.children[0].children[1], this.skeletonHelper, this.options);

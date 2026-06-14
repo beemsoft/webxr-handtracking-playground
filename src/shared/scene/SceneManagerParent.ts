@@ -1,4 +1,4 @@
-import {AnimationMixer, Clock, PerspectiveCamera, Scene, Vector3, WebGLRenderer} from 'three/src/Three';
+import {AnimationMixer, PerspectiveCamera, Scene, Timer, Vector3, WebGLRenderer} from 'three/src/Three';
 import { HandTrackingResult, PostProcessingConfig, SceneManagerInterface } from './SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import { SceneHelper } from './SceneHelper';
@@ -13,7 +13,7 @@ export default class SceneManagerParent implements SceneManagerInterface {
   protected renderer: WebGLRenderer;
   protected camera: PerspectiveCamera;
   protected handPoseManager: HandPoseManager;
-  protected clock = new Clock();
+  protected timer = new Timer();
   protected mixer: AnimationMixer;
 
   build(camera, scene, renderer, physicsHandler: PhysicsHandler) {
@@ -53,10 +53,7 @@ export default class SceneManagerParent implements SceneManagerInterface {
   }
 
   update() {
-    let delta = this.clock.getDelta();
-    if (this.mixer) {
-      this.mixer.update(delta);
-    }
+    this.timer.update();
   }
 
 }

@@ -89,6 +89,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
+    super.update();
     if (isNaN(this.ball.position.y) || this.ball.position.y> 10 || this.ball.position.y < -2) {
       this.ball.velocity = new Vec3(0,0,0);
       this.ball.angularVelocity = new Vec3(0,0,0);

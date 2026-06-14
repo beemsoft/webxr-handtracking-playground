@@ -87,6 +87,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
+    super.update();
     if (this.ball.position.y < -0.75) {
       this.ball.velocity = new Vec3(0,0,0);
       this.ball.angularVelocity = new Vec3(0,0,0);

@@ -199,7 +199,7 @@ function animate() {
 
 }
 
-let clock = new THREE.Clock();
+let timer = new THREE.Timer();
 let mixerDance1, mixerDance2;
 let isAnimationPaused = false;
 let person1, person2;
@@ -272,7 +272,8 @@ const options = {
 
 function render() {
 
-    let delta = clock.getDelta();
+    timer.update();
+    let delta = timer.getDelta();
     if (mixerDance1 && mixerDance2) {
         mixerDance1.update(delta/slowDownFactor);
         mixerDance2.update(delta/slowDownFactor);

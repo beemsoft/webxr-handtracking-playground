@@ -185,7 +185,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
-    const deltaTime = this.clock.getDelta();
+    super.update();
+    const deltaTime = this.timer.getDelta();
     this.ammoHandler.updatePhysics( deltaTime );
   }
 

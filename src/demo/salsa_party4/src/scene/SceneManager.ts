@@ -321,7 +321,8 @@ export default class SceneManager extends SceneManagerParent  {
   }
 
   update() {
-    let delta = this.clock.getDelta();
+    super.update();
+    let delta = this.timer.getDelta();
     if (this.handTextFadeOut) {
       this.handTextOpacity -= 0.02;
       if (this.handTextOpacity < 0) {

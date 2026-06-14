@@ -236,7 +236,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
-    let delta = this.clock.getDelta();
+    super.update();
+    let delta = this.timer.getDelta();
     if (this.mixerDance1 && this.mixerDance2) {
       if (!this.isAnimationPaused && this.isModelsLoaded && this.target1Skeleton && this.target2Skeleton) {
         this.mixerDance1.update(delta/this.slowDownFactor);

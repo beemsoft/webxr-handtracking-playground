@@ -96,6 +96,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
+    super.update();
     if (this.water) {
       // @ts-ignore
       this.water.material.uniforms['time'].value += 1.0 / 60.0;

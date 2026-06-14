@@ -355,6 +355,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
+    super.update();
     const time2 = performance.now() * 0.001;
 
     if (this.ship) {
@@ -373,7 +374,7 @@ export default class SceneManager extends SceneManagerParent {
     }
 
 
-    const deltaTime = this.clock.getDelta();
+    const deltaTime = this.timer.getDelta();
 
     time += deltaTime;
     if (this.animation) {

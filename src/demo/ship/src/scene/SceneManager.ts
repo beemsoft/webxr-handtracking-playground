@@ -227,6 +227,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
+    super.update();
     if (this.water) {
       // @ts-ignore
       this.water.material.uniforms['time'].value += 1.0 / 90.0;
@@ -241,7 +242,7 @@ export default class SceneManager extends SceneManagerParent {
       this.ship2.rotation.x = Math.sin(time-5) * 0.02 - Math.PI/2;
       this.ship2.rotation.y = Math.sin(time-5) * 0.02;
     }
-    let delta = this.clock.getDelta();
+    let delta = this.timer.getDelta();
     if (this.mixer) {
       this.mixer.update(delta);
       if (this.isAnimationStarted && this.jackSparrow) {

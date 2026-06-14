@@ -1,14 +1,14 @@
 import { Water } from '../scene/water/Water2';
-import {Clock, PerspectiveCamera, Scene, WebGLRenderer} from 'three/src/Three';
+import {PerspectiveCamera, Scene, Timer, WebGLRenderer} from 'three/src/Three';
 
 export default class Water2Manager {
 
-  private clock = new Clock();
+  private timer = new Timer();
 
 
   updateFlow(water: Water) {
 
-    const delta = this.clock.getDelta();
+    const delta = this.timer.getDelta();
     // @ts-ignore
     const config = water.material.uniforms[ 'config' ];
 
@@ -49,6 +49,7 @@ export default class Water2Manager {
   }
 
   update(water: Water, renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera) {
+    this.timer.update();
     this.updateTextureMatrix( water, camera );
     this.updateFlow(water);
 

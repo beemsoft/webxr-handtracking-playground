@@ -1,4 +1,4 @@
-import {Clock, PerspectiveCamera, Scene, WebGLRenderer} from 'three/src/Three';
+import {PerspectiveCamera, Scene, Timer, WebGLRenderer} from 'three/src/Three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
@@ -12,7 +12,7 @@ export default class WebPageManager {
   private sceneBuilder: SceneManagerInterface;
   private readonly physicsHandler: PhysicsHandler;
   private controls: OrbitControls;
-  private clock = new Clock();
+  private timer = new Timer();
   private composer: EffectComposer;
   private finalRenderTarget = null;
 
@@ -44,12 +44,13 @@ export default class WebPageManager {
     this.addTrackBallControls();
     this.addOutputToPage();
     window.addEventListener( 'resize', this.onWindowResize, false );
-    this.clock.start();
+    this.timer.reset();
     this.render();
   }
 
   private render = () => {
-    this.physicsHandler.dt = 1 / (1 / this.clock.getDelta());
+    this.timer.update();
+    this.physicsHandler.dt = 1 / (1 / this.timer.getDelta());
     this.renderer.setAnimationLoop(this.render);
     this.sceneBuilder.update();
     this.physicsHandler.updatePhysics();

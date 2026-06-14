@@ -106,7 +106,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
-    const delta = this.clock.getDelta();
+    super.update();
+    const delta = this.timer.getDelta();
     this.torusKnot.rotation.x += delta;
     this.torusKnot.rotation.y += delta * 0.5;
 

@@ -100,7 +100,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
-    let delta = this.clock.getDelta();
+    super.update();
+    let delta = this.timer.getDelta();
     if (this.isAnimationStarted && this.mixer) {
       this.mixer.update(delta);
     }

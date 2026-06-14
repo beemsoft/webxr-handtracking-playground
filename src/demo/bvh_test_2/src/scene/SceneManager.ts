@@ -109,7 +109,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   update() {
-    let delta = this.clock.getDelta();
+    super.update();
+    let delta = this.timer.getDelta();
     const time = performance.now() * 0.001;
     if (this.grid && this.player && this.sourceSkeletonHelper) {
       this.grid.rotation.x = Math.sin(time) * 0.2;
