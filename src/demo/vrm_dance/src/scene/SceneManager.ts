@@ -56,9 +56,9 @@ export default class SceneManager extends SceneManagerParent {
       "Normalized_J_Bip_L_LowerArm": "l_forearm_JNT",
       "Normalized_J_Bip_L_Hand": "l_hand_JNT",
 
-      "Normalized_J_Bip_R_UpperLeg": "r_upleg_JNT",
-      "Normalized__Bip_R_LowerLeg": "r_leg_JNT",
-      "Normalized_J_Bip_R_Foot": "r_foot_JNT",
+       "Normalized_J_Bip_R_UpperLeg": "r_upleg_JNT",
+       "Normalized_J_Bip_R_LowerLeg": "r_leg_JNT",
+       "Normalized_J_Bip_R_Foot": "r_foot_JNT",
 
       "Normalized_J_Bip_L_UpperLeg": "l_upleg_JNT",
       "Normalized_J_Bip_L_LowerLeg": "l_leg_JNT",
