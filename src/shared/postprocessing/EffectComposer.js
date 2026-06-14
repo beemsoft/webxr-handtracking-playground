@@ -26,7 +26,7 @@ class EffectComposer {
             this._width = size.width;
             this._height = size.height;
 
-            renderTarget = new WebGLRenderTarget( this._width * this._pixelRatio, this._height * this._pixelRatio, { type: HalfFloatType } );
+            renderTarget = new WebGLRenderTarget( this._width * this._pixelRatio, this._height * this._pixelRatio, { type: HalfFloatType, samples: 0, depthBuffer: false, stencilBuffer: false } );
             renderTarget.texture.name = 'EffectComposer.rt1';
 
         } else {

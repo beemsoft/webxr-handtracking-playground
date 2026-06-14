@@ -43,6 +43,7 @@ export default class WebXRManager {
   private newRenderTarget: WebGLRenderTarget;
 
   constructor(sceneBuilder: SceneManagerInterface, useDefaultHandGestures: boolean, useAmmoLib: boolean) {
+    this.scene.userData.isXR = true;
     this.cameraManager.createVrCamera();
     this.sceneBuilder = sceneBuilder;
     this.useDefaultHandGestures = useDefaultHandGestures;
@@ -62,7 +63,7 @@ export default class WebXRManager {
         this.gl = <WebGLRenderingContext>glCanvas.getContext('webgl2');
         this.gl.makeXRCompatible()
             .then(() => {
-          this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, alpha: false});
+          this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, antialias: false, alpha: false});
           if (!this.composer) {
             // @ts-ignore
             this.baseLayer = new XRWebGLLayer(this.session, this.gl)
@@ -85,6 +86,9 @@ export default class WebXRManager {
                 this.sessionActive = true;
                 this.session.requestAnimationFrame(this.onXRFrame);
               })
+              .then(() => {
+                this.renderer.xr.enabled = false;
+              })
         })
       })
       .catch(error => {
@@ -96,10 +100,17 @@ export default class WebXRManager {
     this.xrFramebuffer = this.gl.createFramebuffer();
     // @ts-ignore
     this.xrGLFactory = new XRWebGLBinding(this.session, this.gl);
-    this.proj_layer = this.xrGLFactory.createProjectionLayer({space: this.xrReferenceSpace});
+    this.proj_layer = this.xrGLFactory.createProjectionLayer({
+      space: this.xrReferenceSpace,
+      antialias: false,
+      colorFormat: (this.gl as any).RGBA8,
+      depthFormat: (this.gl as any).DEPTH_COMPONENT24
+    });
+    // @ts-ignore
     this.session.updateRenderState({layers: [this.proj_layer]});
     this.renderer.setDrawingBufferSize(this.proj_layer.textureWidth, this.proj_layer.textureHeight, 1);
-    this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight);
+    this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight, { samples: 0, depthBuffer: true, stencilBuffer: false });
+    this.newRenderTarget.texture.name = 'WebXRManager.newRenderTarget';
 
     if (postProcessingConfig) {
       this.composer = new EffectManager().createEffectComposer(
@@ -142,9 +153,22 @@ export default class WebXRManager {
 
   private getViewPort(view) {
     if (this.composer) {
+      // this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.xrFramebuffer);
+      // // @ts-ignore
+      // this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, null, 0);
       let glLayer = this.xrGLFactory.getViewSubImage(this.proj_layer, view);
       let viewport = glLayer.viewport;
+      // @ts-ignore
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.xrFramebuffer);
+      // @ts-ignore
       this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, glLayer.colorTexture, 0);
+      // @ts-ignore
+      // this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, null);
+
+      const fbStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+      if (fbStatus !== this.gl.FRAMEBUFFER_COMPLETE) {
+          console.error('Framebuffer incomplete: ' + fbStatus);
+      }
       return viewport;
     } else {
       let viewport = this.baseLayer.getViewport(view);
@@ -216,6 +240,7 @@ export default class WebXRManager {
     this.cameraManager.update(pose);
     this.physicsHandler.updatePhysics();
     if (this.composer) {
+      this.renderer.setRenderTarget(null);
       this.composer.render();
     } else {
       this.renderer.render(this.scene, this.cameraManager.cameraVR);

@@ -3,15 +3,19 @@ import {
   AnimationClip,
   AnimationMixer,
   BoxGeometry,
+  DoubleSide,
   LoopOnce,
   Matrix4,
   Mesh,
   MeshNormalMaterial,
+  MeshStandardMaterial,
   NumberKeyframeTrack,
   PerspectiveCamera,
+  PlaneGeometry,
   PointLight,
   Quaternion,
   Scene,
+  SpotLight,
   Vector3,
   WebGLRenderer
 } from 'three/src/Three';
@@ -117,15 +121,47 @@ export default class SceneManager extends SceneManagerParent  {
     const geometry2 = new BoxGeometry(0.3, 0.3, 0.3);
     this.cubeSound2 = new Mesh(geometry2, material);
 
+    this.sceneHelper.addLight(true);
+    const groundGeometry = new PlaneGeometry(100, 100);
+    const groundMaterial = new MeshStandardMaterial({ color: 0x404040, side: DoubleSide });
+    const ground = new Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
+    ground.receiveShadow = true;
+    this.scene.add(ground);
+
+    const isXR = scene.userData.isXR;
     const pointLight1 = SceneManager.createPointLight( 0xFF7F00 );
     const pointLight2 = SceneManager.createPointLight( 0x00FF7F );
     const pointLight3 = SceneManager.createPointLight( 0x7F00FF );
-    renderer.shadowMap.enabled = false
+    const pointLight4 = SceneManager.createPointLight( 0xFFFFFF );
+
+    const spotLight1 = SceneManager.createSpotLight( 0xFF0000, isXR );
+    const spotLight2 = SceneManager.createSpotLight( 0x0000FF, isXR );
+    const spotLight3 = SceneManager.createSpotLight( 0x00FF00, isXR );
+    const spotLight4 = SceneManager.createSpotLight( 0xFFFF00, isXR );
+
+    if (!renderer.xr.enabled) {
+      renderer.shadowMap.enabled = true;
+    }
     renderer.xr.enabled = false;
-    pointLight1.position.set( 3, 2, 3 );
-    pointLight2.position.set( 4, 2, 0 );
-    pointLight3.position.set( -3, 2, -3 );
-    scene.add( pointLight1, pointLight2, pointLight3 );
+    pointLight1.position.set( 1, 1, 1 );
+    pointLight2.position.set( 2, 1, 0 );
+    pointLight3.position.set( -1, 1, -1 );
+    pointLight4.position.set( 0, 3, 0 );
+
+    spotLight1.position.set( -2, 4, 0 );
+    spotLight1.target.position.set( -2, -0.5, 0 );
+    spotLight2.position.set( 0, 4, -2 );
+    spotLight2.target.position.set( 0, -0.5, -2 );
+    spotLight3.position.set( 0, 4, 2 );
+    spotLight3.target.position.set( 0, -0.5, 2 );
+    spotLight4.position.set( 2, 4, 0 );
+    spotLight4.target.position.set( 2, -0.5, 0 );
+
+    scene.add( pointLight1, pointLight2, pointLight3, pointLight4 );
+    scene.add( spotLight1, spotLight2, spotLight3, spotLight4 );
+    scene.add( spotLight1.target, spotLight2.target, spotLight3.target, spotLight4.target );
 
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(this.audioLocation);
@@ -136,18 +172,33 @@ export default class SceneManager extends SceneManagerParent  {
 
     const anisotropy: number = this.renderer.capabilities.getMaxAnisotropy();
     this.handText= new TextMesh(anisotropy, 1024, 512, 2, 12);
+    this.handText.mesh.visible = false;
     this.scene.add(this.handText.mesh);
   }
 
   private static createPointLight(color ) {
-    const newObj = new PointLight( color, 0.6 );
-    newObj.castShadow = true;
+    const newObj = new PointLight( color, 1.5 );
+    newObj.castShadow = false;
     newObj.decay = 2;
     newObj.distance = 10;
-    newObj.shadow.mapSize.width = 512;
-    newObj.shadow.mapSize.height = 512;
     return newObj;
+  }
 
+  private static createSpotLight(color, isXR) {
+    const newObj = new SpotLight(color, 20);
+    newObj.castShadow = !isXR;
+    newObj.angle = Math.PI / 6;
+    newObj.penumbra = 0.2;
+    newObj.decay = 2;
+    newObj.distance = 20;
+    if (!isXR) {
+      newObj.shadow.mapSize.width = 1024;
+      newObj.shadow.mapSize.height = 1024;
+      newObj.shadow.camera.near = 1;
+      newObj.shadow.camera.far = 20;
+      newObj.shadow.bias = -0.001; // Added shadow bias
+    }
+    return newObj;
   }
 
   private loadModels2(modelNames: DanceCouple[]) {
@@ -163,17 +214,25 @@ export default class SceneManager extends SceneManagerParent  {
         gltf.scene.children[5].position.z = modelNames[i].offsetZ;
         gltf.scene.traverse( function( object ) {
           object.frustumCulled = false;
+          if ((object as any).isMesh) {
+            object.castShadow = !gltf.scene.userData.isXR;
+            object.receiveShadow = !gltf.scene.userData.isXR;
+          }
         } );
         this.initHappyAnimation(gltf.userData.vrm);
         this.initBlinkAnimation(gltf.userData.vrm);
         console.log('Loading model ' + modelNames[i].follower);
         gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
-          VRMUtils.combineSkeletons(gltf.scene);;
+          VRMUtils.combineSkeletons(gltf2.scene);
           gltf2.scene.children[5].position.x = modelNames[i].offsetX;
           gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
           gltf2.scene.traverse( function( object ) {
             object.frustumCulled = false;
+            if ((object as any).isMesh) {
+              object.castShadow = !gltf2.scene.userData.isXR;
+              object.receiveShadow = !gltf2.scene.userData.isXR;
+            }
           } );
           this.initHappyAnimation(gltf2.userData.vrm);
           this.initBlinkAnimation(gltf2.userData.vrm);
@@ -194,6 +253,12 @@ export default class SceneManager extends SceneManagerParent  {
       let model = gltf.scene;
       model.scale.set(0.03, 0.03, 0.03);
       model.position.y = -0.4;
+      model.traverse(function (object) {
+        if ((object as any).isMesh) {
+          object.castShadow = !model.userData.isXR;
+          object.receiveShadow = !model.userData.isXR;
+        }
+      });
       this.scene.add(model);
     });
     this.loadModels2(this.modelNames);
@@ -328,6 +393,7 @@ export default class SceneManager extends SceneManagerParent  {
       if (this.handTextOpacity < 0) {
         this.handTextOpacity = 0;
         this.handTextFadeOut = false;
+        this.handText.mesh.visible = false;
       }
       this.handText.fadeOut(this.handTextOpacity);
     }
@@ -385,6 +451,7 @@ export default class SceneManager extends SceneManagerParent  {
 
   displayMessage(message: string, o: Vector3, q: Quaternion) {
     if (o) {
+      this.handText.mesh.visible = true;
       this.handText.mesh.position.set(o.x, o.y, o.z);
       let rotationMatrix = new Matrix4();
       if (this.camera.position) {

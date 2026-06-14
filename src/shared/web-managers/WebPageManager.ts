@@ -24,7 +24,7 @@ export default class WebPageManager {
     if (cameraPosition) {
       this.camera.position.add(cameraPosition);
     }
-    this.renderer = new WebGLRenderer({alpha: false});
+    this.renderer = new WebGLRenderer({alpha: false, antialias: false});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.autoClear = false;
 
