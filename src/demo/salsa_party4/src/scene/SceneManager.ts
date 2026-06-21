@@ -17,7 +17,8 @@ import {
   Scene,
   SpotLight,
   Vector3,
-  WebGLRenderer
+  WebGLRenderer,
+  Box3
 } from 'three/src/Three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
@@ -110,6 +111,9 @@ export default class SceneManager extends SceneManagerParent  {
     super.build(camera, scene, renderer, physicsHandler);
     document.body.appendChild(this.stats.dom);
 
+    // Optimize shadow map type for better performance and to avoid resource exhaustion
+    renderer.shadowMap.type = 1; // BasicShadowMap
+
     const material = new MeshNormalMaterial();
     const geometry = new BoxGeometry(0.1, 0.1, 0.1);
     this.cube = new Mesh(geometry, material);
@@ -125,43 +129,36 @@ export default class SceneManager extends SceneManagerParent  {
     const groundGeometry = new PlaneGeometry(100, 100);
     const groundMaterial = new MeshStandardMaterial({ color: 0x404040, side: DoubleSide });
     const ground = new Mesh(groundGeometry, groundMaterial);
+    ground.name = "danceFloor";
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.5;
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    const isXR = scene.userData.isXR;
-    const pointLight1 = SceneManager.createPointLight( 0xFF7F00 );
-    const pointLight2 = SceneManager.createPointLight( 0x00FF7F );
-    const pointLight3 = SceneManager.createPointLight( 0x7F00FF );
-    const pointLight4 = SceneManager.createPointLight( 0xFFFFFF );
+    // Reduced number of lights to avoid shader uniform limits
+    // const pointLight1 = SceneManager.createPointLight( 0xFF7F00 );
+    // const pointLight2 = SceneManager.createPointLight( 0x00FF7F );
+    // const pointLight3 = SceneManager.createPointLight( 0x7F00FF );
+    // const pointLight4 = SceneManager.createPointLight( 0xFFFFFF );
 
-    const spotLight1 = SceneManager.createSpotLight( 0xFF0000, isXR );
-    const spotLight2 = SceneManager.createSpotLight( 0x0000FF, isXR );
-    const spotLight3 = SceneManager.createSpotLight( 0x00FF00, isXR );
-    const spotLight4 = SceneManager.createSpotLight( 0xFFFF00, isXR );
+    // Reduced number of spotlights to avoid shader uniform limits
+    // const spotLight2 = SceneManager.createSpotLight( 0x0000FF, isXR );
+    // spotLight2.castShadow = false;
 
-    if (!renderer.xr.enabled) {
-      renderer.shadowMap.enabled = true;
-    }
+    renderer.shadowMap.enabled = true;
     renderer.xr.enabled = false;
-    pointLight1.position.set( 1, 1, 1 );
-    pointLight2.position.set( 2, 1, 0 );
-    pointLight3.position.set( -1, 1, -1 );
-    pointLight4.position.set( 0, 3, 0 );
+    // pointLight1.position.set( 1, 1, 1 );
+    // pointLight2.position.set( 2, 1, 0 );
+    // pointLight3.position.set( -1, 1, -1 );
+    // pointLight4.position.set( 0, 2.3, 0 );
 
-    spotLight1.position.set( -2, 4, 0 );
-    spotLight1.target.position.set( -2, -0.5, 0 );
-    spotLight2.position.set( 0, 4, -2 );
-    spotLight2.target.position.set( 0, -0.5, -2 );
-    spotLight3.position.set( 0, 4, 2 );
-    spotLight3.target.position.set( 0, -0.5, 2 );
-    spotLight4.position.set( 2, 4, 0 );
-    spotLight4.target.position.set( 2, -0.5, 0 );
+    // spotLight2.position.set( 0, 2.3, -2 );
+    // spotLight2.target.position.set( 0, -0.5, -2 );
 
-    scene.add( pointLight1, pointLight2, pointLight3, pointLight4 );
-    scene.add( spotLight1, spotLight2, spotLight3, spotLight4 );
-    scene.add( spotLight1.target, spotLight2.target, spotLight3.target, spotLight4.target );
+    // scene.add( pointLight4 );
+    // scene.add( pointLight1, pointLight2, pointLight3, pointLight4 );
+    // scene.add( spotLight2 );
+    // scene.add( spotLight2.target );
 
     this.audioHandler.initAudio(AudioDemo.salsaDanceSlow);
     this.audioHandler.setPosition(this.audioLocation);
@@ -174,6 +171,31 @@ export default class SceneManager extends SceneManagerParent  {
     this.handText= new TextMesh(anisotropy, 1024, 512, 2, 12);
     this.handText.mesh.visible = false;
     this.scene.add(this.handText.mesh);
+
+    // Restore original 4 spotlight setup
+    const spotLight1 = SceneManager.createSpotLight( 0xFF0000, false );
+    const spotLight2 = SceneManager.createSpotLight( 0x00FF00, false );
+    const spotLight3 = SceneManager.createSpotLight( 0x0000FF, false );
+    const spotLight4 = SceneManager.createSpotLight( 0xFFFF00, false );
+
+    spotLight1.position.set( -2, 2.3, -2 );
+    spotLight2.position.set( 2, 2.3, -2 );
+    spotLight3.position.set( -2, 2.3, 2 );
+    spotLight4.position.set( 2, 2.3, 2 );
+
+    spotLight1.target.position.set( -1, -0.5, -1 );
+    spotLight2.target.position.set( 1, -0.5, -1 );
+    spotLight3.target.position.set( -1, -0.5, 1 );
+    spotLight4.target.position.set( 1, -0.5, 1 );
+
+    // Enable shadows for the original spotlights as requested
+    spotLight1.castShadow = true;
+    spotLight2.castShadow = true;
+    spotLight3.castShadow = true;
+    spotLight4.castShadow = true;
+
+    this.scene.add( spotLight1, spotLight2, spotLight3, spotLight4 );
+    this.scene.add( spotLight1.target, spotLight2.target, spotLight3.target, spotLight4.target );
   }
 
   private static createPointLight(color ) {
@@ -186,7 +208,7 @@ export default class SceneManager extends SceneManagerParent  {
 
   private static createSpotLight(color, isXR) {
     const newObj = new SpotLight(color, 20);
-    newObj.castShadow = !isXR;
+    newObj.castShadow = true;
     newObj.angle = Math.PI / 6;
     newObj.penumbra = 0.2;
     newObj.decay = 2;
@@ -197,6 +219,12 @@ export default class SceneManager extends SceneManagerParent  {
       newObj.shadow.camera.near = 1;
       newObj.shadow.camera.far = 20;
       newObj.shadow.bias = -0.001; // Added shadow bias
+    } else {
+      newObj.shadow.mapSize.width = 512;
+      newObj.shadow.mapSize.height = 512;
+      newObj.shadow.camera.near = 1;
+      newObj.shadow.camera.far = 20;
+      newObj.shadow.bias = -0.001;
     }
     return newObj;
   }
@@ -215,8 +243,8 @@ export default class SceneManager extends SceneManagerParent  {
         gltf.scene.traverse( function( object ) {
           object.frustumCulled = false;
           if ((object as any).isMesh) {
-            object.castShadow = !gltf.scene.userData.isXR;
-            object.receiveShadow = !gltf.scene.userData.isXR;
+            object.castShadow = true;
+            object.receiveShadow = true;
           }
         } );
         this.initHappyAnimation(gltf.userData.vrm);
@@ -230,8 +258,8 @@ export default class SceneManager extends SceneManagerParent  {
           gltf2.scene.traverse( function( object ) {
             object.frustumCulled = false;
             if ((object as any).isMesh) {
-              object.castShadow = !gltf2.scene.userData.isXR;
-              object.receiveShadow = !gltf2.scene.userData.isXR;
+              object.castShadow = true;
+              object.receiveShadow = true;
             }
           } );
           this.initHappyAnimation(gltf2.userData.vrm);
@@ -255,8 +283,8 @@ export default class SceneManager extends SceneManagerParent  {
       model.position.y = -0.4;
       model.traverse(function (object) {
         if ((object as any).isMesh) {
-          object.castShadow = !model.userData.isXR;
-          object.receiveShadow = !model.userData.isXR;
+          object.castShadow = true;
+          object.receiveShadow = true;
         }
       });
       this.scene.add(model);
@@ -407,6 +435,19 @@ export default class SceneManager extends SceneManagerParent  {
             VrmSkeletonUtils.retarget(this.danceCouples[i].follower.scene.children[5], this.source2SkeletonHelper, this.modelOptions);
             this.danceCouples[i].leader.update(delta);
             this.danceCouples[i].follower.update(delta);
+
+            // Adjust Y position to keep feet on the ground
+            [this.danceCouples[i].leader, this.danceCouples[i].follower].forEach(vrm => {
+              vrm.scene.updateMatrixWorld(true);
+              const box = new Box3();
+              vrm.scene.traverse(obj => {
+                if ((obj as any).isMesh) {
+                  box.expandByObject(obj);
+                }
+              });
+              const lowestY = box.min.y;
+              vrm.scene.position.y -= (lowestY + 0.5);
+            });
           }
         }
         if (this.animationMixersEndOfDance.length > 0) {

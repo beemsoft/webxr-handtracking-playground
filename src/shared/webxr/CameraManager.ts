@@ -9,6 +9,10 @@ export default class CameraManager {
   public cameraVR = new ArrayCamera([this.cameraL, this.cameraR]);
 
   public createVrCamera() {
+    this.cameraL.matrixAutoUpdate = false;
+    this.cameraR.matrixAutoUpdate = false;
+    this.cameraVR.matrixAutoUpdate = false;
+    this.cameraVR.frustumCulled = false;
     this.cameraL.layers.enable(1);
     // @ts-ignore
     this.cameraL.viewport = new Vector4();
@@ -27,11 +31,13 @@ export default class CameraManager {
     // console.log('Projection matrix: ' + JSON.stringify(camera.projectionMatrix));
     camera.projectionMatrix.fromArray(view.projectionMatrix);
     camera.matrixWorldInverse.fromArray(viewMatrix);
+    camera.matrixWorld.copy(camera.matrixWorldInverse).invert();
     // @ts-ignore
     camera.viewport.set(viewport.x, viewport.y, viewport.width, viewport.height);
   }
 
   public update(pose: XRDevicePose) {
+    if (!pose) return;
     this.cameraVR.position.x = pose.transform.position.x;
     this.cameraVR.position.y = pose.transform.position.y;
     this.cameraVR.position.z = pose.transform.position.z;
@@ -39,6 +45,11 @@ export default class CameraManager {
     this.cameraVR.quaternion.y = pose.transform.orientation.y;
     this.cameraVR.quaternion.z = pose.transform.orientation.z;
     this.cameraVR.quaternion.w = pose.transform.orientation.w;
+    this.cameraVR.updateMatrixWorld(true);
+    // Explicitly update sub-cameras world matrix as they are removed from normal scene graph logic
+    for (let camera of this.cameraVR.cameras) {
+      camera.updateMatrixWorld(true);
+    }
     this.cameraVR.updateProjectionMatrix();
   }
 

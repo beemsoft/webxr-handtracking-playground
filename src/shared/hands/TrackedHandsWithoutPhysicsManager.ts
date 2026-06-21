@@ -51,6 +51,7 @@ export default class TrackedHandsWithoutPhysicsManager {
   public offsetAngle = 0;
   public rotationPosition: Vector3;
   public handGesture = GestureType.None;
+  public handMeshList = handMeshList;
 
   constructor(scene: Scene, camera: ArrayCamera) {
     this.scene = scene;
@@ -59,13 +60,14 @@ export default class TrackedHandsWithoutPhysicsManager {
 
   public renderHandsAndDetectGesture(frame: XRFrameOfReference, pose: XRDevicePose, xrReferenceSpace: XRReferenceSpace): HandTrackingResult {
     let wristPose;
+    if (frame.session.inputSources.length === 0) return null;
     for (let inputSource of frame.session.inputSources) {
       if (inputSource.hand) {
         if (inputSource.handedness == "right") {
           this.handGesture = GestureType.None;
           let wrist = inputSource.hand.get(wristJoint);
           if (!wrist) {
-            return;
+            continue;
           }
           wristPose = frame.getJointPose(wrist, xrReferenceSpace);
           let thumb = inputSource.hand.get(thumbTip);
@@ -74,7 +76,7 @@ export default class TrackedHandsWithoutPhysicsManager {
             if (this.isOpenHand(inputSource, wristPose, thumbTipPose, xrReferenceSpace, frame)) {
               this.handGesture = GestureType.Open_Hand;
             } else {
-              if (thumbTipPose.transform.position.y > wristPose.transform.position.y) {
+              if (thumbTipPose && thumbTipPose.transform.position.y > wristPose.transform.position.y) {
                 if (this.isThumbPinchingWithOtherFingerTip(inputSource, pinchFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
                   this.handGesture = GestureType.Index_Thumb;
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, snapFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
@@ -98,6 +100,10 @@ export default class TrackedHandsWithoutPhysicsManager {
         }
       }
     }
+    for (let i = 0; i < handMeshList.length; i++) {
+      if (handMeshList[i]) handMeshList[i].visible = false;
+    }
+    return null;
   }
 
   protected renderHandWithPhysicsEnabled(inputSource: XRInputSource, frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
@@ -133,12 +139,16 @@ export default class TrackedHandsWithoutPhysicsManager {
                   break;
               }
               handBody = new Mesh(sphere_geometry, mat);
+              handBody.castShadow = true;
+              handBody.receiveShadow = true;
+              handBody.frustumCulled = false;
               this.scene.add(handBody);
               handMeshList[meshIndex] = handBody;
             }
             handBody.position.x = pose.transform.position.x;
             handBody.position.y = pose.transform.position.y;
             handBody.position.z = pose.transform.position.z;
+            handBody.visible = true;
             switch (this.handGesture) {
               case GestureType.Open_Hand: {
                 if (joint1 == pinkyFingerTip || joint1 == thumbTip || joint1 == wristJoint) {
@@ -189,6 +199,14 @@ export default class TrackedHandsWithoutPhysicsManager {
                 }
                 break;
             }
+          } else {
+            if (handMeshList[meshIndex]) {
+              handMeshList[meshIndex].visible = false;
+            }
+          }
+        } else {
+          if (handMeshList[meshIndex]) {
+            handMeshList[meshIndex].visible = false;
           }
         }
         meshIndex++;

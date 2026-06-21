@@ -23,7 +23,6 @@ import {
     CanvasTexture,
     DoubleSide,
     LinearFilter,
-    LinearMipMapLinearFilter,
     Mesh,
     PlaneGeometry,
     RawShaderMaterial
@@ -64,7 +63,7 @@ export class TextMesh {
         // @ts-ignore
         this.texture.generateMipMaps = false;
         this.texture.anisotropy = maxAnisotropy;
-        this.texture.minFilter = LinearMipMapLinearFilter;
+        this.texture.minFilter = LinearFilter;
         this.texture.magFilter = LinearFilter;
         this.material = new RawShaderMaterial( {
             uniforms:{

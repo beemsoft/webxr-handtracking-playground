@@ -4,6 +4,7 @@ import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import { EffectComposer } from '../postprocessing/EffectComposer';
 import EffectManager from './EffectManager';
+import Stats from 'three/examples/jsm/libs/stats.module';
 
 export default class WebPageManager {
   private readonly camera: PerspectiveCamera;
@@ -15,6 +16,7 @@ export default class WebPageManager {
   private timer = new Timer();
   private composer: EffectComposer;
   private finalRenderTarget = null;
+  private stats: Stats;
 
   constructor(sceneManager: SceneManagerInterface) {
     this.sceneBuilder = sceneManager;
@@ -42,6 +44,7 @@ export default class WebPageManager {
 
     this.sceneBuilder.build(this.camera, this.scene, this.renderer, this.physicsHandler);
     this.addTrackBallControls();
+    this.addStats();
     this.addOutputToPage();
     window.addEventListener( 'resize', this.onWindowResize, false );
     this.timer.reset();
@@ -49,6 +52,7 @@ export default class WebPageManager {
   }
 
   private render = () => {
+    this.stats.begin();
     this.timer.update();
     this.physicsHandler.dt = 1 / (1 / this.timer.getDelta());
     this.renderer.setAnimationLoop(this.render);
@@ -60,6 +64,7 @@ export default class WebPageManager {
       this.renderer.render(this.scene, this.camera);
     }
     this.sceneBuilder.postUpdate();
+    this.stats.end();
   };
 
   private addTrackBallControls() {
@@ -69,6 +74,11 @@ export default class WebPageManager {
       this.controls.target.copy(this.sceneBuilder.getInitialCameraTarget());
       this.controls.update();
     }
+  }
+
+  private addStats() {
+    this.stats = new Stats();
+    document.body.appendChild(this.stats.dom);
   }
 
   private addOutputToPage = () => {

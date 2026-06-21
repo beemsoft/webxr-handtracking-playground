@@ -24,9 +24,6 @@ export default class SceneManagerParent implements SceneManagerInterface {
     this.camera = camera;
     this.handPoseManager = new HandPoseManager(scene, physicsHandler);
     this.ammoHandler = new AmmoHandler(scene);
-    if (renderer.xr.enabled) {
-      this.renderer.shadowMap.enabled = false;
-    }
   }
 
   getInitialCameraAngle(): number {

@@ -173,9 +173,13 @@ export interface XRDevicePose {
   readonly poseModelMatrix: Float32Array;
   getViewMatrix(view: XRView): Float32Array;
 }
+export interface XRViewerPose extends XRDevicePose {
+  readonly views: XRView[];
+}
 declare global  {
   interface Window {
     XRDevicePose: XRDevicePose;
+    XRViewerPose: XRViewerPose;
   }
 }
 export type XRHandedness = '' | 'left' | 'right';

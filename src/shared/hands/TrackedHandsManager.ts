@@ -141,6 +141,9 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
                   break;
               }
               let mesh = new Mesh(sphere_geometry, mat);
+              mesh.castShadow = true;
+              mesh.receiveShadow = true;
+              mesh.frustumCulled = false;
               this.scene.add(mesh);
               handBody = new Body({mass: 0, material: this.physicsHandler.handMaterial});
               handBody.addShape(new Box(new Vec3(pose.radius, pose.radius, pose.radius)));

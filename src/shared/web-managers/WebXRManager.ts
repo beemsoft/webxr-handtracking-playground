@@ -1,4 +1,4 @@
-import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three/src/Three';
+import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera } from 'three/src/Three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   GestureType,
@@ -8,7 +8,7 @@ import {
 } from '../scene/SceneManagerInterface';
 import CameraManager from '..//webxr/CameraManager';
 import {
-  XRDevicePose,
+  XRViewerPose,
   XRFrameOfReference,
   XRReferenceSpace,
   XRRigidTransform,
@@ -20,6 +20,8 @@ import { EffectComposer } from '../postprocessing/EffectComposer';
 import TrackedHandsWithoutPhysicsManager from '../hands/TrackedHandsWithoutPhysicsManager';
 import EffectManager from './EffectManager';
 import TrackedHandsManager from "../hands/TrackedHandsManager";
+import { TextMesh } from '../scene/text/TextMesh';
+import { StatsMesh } from '../scene/text/StatsMesh';
 
 export default class WebXRManager {
   private renderer: WebGLRenderer;
@@ -41,6 +43,20 @@ export default class WebXRManager {
   private xrGLFactory: XRWebGLBinding;
   private xrFramebuffer: WebGLFramebuffer;
   private newRenderTarget: WebGLRenderTarget;
+  private fpsText: TextMesh;
+  private fpsHandText: TextMesh;
+  private statsMesh: StatsMesh;
+  private shadowCamera: PerspectiveCamera;
+  private fpsTimestamp = 0;
+  private fpsFrameCount = 0;
+  private currentFps = 0;
+  private readonly config = {
+    enableScreenHud: false,
+    enableHandHud: false,
+    enableDomOverlay: false,
+    enableStats: true,
+    enableShadows: true
+  };
 
   constructor(sceneBuilder: SceneManagerInterface, useDefaultHandGestures: boolean, useAmmoLib: boolean) {
     this.scene.userData.isXR = true;
@@ -64,10 +80,113 @@ export default class WebXRManager {
         this.gl.makeXRCompatible()
             .then(() => {
           this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, antialias: false, alpha: false});
-          if (!this.composer) {
+          this.renderer.shadowMap.enabled = this.config.enableShadows;
+          this.renderer.shadowMap.autoUpdate = false;
+          this.shadowCamera = new PerspectiveCamera(175, 1, 0.1, 100);
+          this.shadowCamera.updateProjectionMatrix();
+          this.shadowCamera.matrixAutoUpdate = false;
+          this.shadowCamera.frustumCulled = false;
+
+          // Prevent shadowMap.enabled from being overridden by other modules in XR mode
+          const renderer = this.renderer;
+          const config = this.config;
+          const originalShadowMap = renderer.shadowMap;
+          // @ts-ignore
+          renderer.shadowMap = new Proxy(originalShadowMap, {
+            set: (target, prop, value) => {
+              if (prop === 'enabled') {
+                target.enabled = config.enableShadows;
+                if (value !== config.enableShadows) {
+                  console.warn(`Attempt to set shadowMap.enabled to ${value} was ignored. Locked to ${config.enableShadows} by WebXRManager config.`);
+                }
+                return true;
+              }
+              // @ts-ignore
+              target[prop] = value;
+              return true;
+            },
+            get: (target, prop) => {
+              if (prop === 'enabled') return config.enableShadows;
+              // @ts-ignore
+              const val = target[prop];
+              return typeof val === 'function' ? val.bind(target) : val;
+            }
+          });
+
+          if (this.config.enableScreenHud) {
+            this.fpsText = new TextMesh(this.renderer.capabilities.getMaxAnisotropy(), 0.4, 0.2, 2, 60);
+            this.fpsText.mesh.position.set(0, 0.2, -0.8); // More central and further away to be visible
+            this.fpsText.mesh.frustumCulled = false;
+            this.fpsText.mesh.renderOrder = 1000;
+            if (this.fpsText.mesh.material instanceof RawShaderMaterial) {
+              this.fpsText.mesh.material.depthTest = false;
+            }
+            // Use a custom property to mark it as HUD to safely ignore it in Pass 1 if needed
+            this.fpsText.mesh.userData.isHUD = true;
+            this.cameraManager.cameraVR.add(this.fpsText.mesh);
+          }
+
+          if (this.config.enableStats) {
+            this.statsMesh = new StatsMesh(this.renderer.capabilities.getMaxAnisotropy());
+            this.statsMesh.mesh.position.set(0, 0.1, -0.9); // Positioned lower (changed from 0.3)
+            this.statsMesh.mesh.scale.set(0.3, 0.3, 0.3); // Scaled to 30%
+            this.statsMesh.mesh.frustumCulled = false;
+            this.statsMesh.mesh.renderOrder = 1002;
+            if (this.statsMesh.mesh.material instanceof RawShaderMaterial) {
+              this.statsMesh.mesh.material.depthTest = false;
+            }
+            this.statsMesh.mesh.userData.isHUD = true;
+            this.cameraManager.cameraVR.add(this.statsMesh.mesh);
+          }
+
+          if (this.config.enableHandHud) {
+            this.fpsHandText = new TextMesh(this.renderer.capabilities.getMaxAnisotropy(), 0.4, 0.2, 2, 60);
+            this.fpsHandText.mesh.visible = false;
+            this.fpsHandText.mesh.renderOrder = 1001;
+            if (this.fpsHandText.mesh.material instanceof RawShaderMaterial) {
+              this.fpsHandText.mesh.material.depthTest = false;
+            }
+            this.scene.add(this.fpsHandText.mesh);
+          }
+
+          // @ts-ignore
+          this.scene.add(this.cameraManager.cameraVR);
+
+          // Create DOM overlay for HUD
+          if (this.config.enableDomOverlay) {
+            const overlayElement = document.createElement('div');
+            overlayElement.id = 'xr-overlay';
+            overlayElement.style.position = 'absolute';
+            overlayElement.style.left = '50%';
+            overlayElement.style.top = '10%';
+            overlayElement.style.transform = 'translateX(-50%)';
+            overlayElement.style.color = '#00FF00'; // Bright green
+            overlayElement.style.fontFamily = 'sans-serif';
+            overlayElement.style.fontSize = '50px'; // Much bigger
+            overlayElement.style.fontWeight = 'bold';
+            overlayElement.style.padding = '20px';
+            overlayElement.style.backgroundColor = 'rgba(255, 0, 0, 0.5)'; // Semi-transparent red background for high contrast
+            overlayElement.style.border = '5px solid yellow';
+            overlayElement.style.pointerEvents = 'none'; // Ensure it doesn't block interactions
+            overlayElement.innerText = 'FPS: 0';
+            overlayElement.style.display = 'none'; // Hide initially, updateFps will show it
+            document.body.appendChild(overlayElement);
+
+            if (!this.composer) {
+              // @ts-ignore
+              this.baseLayer = new XRWebGLLayer(this.session, this.gl)
+              this.session.updateRenderState({
+                baseLayer: this.baseLayer,
+                // @ts-ignore
+                domOverlay: { root: overlayElement }
+              });
+            }
+          } else if (!this.composer) {
             // @ts-ignore
             this.baseLayer = new XRWebGLLayer(this.session, this.gl)
-            this.session.updateRenderState({baseLayer: this.baseLayer});
+            this.session.updateRenderState({
+              baseLayer: this.baseLayer
+            });
           }
           this.session.requestReferenceSpace('local')
               .then(space => {
@@ -107,7 +226,9 @@ export default class WebXRManager {
       depthFormat: (this.gl as any).DEPTH_COMPONENT24
     });
     // @ts-ignore
-    this.session.updateRenderState({layers: [this.proj_layer]});
+    this.session.updateRenderState({
+      layers: [this.proj_layer]
+    });
     this.renderer.setDrawingBufferSize(this.proj_layer.textureWidth, this.proj_layer.textureHeight, 1);
     this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight, { samples: 0, depthBuffer: true, stencilBuffer: false });
     this.newRenderTarget.texture.name = 'WebXRManager.newRenderTarget';
@@ -128,13 +249,11 @@ export default class WebXRManager {
     this.setDeltaTime(timestamp);
     let session = frame.session;
     session.requestAnimationFrame(this.onXRFrame);
-    if (session.inputSources.length === 0) return;
-    let pose = frame.getViewerPose(this.xrReferenceSpace);
+    // if (session.inputSources.length === 0) return;
+    let pose = frame.getViewerPose(this.xrReferenceSpace) as XRViewerPose;
     if (!pose) return;
-    if (!this.composer) {
-      let layer = session.renderState.baseLayer;
-      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, layer.framebuffer);
-    }
+
+    this.cameraManager.update(pose);
     let index = 0;
     for (let view of pose.views) {
       let viewport = this.getViewPort(view);
@@ -142,13 +261,10 @@ export default class WebXRManager {
       index++;
     }
     if (!this.inputSourcesAvailable) {
-      if (this.session.inputSources.length > 0) {
-        this.sceneBuilder.build(this.cameraManager.cameraVR, this.scene, this.renderer, this.physicsHandler);
-        this.inputSourcesAvailable = true;
-      }
-    } else {
-      this.renderScene(frame, pose);
+      this.sceneBuilder.build(this.cameraManager.cameraVR, this.scene, this.renderer, this.physicsHandler);
+      this.inputSourcesAvailable = true;
     }
+    this.renderScene(frame, pose);
   };
 
   private getViewPort(view) {
@@ -171,9 +287,7 @@ export default class WebXRManager {
       }
       return viewport;
     } else {
-      let viewport = this.baseLayer.getViewport(view);
-      this.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
-      return viewport;
+      return this.baseLayer.getViewport(view);
     }
   }
 
@@ -188,12 +302,17 @@ export default class WebXRManager {
     }
   }
 
-  private renderScene(frame: XRFrameOfReference, pose: XRDevicePose) {
-    let handTrackingResult: HandTrackingResult = this.trackedHandsManager.renderHandsAndDetectGesture(frame, pose, this.xrReferenceSpace);
+  private renderScene(frame: XRFrameOfReference, pose: XRViewerPose) {
+    let handTrackingResult: HandTrackingResult;
+    if (this.trackedHandsManager) {
+      handTrackingResult = this.trackedHandsManager.renderHandsAndDetectGesture(frame, pose, this.xrReferenceSpace);
+    }
     if (handTrackingResult) {
       if (handTrackingResult.gestureType == GestureType.None) {
-        this.trackedHandsManager.isCameraRotationEnabled = false;
-        this.trackedHandsManager.isOriginRotationEnabled = false;
+        if (this.trackedHandsManager) {
+          this.trackedHandsManager.isCameraRotationEnabled = false;
+          this.trackedHandsManager.isOriginRotationEnabled = false;
+        }
       } else {
         if (this.useDefaultHandGestures) {
           if (handTrackingResult.gestureType == GestureType.Index_Thumb) {
@@ -237,15 +356,144 @@ export default class WebXRManager {
       }
     }
     this.sceneBuilder.update();
-    this.cameraManager.update(pose);
     this.physicsHandler.updatePhysics();
-    if (this.composer) {
-      this.renderer.setRenderTarget(null);
-      this.composer.render();
+
+    if (this.config.enableHandHud && this.fpsHandText) {
+      if (handTrackingResult && handTrackingResult.position) {
+        this.displayFps(handTrackingResult.position);
+      } else {
+        // Keep it at a default position if hands are not tracked
+        this.displayFps(new Vector3(0, 0, -1));
+      }
+    }
+
+    if (this.config.enableShadows) {
+      if (this.composer) {
+        this.renderer.setRenderTarget(null);
+        this.updateFps(); // Update FPS while null target is bound
+        this.renderer.shadowMap.needsUpdate = true;
+        // Use only one eye for shadow update if using composer (though composer usually handles its own camera)
+        // Note: composer usually uses its own internal render path, but here we just want to trigger shadowMap
+        this.composer.render();
+      } else {
+        // Update shadows once per frame.
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+        this.renderer.shadowMap.needsUpdate = true;
+
+        if (this.config.enableScreenHud && this.fpsText) {
+          this.fpsText.mesh.visible = false;
+        }
+        if (this.config.enableHandHud && this.fpsHandText) {
+          this.fpsHandText.mesh.visible = false;
+        }
+        if (this.config.enableStats && this.statsMesh) {
+          this.statsMesh.mesh.visible = false;
+        }
+
+        // Handle hand mesh visibility during shadow pass
+        const handMeshesVisibleStates: boolean[] = [];
+        const handMeshList = (this.trackedHandsManager as any).handMeshList || [];
+        if (this.trackedHandsManager) {
+          for (let i = 0; i < handMeshList.length; i++) {
+            handMeshesVisibleStates[i] = handMeshList[i].visible;
+            // We want hands to be visible for the shadow pass if they were already visible
+            // This is just a safeguard in case something else hides them.
+          }
+        }
+
+        // We use a dedicated shadowCamera for Pass 1.
+        // To avoid culling lights/shadows based on head pose, we ensure the shadowCamera
+        // covers the whole scene by using an extremely wide FOV and keeping it centered.
+        this.shadowCamera.matrixWorld.identity();
+        this.shadowCamera.matrixWorldInverse.identity();
+        this.shadowCamera.updateProjectionMatrix();
+        this.renderer.render(this.scene, this.shadowCamera);
+
+        // Update FPS texture HERE, after Pass 1 but before Pass 2
+        // This is while the default framebuffer is bound and after the shadow pass.
+        this.updateFps();
+
+        if (this.config.enableScreenHud && this.fpsText) {
+          this.fpsText.mesh.visible = true;
+        }
+        if (this.config.enableHandHud && this.fpsHandText) {
+          this.fpsHandText.mesh.visible = true;
+        }
+        if (this.config.enableStats && this.statsMesh) {
+          this.statsMesh.mesh.visible = true;
+        }
+
+        // Restore hand mesh visibility just in case (though we didn't hide them)
+        if (this.trackedHandsManager) {
+          for (let i = 0; i < handMeshList.length; i++) {
+            if (handMeshesVisibleStates[i] !== undefined) {
+              handMeshList[i].visible = handMeshesVisibleStates[i];
+            }
+          }
+        }
+
+        // Render the whole array camera (Three.js will handle the eyes)
+        let layer = frame.session.renderState.baseLayer;
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, layer.framebuffer);
+        // Ensure world matrix is fresh for HUD children before main pass
+        this.cameraManager.cameraVR.updateMatrixWorld(true);
+        // Force projection matrix update for ArrayCamera if it hasn't been set yet
+        // although sub-cameras have correct projection matrices.
+        this.renderer.render(this.scene, this.cameraManager.cameraVR);
+      }
     } else {
-      this.renderer.render(this.scene, this.cameraManager.cameraVR);
+      // Shadows disabled, just update FPS and render once
+      // FORCE shadowMap.enabled to false again just in case Proxy was bypassed
+      this.renderer.shadowMap.enabled = false;
+
+      if (this.composer) {
+        this.renderer.setRenderTarget(null);
+        this.updateFps();
+        this.composer.render();
+      } else {
+        this.updateFps();
+        let layer = frame.session.renderState.baseLayer;
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, layer.framebuffer);
+        this.cameraManager.cameraVR.updateMatrixWorld(true);
+        this.renderer.render(this.scene, this.cameraManager.cameraVR);
+      }
     }
     this.sceneBuilder.postUpdate();
+  }
+
+  private displayFps(position: Vector3) {
+    if (this.fpsHandText) {
+      this.fpsHandText.mesh.position.set(position.x, position.y + 0.1, position.z);
+      if (this.cameraManager.cameraVR.position) {
+        // Use the same lookAt logic as SceneManager
+        this.fpsHandText.mesh.lookAt(this.cameraManager.cameraVR.position);
+      }
+    }
+  }
+
+  private updateFps() {
+    this.fpsFrameCount++;
+    const now = performance.now();
+    if (now >= this.fpsTimestamp + 1000) {
+      this.currentFps = Math.round((this.fpsFrameCount * 1000) / (now - this.fpsTimestamp));
+      this.fpsTimestamp = now;
+      this.fpsFrameCount = 0;
+      const overlay = document.getElementById('xr-overlay');
+      if (overlay && this.config.enableDomOverlay) {
+        overlay.innerText = "FPS: " + this.currentFps;
+        overlay.style.display = 'block';
+      }
+      if (this.fpsText && this.config.enableScreenHud) {
+        this.fpsText.set("FPS: " + this.currentFps);
+      }
+      if (this.fpsHandText && this.config.enableHandHud) {
+        // Only call .set() when the value actually changed to reduce texSubImage2D calls
+        this.fpsHandText.set("FPS: " + this.currentFps);
+      }
+      if (this.statsMesh && this.config.enableStats) {
+        this.statsMesh.update(this.currentFps);
+      }
+    }
   }
 
   private setInitialCameraPosition(direction: Vector3) {
