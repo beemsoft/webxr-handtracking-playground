@@ -537,6 +537,9 @@ export default class SceneManager extends SceneManagerParent  {
           this.displayMessage("Next move: " + this.move, gesture.position, gesture.orientation)
           this.doNext();
         }
+      } else if (gesture.gestureType == GestureType.Middle_Thumb_Upward) {
+        this.renderer.shadowMap.enabled = !this.renderer.shadowMap.enabled;
+        this.displayMessage("Shadows: " + (this.renderer.shadowMap.enabled ? "ON" : "OFF"), gesture.position, gesture.orientation);
       } else if (gesture.gestureType == GestureType.Pinky_Thumb) {
         if (this.isAnimationPaused) {
           this.move = this.move - 1;

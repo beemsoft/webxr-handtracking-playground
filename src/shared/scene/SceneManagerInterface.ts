@@ -10,7 +10,8 @@ export enum GestureType {
   "Middle_Thumb",
   "Ring_Thumb",
   "Pinky_Thumb",
-  "Middle_and_Ring_on_Thumb"
+  "Middle_and_Ring_on_Thumb",
+  "Middle_Thumb_Upward"
 }
 
 export interface HandTrackingResult {

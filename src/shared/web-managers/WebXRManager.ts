@@ -87,7 +87,7 @@ export default class WebXRManager {
           this.shadowCamera.matrixAutoUpdate = false;
           this.shadowCamera.frustumCulled = false;
 
-          // Prevent shadowMap.enabled from being overridden by other modules in XR mode
+          // Allow shadowMap.enabled to be controlled via config.enableShadows
           const renderer = this.renderer;
           const config = this.config;
           const originalShadowMap = renderer.shadowMap;
@@ -95,10 +95,8 @@ export default class WebXRManager {
           renderer.shadowMap = new Proxy(originalShadowMap, {
             set: (target, prop, value) => {
               if (prop === 'enabled') {
-                target.enabled = config.enableShadows;
-                if (value !== config.enableShadows) {
-                  console.warn(`Attempt to set shadowMap.enabled to ${value} was ignored. Locked to ${config.enableShadows} by WebXRManager config.`);
-                }
+                config.enableShadows = value;
+                target.enabled = value;
                 return true;
               }
               // @ts-ignore

@@ -80,7 +80,14 @@ export default class TrackedHandsWithoutPhysicsManager {
                 if (this.isThumbPinchingWithOtherFingerTip(inputSource, pinchFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
                   this.handGesture = GestureType.Index_Thumb;
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, snapFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
-                  this.handGesture = GestureType.Middle_Thumb;
+                  let middleTip = inputSource.hand.get(snapFingerTip);
+                  let middleTipPose = frame.getJointPose(middleTip, xrReferenceSpace);
+                  if (thumbTipPose.transform.position.y > wristPose.transform.position.y + 0.1 &&
+                      middleTipPose && middleTipPose.transform.position.y > wristPose.transform.position.y + 0.1) {
+                    this.handGesture = GestureType.Middle_Thumb_Upward;
+                  } else {
+                    this.handGesture = GestureType.Middle_Thumb;
+                  }
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, ringFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
                   this.handGesture = GestureType.Ring_Thumb;
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, pinkyFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
@@ -163,7 +170,8 @@ export default class TrackedHandsWithoutPhysicsManager {
                 }
                 break;
               }
-              case GestureType.Middle_Thumb: {
+              case GestureType.Middle_Thumb:
+              case GestureType.Middle_Thumb_Upward: {
                 if (joint1 == snapFingerTip || joint1 == thumbTip) {
                   fingerJointMaterial[joint1].color.set(0x33fdff);
                 }

@@ -73,7 +73,7 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
           this.handGesture = GestureType.None;
           let wrist = inputSource.hand.get(wristJoint);
           if (!wrist) {
-            return;
+            continue;
           }
           wristPose = frame.getJointPose(wrist, xrReferenceSpace);
           let thumb = inputSource.hand.get(thumbTip);
@@ -86,7 +86,14 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
                 if (this.isThumbPinchingWithOtherFingerTip(inputSource, pinchFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
                   this.handGesture = GestureType.Index_Thumb;
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, snapFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
-                  this.handGesture = GestureType.Middle_Thumb;
+                  let middleTip = inputSource.hand.get(snapFingerTip);
+                  let middleTipPose = frame.getJointPose(middleTip, xrReferenceSpace);
+                  if (thumbTipPose.transform.position.y > wristPose.transform.position.y + 0.1 &&
+                      middleTipPose && middleTipPose.transform.position.y > wristPose.transform.position.y + 0.1) {
+                    this.handGesture = GestureType.Middle_Thumb_Upward;
+                  } else {
+                    this.handGesture = GestureType.Middle_Thumb;
+                  }
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, ringFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
                   this.handGesture = GestureType.Ring_Thumb;
                 } else if (this.isThumbPinchingWithOtherFingerTip(inputSource, pinkyFingerTip, thumbTipPose, xrReferenceSpace, frame)) {
@@ -106,6 +113,7 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
         }
       }
     }
+    return null;
   }
 
   protected renderHandWithPhysicsEnabled(inputSource: XRInputSource, frame: XRFrameOfReference, xrReferenceSpace: XRReferenceSpace) {
@@ -168,7 +176,8 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
                 }
                 break;
               }
-              case GestureType.Middle_Thumb: {
+              case GestureType.Middle_Thumb:
+              case GestureType.Middle_Thumb_Upward: {
                 if (joint1 == snapFingerTip || joint1 == thumbTip) {
                   fingerJointMaterial[joint1].color.set(0x33fdff);
                 }
