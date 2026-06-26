@@ -40,6 +40,10 @@ export default class VrmSkeletonUtils {
         bindBones.push(bone.matrixWorld.clone());
     }
 
+    if (options.adjustScaling && !target.children[0].isAdjusted) {
+      this.adjustScaling(target.children[0], sourceBones, options);
+      target.children[0].isAdjusted = true;
+    }
     this.retargetBone(options, sourceBones, target.children[0]);   // Hip
     if (!options.rotateModel) {
       this.retargetBone(options, sourceBones, target.children[0].children[0]);   // Spine
@@ -51,11 +55,13 @@ export default class VrmSkeletonUtils {
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2]);   // Left shoulder
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0]);   // Left shoulder
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);   // Left shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);   // Left hand
+    this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1]);   // Right shoulder
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0]);   // Right upper arm
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0]);   // Right lower arm
+    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);   // Right hand
+    this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);
     this.retargetBone(options, sourceBones, target.children[0].children[2]);   // Right upper leg
     this.retargetBone(options, sourceBones, target.children[0].children[2].children[0]);   // Right leg
     this.retargetBone(options, sourceBones, target.children[0].children[2].children[0].children[0]);   // Right foot
@@ -65,6 +71,7 @@ export default class VrmSkeletonUtils {
   };
 
   static retargetBone(options, sourceBones, target) {
+    if (!target) return;
     const quat = new Quaternion(),
       relativeMatrix = new Matrix4(),
       globalMatrix = new Matrix4();
@@ -88,11 +95,70 @@ export default class VrmSkeletonUtils {
     bone.matrix.copy(bone.parent.matrixWorld).invert();
     bone.matrix.multiply(globalMatrix);
 
+    const oldScale = bone.scale.clone();
     bone.matrix.decompose(bone.position, bone.quaternion, bone.scale);
+    if (!options.adjustScaling) {
+      bone.scale.set(1, 1, 1);
+    } else {
+      bone.scale.copy(oldScale);
+    }
     if (options.rotateModel) {
       bone.quaternion.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
     }
     bone.updateMatrixWorld();
+  }
+
+  static retargetHand(options, sourceBones, handBone) {
+    if (!handBone) return;
+
+    for (const child of handBone.children) {
+      if (child.isBone || child.name.includes("Normalized") || (child.name && child.name.startsWith("Normalized"))) {
+        const name = options.names[child.name] || child.name;
+        const sourceBone = this.getBoneByName(name, sourceBones);
+        if (sourceBone) {
+          this.retargetBone(options, sourceBones, child);
+        }
+        this.retargetHand(options, sourceBones, child);
+      }
+    }
+  }
+
+  static adjustScaling(targetBone, sourceBones, options) {
+    const name = options.names[targetBone.name] || targetBone.name;
+    const sourceBone = this.getBoneByName(name, sourceBones);
+
+    if (sourceBone && sourceBone.children.length > 0 && targetBone.children.length > 0) {
+      // Find matching source child
+      let sourceChild;
+      const targetChild = targetBone.children[0];
+      const targetChildName = options.names[targetChild.name] || targetChild.name;
+
+      for (const sc of sourceBone.children) {
+        const scName = options.names[sc.name] || sc.name;
+        if (scName === targetChildName || sc.name === targetChildName) {
+          sourceChild = sc;
+          break;
+        }
+      }
+
+      if (sourceChild) {
+        const sourceLength = sourceChild.position.length();
+        const targetLength = targetChild.position.length();
+
+        if (targetLength > 0 && sourceLength > 0) {
+          let scaleFactor = sourceLength / targetLength;
+          // Clamp scale factor to reasonable limits
+          scaleFactor = Math.max(0.1, Math.min(10, scaleFactor));
+          targetBone.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        }
+      }
+    }
+
+    for (const child of targetBone.children) {
+      if (child.isBone || child.name.includes("Normalized") || (child.name && child.name.startsWith("Normalized"))) {
+        this.adjustScaling(child, sourceBones, options);
+      }
+    }
   }
 
   static getBones(skeleton) {
