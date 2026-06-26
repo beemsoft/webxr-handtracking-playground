@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, Timer, WebGLRenderer} from 'three/src/Three';
+import {PerspectiveCamera, Scene, Timer, WebGLRenderer} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';

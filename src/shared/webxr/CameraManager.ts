@@ -1,4 +1,4 @@
-import { ArrayCamera, PerspectiveCamera, Vector4 } from 'three/src/Three';
+import { ArrayCamera, PerspectiveCamera, Vector4 } from 'three';
 import { XRDevicePose, XRView, XRViewport } from './WebXRDeviceAPI';
 
 const FIELD_OF_VIEW_DEGREES = 75;

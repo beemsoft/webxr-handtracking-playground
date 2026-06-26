@@ -14,7 +14,7 @@ import {
 // import {Refractor} from "three/examples/jsm/objects/Refractor";
 import {Reflector} from "./Reflector2";
 import {Refractor} from "./Refractor2";
-import {Vector3, WebGLRenderTarget} from "three/src/Three";
+import {Vector3, WebGLRenderTarget} from "three";
 // import {Reflector} from "three/examples/jsm/objects/Reflector";
 
 /**

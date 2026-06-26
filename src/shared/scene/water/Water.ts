@@ -8,7 +8,7 @@ import {
 	UniformsUtils,
 	Vector3,
 	WebGLRenderTarget
-} from 'three/src/Three';
+} from 'three';
 
 /**
  * Work based on :

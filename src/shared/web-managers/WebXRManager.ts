@@ -1,4 +1,4 @@
-import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera } from 'three/src/Three';
+import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   GestureType,

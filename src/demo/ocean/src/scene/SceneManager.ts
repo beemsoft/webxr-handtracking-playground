@@ -10,7 +10,7 @@ import {
   TextureLoader,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { Water } from '../../../../shared/scene/water/Water';
 import { Sky } from '../../../../shared/scene/sky/Sky';

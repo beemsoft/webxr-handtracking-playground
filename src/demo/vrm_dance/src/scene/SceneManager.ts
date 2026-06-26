@@ -10,7 +10,7 @@ import {
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import HandPoseManager from '../../../../shared/hands/HandPoseManager';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';

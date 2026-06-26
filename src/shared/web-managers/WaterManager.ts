@@ -1,5 +1,5 @@
 import { Water } from '../scene/water/Water';
-import { Matrix4, PerspectiveCamera, Plane, Scene, Vector3, Vector4, WebGLRenderer } from 'three/src/Three';
+import { Matrix4, PerspectiveCamera, Plane, Scene, Vector3, Vector4, WebGLRenderer } from 'three';
 
 export default class WaterManager {
 

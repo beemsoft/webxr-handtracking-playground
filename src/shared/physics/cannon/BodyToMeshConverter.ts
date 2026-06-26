@@ -5,7 +5,7 @@ import {
   Object3D,
   PlaneGeometry,
   SphereGeometry
-} from 'three/src/Three';
+} from 'three';
 import {Body, Shape} from 'cannon-es';
 
 const particleGeo = new SphereGeometry( 0.5, 16, 8 );

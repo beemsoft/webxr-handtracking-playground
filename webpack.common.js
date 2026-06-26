@@ -1,14 +1,5 @@
 const path = require('path');
-const webpack = require('webpack');
-
-const plugins = [
-    new webpack.ProvidePlugin({
-        THREE: "three"
-    }),
-    new webpack.ProvidePlugin({
-        CANNON: "cannon-es"
-    })
-];
+require('webpack');
 
 module.exports = {
     entry: {
@@ -50,8 +41,12 @@ module.exports = {
             }
         ]
     },
-    plugins: plugins,
     resolve: {
+        alias: {
+            three: path.resolve(__dirname, 'node_modules/three'),
+            'three/addons': path.resolve(__dirname, 'node_modules/three/examples/jsm'),
+            'three/examples/jsm': path.resolve(__dirname, 'node_modules/three/examples/jsm'),
+        },
         extensions: [ '.tsx', '.ts', '.js' ],
         fallback: {
             fs: false,

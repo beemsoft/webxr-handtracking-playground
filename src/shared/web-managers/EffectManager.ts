@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, Vector2, WebGLRenderer, WebGLRenderTarget } from 'three/src/Three';
+import { PerspectiveCamera, Scene, Vector2, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { PostProcessingConfig, PostProcessingType } from '../scene/SceneManagerInterface';
 import { EffectComposer } from '../postprocessing/EffectComposer';
 import { RenderPass } from '../postprocessing/RenderPass';

@@ -1,4 +1,4 @@
-import { Matrix4, Quaternion, Vector3 } from 'three/src/Three';
+import { Matrix4, Quaternion, Vector3 } from 'three';
 
 export default class VrmSkeletonUtils {
 

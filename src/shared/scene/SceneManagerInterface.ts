@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Quaternion, Scene, ToneMapping, Vector3, WebGLRenderer } from 'three/src/Three';
+import { PerspectiveCamera, Quaternion, Scene, ToneMapping, Vector3, WebGLRenderer } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import AmmoHandler from "../physics/ammo/AmmoHandler";
 

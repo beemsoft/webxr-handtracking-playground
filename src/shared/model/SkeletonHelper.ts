@@ -6,7 +6,7 @@ import {
   LineSegments,
   Matrix4, Skeleton,
   Vector3
-} from 'three/src/Three';
+} from 'three';
 
 const _vector = /*@__PURE__*/ new Vector3();
 const _boneMatrix = /*@__PURE__*/ new Matrix4();

@@ -11,7 +11,7 @@ import {
   TextureLoader,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 // @ts-ignore
 import { Body, Box, Plane, Quaternion, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';

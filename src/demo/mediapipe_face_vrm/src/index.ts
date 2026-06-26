@@ -33,7 +33,7 @@ import {
     Vector3,
     VideoTexture,
     WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 

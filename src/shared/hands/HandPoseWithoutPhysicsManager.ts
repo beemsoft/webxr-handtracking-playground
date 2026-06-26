@@ -1,4 +1,4 @@
-import {BoxGeometry, MathUtils, Mesh, MeshNormalMaterial, Scene, Vector3} from 'three/src/Three';
+import {BoxGeometry, MathUtils, Mesh, MeshNormalMaterial, Scene, Vector3} from 'three';
 
 export const fingerLookupIndices = {
   thumb: [0, 1, 2, 3, 4],

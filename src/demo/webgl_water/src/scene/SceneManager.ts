@@ -8,7 +8,7 @@ import {
   TextureLoader, TorusKnotGeometry, Vector2,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import {Water} from "../../../../shared/scene/water/Water2";

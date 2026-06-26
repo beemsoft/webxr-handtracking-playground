@@ -5,7 +5,7 @@ import {
     PlaneGeometry,
     ShaderMaterial,
     TextureLoader
-} from "three/src/Three";
+} from "three";
 
 export class Water extends Mesh {
     constructor() {

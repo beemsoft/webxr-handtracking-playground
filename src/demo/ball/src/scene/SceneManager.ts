@@ -9,7 +9,7 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 import { Body, Material, Sphere, Vec3 } from 'cannon-es';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';

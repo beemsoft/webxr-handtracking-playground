@@ -5,7 +5,7 @@ import {
     Mesh,
     ShaderMaterial,
     TextureLoader
-} from "three/src/Three";
+} from "three";
 
 const light = [0.7559289460184544, 0.7559289460184544, -0.3779644730092272];
 

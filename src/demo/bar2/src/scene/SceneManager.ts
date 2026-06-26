@@ -1,4 +1,5 @@
 import {
+  AnimationAction,
   AnimationClip,
   AnimationMixer,
   LoopOnce,
@@ -8,12 +9,11 @@ import {
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMExpressionPresetName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
-import { AnimationAction } from 'three/src/animation/AnimationAction';
 import { BVH, BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import SkeletonHelper from '../../../../shared/model/SkeletonHelper';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';

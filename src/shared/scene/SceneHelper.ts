@@ -1,4 +1,4 @@
-import {DirectionalLight, HemisphereLight, Scene} from 'three/src/Three';
+import {DirectionalLight, HemisphereLight, Scene} from 'three';
 import {TextMesh} from './text/TextMesh';
 
 export class SceneHelper {

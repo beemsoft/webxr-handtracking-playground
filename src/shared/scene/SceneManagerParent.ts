@@ -1,4 +1,4 @@
-import {AnimationMixer, PerspectiveCamera, Scene, Timer, Vector3, WebGLRenderer} from 'three/src/Three';
+import {AnimationMixer, PerspectiveCamera, Scene, Timer, Vector3, WebGLRenderer} from 'three';
 import { HandTrackingResult, PostProcessingConfig, SceneManagerInterface } from './SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import { SceneHelper } from './SceneHelper';

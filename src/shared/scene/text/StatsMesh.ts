@@ -5,7 +5,7 @@ import {
     Mesh,
     PlaneGeometry,
     RawShaderMaterial
-} from 'three/src/Three';
+} from 'three';
 
 /**
  * A Performance Stats Viewer for WebXR, inspired by the immersive-web samples.

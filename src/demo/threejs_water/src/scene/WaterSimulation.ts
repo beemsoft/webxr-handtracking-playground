@@ -6,7 +6,7 @@ import {
     PlaneGeometry,
     ShaderMaterial,
     WebGLRenderTarget
-} from "three/src/Three";
+} from "three";
 
 export class WaterSimulation {
     private _camera: OrthographicCamera;

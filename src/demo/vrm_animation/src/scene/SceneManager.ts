@@ -1,4 +1,5 @@
 import {
+  AnimationAction,
   AnimationClip,
   AnimationMixer,
   AxesHelper,
@@ -13,12 +14,11 @@ import {
   Scene,
   Vector3,
   WebGLRenderer
-} from 'three/src/Three';
+} from 'three';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMExpressionPresetName, VRMHumanBoneName, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
-import { AnimationAction } from 'three/src/animation/AnimationAction';
 import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 
 export default class SceneManager extends SceneManagerParent {

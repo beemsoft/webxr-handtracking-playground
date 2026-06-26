@@ -7,7 +7,7 @@ import {
 	UniformsUtils,
 	Vector3,
 	WebGLRenderTarget
-} from 'three/src/Three';
+} from 'three';
 import { earthFragmentShader, earthVertexShader } from './EarthShaders';
 
 const verteces = Math.pow(2, 9);

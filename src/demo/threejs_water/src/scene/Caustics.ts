@@ -4,7 +4,7 @@ import {
     ShaderChunk, ShaderMaterial,
     UnsignedByteType,
     WebGLRenderTarget
-} from "three/src/Three";
+} from "three";
 import {loadFile} from "../utils/utils";
 
 const light = [0.7559289460184544, 0.7559289460184544, -0.3779644730092272];

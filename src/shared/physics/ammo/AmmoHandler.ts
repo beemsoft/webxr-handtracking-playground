@@ -8,7 +8,7 @@ import {
     Quaternion,
     Scene,
     Vector3
-} from "three/src/Three";
+} from "three";
 import * as Ammo from 'ammo.js';
 import {ConvexObjectBreaker} from "three/examples/jsm/misc/ConvexObjectBreaker";
 import {Object3D} from "three";

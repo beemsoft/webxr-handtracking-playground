@@ -1,4 +1,4 @@
-import { MathUtils, Vector3 } from 'three/src/Three';
+import { MathUtils, Vector3 } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import ProjectileMotionHelper from '../physics/cannon/ProjectileMotionHelper';
 import { Vec3 } from 'cannon-es';
