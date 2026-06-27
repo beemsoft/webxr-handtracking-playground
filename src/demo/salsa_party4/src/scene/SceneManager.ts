@@ -56,6 +56,7 @@ export default class SceneManager extends SceneManagerParent  {
     useTargetMatrix: true,
     rotateModel: true,
     adjustScaling: true,
+    proceduralFingers: true,
     names: {
       "Normalized_J_Bip_C_Hips": "hip",
       "Normalized_J_Bip_C_Chest": "abdomen",
@@ -73,27 +74,37 @@ export default class SceneManager extends SceneManagerParent  {
       "Normalized_J_Bip_L_LowerArm": "lForeArm",
       "Normalized_J_Bip_L_Hand": "lHand",
 
-      "Normalized_J_Bip_L_ThumbProximal": "lThumb1",
-      "Normalized_J_Bip_L_ThumbIntermediate": "lThumb2",
+      "Normalized_J_Bip_L_ThumbMetacarpal": "lThumb1",
+      "Normalized_J_Bip_L_ThumbProximal": "lThumb2",
+      "Normalized_J_Bip_L_ThumbDistal": "lThumb3",
       "Normalized_J_Bip_L_IndexProximal": "lIndex1",
-      "Normalized_J_Bip_L_IndexIntermediate": "lIndex2",
+      "Normalized_J_Bip_L_IndexMiddle": "lIndex2",
+      "Normalized_J_Bip_L_IndexDistal": "lIndex3",
       "Normalized_J_Bip_L_MiddleProximal": "lMid1",
-      "Normalized_J_Bip_L_MiddleIntermediate": "lMid2",
+      "Normalized_J_Bip_L_MiddleMiddle": "lMid2",
+      "Normalized_J_Bip_L_MiddleDistal": "lMid3",
       "Normalized_J_Bip_L_RingProximal": "lRing1",
-      "Normalized_J_Bip_L_RingIntermediate": "lRing2",
+      "Normalized_J_Bip_L_RingMiddle": "lRing2",
+      "Normalized_J_Bip_L_RingDistal": "lRing3",
       "Normalized_J_Bip_L_LittleProximal": "lPinky1",
-      "Normalized_J_Bip_L_LittleIntermediate": "lPinky2",
+      "Normalized_J_Bip_L_LittleMiddle": "lPinky2",
+      "Normalized_J_Bip_L_LittleDistal": "lPinky3",
 
-      "Normalized_J_Bip_R_ThumbProximal": "rThumb1",
-      "Normalized_J_Bip_R_ThumbIntermediate": "rThumb2",
+      "Normalized_J_Bip_R_ThumbMetacarpal": "rThumb1",
+      "Normalized_J_Bip_R_ThumbProximal": "rThumb2",
+      "Normalized_J_Bip_R_ThumbDistal": "rThumb3",
       "Normalized_J_Bip_R_IndexProximal": "rIndex1",
-      "Normalized_J_Bip_R_IndexIntermediate": "rIndex2",
+      "Normalized_J_Bip_R_IndexMiddle": "rIndex2",
+      "Normalized_J_Bip_R_IndexDistal": "rIndex3",
       "Normalized_J_Bip_R_MiddleProximal": "rMid1",
-      "Normalized_J_Bip_R_MiddleIntermediate": "rMid2",
+      "Normalized_J_Bip_R_MiddleMiddle": "rMid2",
+      "Normalized_J_Bip_R_MiddleDistal": "rMid3",
       "Normalized_J_Bip_R_RingProximal": "rRing1",
-      "Normalized_J_Bip_R_RingIntermediate": "rRing2",
+      "Normalized_J_Bip_R_RingMiddle": "rRing2",
+      "Normalized_J_Bip_R_RingDistal": "rRing3",
       "Normalized_J_Bip_R_LittleProximal": "rPinky1",
-      "Normalized_J_Bip_R_LittleIntermediate": "rPinky2",
+      "Normalized_J_Bip_R_LittleMiddle": "rPinky2",
+      "Normalized_J_Bip_R_LittleDistal": "rPinky3",
 
       "Normalized_J_Bip_R_UpperLeg": "rThigh",
       "Normalized_J_Bip_R_LowerLeg": "rShin",
@@ -260,6 +271,7 @@ export default class SceneManager extends SceneManagerParent  {
       gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].leader + '.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
         VRMUtils.combineSkeletons(gltf.scene);
+        gltf.scene.userData.vrm = gltf.userData.vrm;
         this.scene.add(gltf.userData.vrm.scene);
         gltf.scene.children[5].position.x = modelNames[i].offsetX;
         gltf.scene.children[5].position.z = modelNames[i].offsetZ;
@@ -272,10 +284,14 @@ export default class SceneManager extends SceneManagerParent  {
         } );
         this.initHappyAnimation(gltf.userData.vrm);
         this.initBlinkAnimation(gltf.userData.vrm);
+        const leaderVrm = gltf.userData.vrm;
+        leaderVrm.humanoid.getNormalizedBoneNode('leftHand').userData.vrm = leaderVrm;
+        leaderVrm.humanoid.getNormalizedBoneNode('rightHand').userData.vrm = leaderVrm;
         console.log('Loading model ' + modelNames[i].follower);
         gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
           VRMUtils.combineSkeletons(gltf2.scene);
+          gltf2.scene.userData.vrm = gltf2.userData.vrm;
           gltf2.scene.children[5].position.x = modelNames[i].offsetX;
           gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
           gltf2.scene.traverse( function( object ) {
@@ -287,6 +303,9 @@ export default class SceneManager extends SceneManagerParent  {
           } );
           this.initHappyAnimation(gltf2.userData.vrm);
           this.initBlinkAnimation(gltf2.userData.vrm);
+          const followerVrm = gltf2.userData.vrm;
+          followerVrm.humanoid.getNormalizedBoneNode('leftHand').userData.vrm = followerVrm;
+          followerVrm.humanoid.getNormalizedBoneNode('rightHand').userData.vrm = followerVrm;
           this.danceCouples.push({ leader: gltf.userData.vrm, follower: gltf2.userData.vrm });
           this.scene.add(gltf2.userData.vrm.scene);
           if (i == modelNames.length - 1) {
@@ -454,8 +473,8 @@ export default class SceneManager extends SceneManagerParent  {
         this.mixerDance2.update(delta/this.slowDownFactor);
         if (this.danceCouples && this.danceCouples.length > 0) {
           for (let i = 0; i < this.danceCouples.length; i++) {
-            VrmSkeletonUtils.retarget(this.danceCouples[i].leader.scene.children[5], this.source1SkeletonHelper, this.modelOptions);
-            VrmSkeletonUtils.retarget(this.danceCouples[i].follower.scene.children[5], this.source2SkeletonHelper, this.modelOptions);
+            VrmSkeletonUtils.retarget(this.danceCouples[i].leader, this.source1SkeletonHelper, this.modelOptions);
+            VrmSkeletonUtils.retarget(this.danceCouples[i].follower, this.source2SkeletonHelper, this.modelOptions);
             this.danceCouples[i].leader.update(delta);
             this.danceCouples[i].follower.update(delta);
 

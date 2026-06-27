@@ -38,6 +38,7 @@ export default class SceneManager extends SceneManagerParent {
     preservePosition: false,
     preserveHipPosition: false,
     useTargetMatrix: true,
+    proceduralFingers: true,
     names: {
       "Normalized_J_Bip_C_Hips": "hips_JNT",
       "Normalized_J_Bip_C_Spine": "spine_JNT",
@@ -62,7 +63,39 @@ export default class SceneManager extends SceneManagerParent {
 
       "Normalized_J_Bip_L_UpperLeg": "l_upleg_JNT",
       "Normalized_J_Bip_L_LowerLeg": "l_leg_JNT",
-      "Normalized_J_Bip_L_Foot": "l_foot_JNT"
+      "Normalized_J_Bip_L_Foot": "l_foot_JNT",
+
+      "Normalized_J_Bip_L_ThumbMetacarpal": "l_handThumb1_JNT",
+      "Normalized_J_Bip_L_ThumbProximal": "l_handThumb2_JNT",
+      "Normalized_J_Bip_L_ThumbDistal": "l_handThumb3_JNT",
+      "Normalized_J_Bip_L_IndexProximal": "l_handIndex_01_JNT",
+      "Normalized_J_Bip_L_IndexMiddle": "l_handIndex_02_JNT",
+      "Normalized_J_Bip_L_IndexDistal": "l_handIndex_03_JNT",
+      "Normalized_J_Bip_L_MiddleProximal": "l_handMiddle1_JNT",
+      "Normalized_J_Bip_L_MiddleMiddle": "l_handMiddle2_JNT",
+      "Normalized_J_Bip_L_MiddleDistal": "l_handMiddle3_JNT",
+      "Normalized_J_Bip_L_RingProximal": "l_handRing1_JNT",
+      "Normalized_J_Bip_L_RingMiddle": "l_handRing2_JNT",
+      "Normalized_J_Bip_L_RingDistal": "l_handRing3_JNT",
+      "Normalized_J_Bip_L_LittleProximal": "l_handPinky1_JNT",
+      "Normalized_J_Bip_L_LittleMiddle": "l_handPinky2_JNT",
+      "Normalized_J_Bip_L_LittleDistal": "l_handPinky3_JNT",
+
+      "Normalized_J_Bip_R_ThumbMetacarpal": "r_handThumb1_JNT",
+      "Normalized_J_Bip_R_ThumbProximal": "r_handThumb2_JNT",
+      "Normalized_J_Bip_R_ThumbDistal": "r_handThumb3_JNT",
+      "Normalized_J_Bip_R_IndexProximal": "r_handIndex_01_JNT",
+      "Normalized_J_Bip_R_IndexMiddle": "r_handIndex_02_JNT",
+      "Normalized_J_Bip_R_IndexDistal": "r_handIndex_03_JNT",
+      "Normalized_J_Bip_R_MiddleProximal": "r_handMiddle1_JNT",
+      "Normalized_J_Bip_R_MiddleMiddle": "r_handMiddle2_JNT",
+      "Normalized_J_Bip_R_MiddleDistal": "r_handMiddle3_JNT",
+      "Normalized_J_Bip_R_RingProximal": "r_handRing1_JNT",
+      "Normalized_J_Bip_R_RingMiddle": "r_handRing2_JNT",
+      "Normalized_J_Bip_R_RingDistal": "r_handRing3_JNT",
+      "Normalized_J_Bip_R_LittleProximal": "r_handPinky1_JNT",
+      "Normalized_J_Bip_R_LittleMiddle": "r_handPinky2_JNT",
+      "Normalized_J_Bip_R_LittleDistal": "r_handPinky3_JNT"
     }
   };
   private audioHandler = new AudioHandler();
@@ -88,6 +121,9 @@ export default class SceneManager extends SceneManagerParent {
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
     gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
       const vrm = gltf.userData.vrm;
+      vrm.scene.userData.vrm = vrm; // Store VRM reference in scene
+      vrm.humanoid.getNormalizedBoneNode('leftHand').userData.vrm = vrm;
+      vrm.humanoid.getNormalizedBoneNode('rightHand').userData.vrm = vrm;
       let model = vrm.scene;
       console.log(vrm);
       scene.add(model);
@@ -152,7 +188,7 @@ export default class SceneManager extends SceneManagerParent {
     if (this.mixer2) {
       this.mixer2.update(delta);
       if (this.isAnimationStarted) {
-        VrmSkeletonUtils.retarget(this.currentVrm.scene.children[5], this.sourceSkeletonHelper, this.options);
+        VrmSkeletonUtils.retarget(this.currentVrm, this.sourceSkeletonHelper, this.options);
       }
     }
     if (this.mixer1) {

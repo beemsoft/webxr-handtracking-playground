@@ -1,8 +1,8 @@
-import { Matrix4, Quaternion, Vector3 } from 'three';
+import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
 
 export default class VrmSkeletonUtils {
 
-  static retarget(target, source, options) {
+  static retarget(vrm, source, options) {
 
     options = options || {};
     options.preserveMatrix = options.preserveMatrix !== undefined ? options.preserveMatrix : true;
@@ -11,6 +11,8 @@ export default class VrmSkeletonUtils {
     options.useTargetMatrix = options.useTargetMatrix !== undefined ? options.useTargetMatrix : false;
     options.hip = options.hip !== undefined ? options.hip : "hip";
     options.names = options.names || {};
+
+    const target = vrm.scene.children[5] || vrm.scene;
 
     let sourceBones = source.isObject3D ? source.skeleton.bones : this.getBones(source),
       bindBones,
@@ -56,12 +58,15 @@ export default class VrmSkeletonUtils {
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0]);   // Left shoulder
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0]);   // Left shoulder
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);   // Left hand
-    this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1]);   // Right shoulder
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0]);   // Right upper arm
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0]);   // Right lower arm
     this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);   // Right hand
-    this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);
+    if (!options.proceduralFingers) {
+      this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);
+      this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);
+    }
+    this.animateFingers(options, vrm);
     this.retargetBone(options, sourceBones, target.children[0].children[2]);   // Right upper leg
     this.retargetBone(options, sourceBones, target.children[0].children[2].children[0]);   // Right leg
     this.retargetBone(options, sourceBones, target.children[0].children[2].children[0].children[0]);   // Right foot
@@ -116,11 +121,170 @@ export default class VrmSkeletonUtils {
         const name = options.names[child.name] || child.name;
         const sourceBone = this.getBoneByName(name, sourceBones);
         if (sourceBone) {
+          // If it's a finger bone, we might want to ignore the BVH data if it's known to be noisy
+          // But for now, let's keep retargeting and then overlay our procedural animation
           this.retargetBone(options, sourceBones, child);
         }
         this.retargetHand(options, sourceBones, child);
       }
     }
+  }
+
+  static animateFingers(options, vrm) {
+    if (options.proceduralFingers === false) return;
+    const time = Date.now() * 0.001;
+
+    const leftHand = vrm.humanoid.getNormalizedBoneNode('leftHand');
+    const rightHand = vrm.humanoid.getNormalizedBoneNode('rightHand');
+    const leftForearm = vrm.humanoid.getNormalizedBoneNode('leftLowerArm');
+    const rightForearm = vrm.humanoid.getNormalizedBoneNode('rightLowerArm');
+
+    if (leftHand) this.applyProceduralHandAnimation(leftHand, leftForearm, time, true, options);
+    if (rightHand) this.applyProceduralHandAnimation(rightHand, rightForearm, time, false, options);
+  }
+
+  static applyProceduralHandAnimation(handBone, forearmBone, time, isLeft, options) {
+    if (!handBone) return;
+
+    // Calculate forearm-hand curve
+    let extensionFactor = 0.5;
+    if (forearmBone) {
+      // Alignment of forearm and hand
+      const forearmDir = new Vector3(0, 0, 1).applyQuaternion(forearmBone.quaternion).normalize();
+      const handDir = new Vector3(0, 0, 1).applyQuaternion(handBone.quaternion).normalize();
+      const dot = forearmDir.dot(handDir);
+
+      // Map dot product to extensionFactor. 1.0 (aligned) -> 1.0, -1.0 (fully bent) -> 0.0
+      extensionFactor = Math.max(0, (dot + 1) / 2);
+    }
+
+    const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
+    const jointNames = ['Proximal', 'Intermediate', 'Distal'];
+
+    // Artistic "Dance Hand" offsets
+    const fingerBaseCurls = {
+      'Thumb': 0.4,
+      'Index': 0.15,
+      'Middle': 0.35,
+      'Ring': 0.3,
+      'Little': 0.55
+    };
+
+    const fingerSplayOffsets = {
+      'Thumb': isLeft ? 0.25 : -0.25,
+      'Index': isLeft ? 0.2 : -0.2,
+      'Middle': isLeft ? 0.05 : -0.05,
+      'Ring': isLeft ? 0.2 : -0.2,
+      'Little': isLeft ? 0.4 : -0.4
+    };
+
+    fingerNames.forEach((finger, fIdx) => {
+      const isThumb = finger === 'Thumb';
+      const isPinky = finger === 'Little';
+      const side = isLeft ? 'Left' : 'Right';
+      const baseCurl = fingerBaseCurls[finger];
+      const splayBase = fingerSplayOffsets[finger];
+      const timeOffset = fIdx * 0.15;
+
+      jointNames.forEach((jName, jIdx) => {
+        let boneName = `${side}${finger}${jName}`;
+        let isMetacarpal = false;
+
+        if (isThumb) {
+           if (jIdx === 0) {
+             boneName = `${side}ThumbMetacarpal`;
+             isMetacarpal = true;
+           } else if (jIdx === 1) {
+             boneName = `${side}ThumbProximal`;
+           } else if (jIdx === 2) {
+             boneName = `${side}ThumbDistal`;
+           }
+        }
+
+        // @ts-ignore
+        const vrm = handBone.userData.vrm || handBone.parent.userData.vrm || (handBone.root && handBone.root.userData.vrm) || (handBone.scene && handBone.scene.userData.vrm);
+        const vrmBoneName = boneName.charAt(0).toLowerCase() + boneName.slice(1);
+        const bone = vrm ? vrm.humanoid.getNormalizedBoneNode(vrmBoneName) : null;
+
+        if (bone) {
+           this.applyFingerCurl(bone, baseCurl, splayBase, time, timeOffset + jIdx * 0.05, extensionFactor, isThumb, jIdx, isLeft, isMetacarpal, isPinky);
+        } else {
+           // console.warn(`Bone not found: ${boneName} (vrmBoneName: ${vrmBoneName})`);
+        }
+      });
+    });
+  }
+
+  static applyFingerCurl(bone, baseCurl, splayBase, time, offset, extensionFactor, isThumb, jointIdx, isLeft, isMetacarpal = false, isPinky = false) {
+    if (!bone) return;
+
+    // Movement is more of a "breathing" or "swaying" motion
+    const pulse = Math.sin(time * 0.8 + offset) * 0.04 + Math.sin(time * 1.5 + offset * 0.5) * 0.02;
+
+    // In dance, the distal joints are often more relaxed/straight than the proximal ones
+    // to create an elegant trailing effect.
+    // However, if fingers look "stretched", we should ensure enough curl is applied.
+    const jointFactor = Math.pow(0.85, jointIdx);
+
+    let curlStrength = isThumb ? 0.6 : 1.0;
+    let naturalCurve = 0.35; // Slightly reduced to avoid "tight" inward curl
+
+    // The base of the thumb (Metacarpal) should be more aligned with the index base.
+    // We adjust the splay and curl specifically for the metacarpal to bring it inside the palm.
+    let splayAdjustment = 0;
+    let thumbTilt = 0; // Subtle Z-axis rotation for opposition
+    if (isThumb && isMetacarpal) {
+      naturalCurve = 0.9; // Adjusted base curve for a more natural tucked position
+      curlStrength = 0.3; // More movement at the base for organic feel
+      splayAdjustment = (isLeft ? -0.5 : 0.5); // Aligned towards palm/index
+      thumbTilt = (isLeft ? 0.2 : -0.2); // Tilt thumb base to face fingers
+    } else if (isThumb) {
+      // Thumb proximal and distal should also curve naturally
+      naturalCurve = 0.6;
+      splayAdjustment = (isLeft ? -0.25 : 0.25);
+      thumbTilt = (isLeft ? 0.1 : -0.1);
+    }
+
+    // extensionFactor 1.0 (arm straight) -> less curl. 0.0 (arm bent) -> more curl (relaxed).
+    const relaxation = (1.2 - extensionFactor) * 1.5;
+
+    // In standard VRM (glTF) bone orientation, the Z-axis points towards the child bone,
+    // and the X-axis is usually the curling axis.
+    // The user says "direction seems opposite", so we negate totalCurl to ensure inward bending.
+    let totalCurl = -(naturalCurve + baseCurl * relaxation + pulse * curlStrength) * jointFactor;
+
+    // Splaying also pulses slightly
+    let splayPulse = Math.cos(time * 1.0 + offset) * 0.02;
+    let splayValue = splayPulse + splayAdjustment;
+
+    // Splay (abduction/adduction) should primarily happen at the base joint (Proximal/Metacarpal)
+    if (jointIdx === 0 || isMetacarpal) {
+      splayValue += splayBase;
+    }
+
+    // If it's the pinky (Little finger), we want it straight
+    if (isPinky) {
+      // For the pinky, we only keep the base splay and force curl to 0
+      const pinkySplay = (jointIdx === 0 || isMetacarpal) ? splayBase + splayAdjustment : 0;
+      bone.quaternion.setFromEuler(new Euler(0, pinkySplay, 0, 'YXZ'));
+      bone.updateMatrixWorld();
+
+      // Also ensure children are straight if they aren't explicitly handled
+      if (bone.children) {
+          bone.children.forEach(child => {
+              if (child.quaternion) {
+                  child.quaternion.set(0, 0, 0, 1);
+              }
+          });
+      }
+      return;
+    }
+
+    // We use a very soft slerp to maintain fluid, organic movement
+    const targetQuat = new Quaternion().setFromEuler(new Euler(totalCurl, splayValue, thumbTilt, 'YXZ'));
+    bone.quaternion.slerp(targetQuat, 0.12);
+
+    bone.updateMatrixWorld();
   }
 
   static adjustScaling(targetBone, sourceBones, options) {
