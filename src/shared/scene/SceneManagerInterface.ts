@@ -21,6 +21,7 @@ export interface HandTrackingResult {
 }
 
 export enum PostProcessingType {
+  "None",
   "Bloom"
 }
 
@@ -54,6 +55,8 @@ export interface SceneManagerInterface {
   getInitialCameraTarget(): Vector3;
 
   getPostProcessingConfig(): PostProcessingConfig;
+
+  isDepthEnabled(): boolean;
 
   setAmmoHandler(ammoHandler: AmmoHandler);
 

@@ -48,6 +48,10 @@ export default class SceneManagerParent implements SceneManagerInterface {
     return undefined;
   }
 
+  isDepthEnabled(): boolean {
+    return false;
+  }
+
   setAmmoHandler(ammoHandler: AmmoHandler) {
     this.ammoHandler = ammoHandler;
   }

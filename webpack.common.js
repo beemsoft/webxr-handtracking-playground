@@ -31,6 +31,7 @@ module.exports = {
         threejs_water: './src/demo/threejs_water/src',
         threejs_physics_ammo_break: './src/demo/threejs_physics_ammo_break/src',
         threejs_physics_ammo_break_movable: './src/demo/threejs_physics_ammo_break_movable/src',
+        ocean_surf: './src/demo/ocean_surf/src',
     },
     module: {
         rules: [

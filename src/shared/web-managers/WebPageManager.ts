@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, Timer, WebGLRenderer} from 'three';
+import {PerspectiveCamera, Scene, Timer, WebGLRenderer, WebGLRenderTarget, DepthTexture, Mesh, ShaderMaterial} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
@@ -16,6 +16,7 @@ export default class WebPageManager {
   private timer = new Timer();
   private composer: EffectComposer;
   private finalRenderTarget = null;
+  private depthRenderTarget: WebGLRenderTarget;
   private stats: Stats;
 
   constructor(sceneManager: SceneManagerInterface) {
@@ -28,7 +29,12 @@ export default class WebPageManager {
     }
     this.renderer = new WebGLRenderer({alpha: false, antialias: false});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.autoClear = false;
+
+    if (sceneManager.isDepthEnabled()) {
+      this.depthRenderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+        depthTexture: new DepthTexture(window.innerWidth, window.innerHeight)
+      });
+    }
 
     let postProcessingConfig = sceneManager.getPostProcessingConfig();
     if (postProcessingConfig) {
@@ -58,6 +64,37 @@ export default class WebPageManager {
     this.renderer.setAnimationLoop(this.render);
     this.sceneBuilder.update();
     this.physicsHandler.updatePhysics();
+
+    if (this.depthRenderTarget) {
+      this.renderer.setRenderTarget(this.depthRenderTarget);
+      this.renderer.clear();
+      this.scene.traverse((obj) => {
+        if (obj.name === 'OceanSurf' || (obj as any).material?.transparent) {
+          obj.userData.oldVisible = obj.visible;
+          obj.visible = false;
+        }
+      });
+      this.renderer.render(this.scene, this.camera);
+      this.scene.traverse((obj) => {
+        if (obj.userData.oldVisible !== undefined) {
+          obj.visible = obj.userData.oldVisible;
+          delete obj.userData.oldVisible;
+        }
+      });
+      this.renderer.setRenderTarget(null);
+
+      this.scene.traverse((obj) => {
+        if (obj.name === 'OceanSurf' && (obj as Mesh).material instanceof ShaderMaterial) {
+          const mat = (obj as Mesh).material as ShaderMaterial;
+          mat.uniforms.uDepthTexture.value = this.depthRenderTarget.depthTexture;
+          mat.uniforms.uCameraNear.value = this.camera.near;
+          mat.uniforms.uCameraFar.value = this.camera.far;
+          mat.uniforms.uProjMatrix.value.copy(this.camera.projectionMatrix);
+          mat.uniforms.uViewMatrix.value.copy(this.camera.matrixWorldInverse);
+        }
+      });
+    }
+
     if (this.composer) {
       this.composer.render();
     } else {
@@ -91,6 +128,9 @@ export default class WebPageManager {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize( window.innerWidth, window.innerHeight );
+    if (this.depthRenderTarget) {
+      this.depthRenderTarget.setSize(window.innerWidth, window.innerHeight);
+    }
   }
 }
 

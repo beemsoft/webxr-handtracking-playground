@@ -1,4 +1,4 @@
-import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera } from 'three';
+import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera, DepthTexture, Mesh, ShaderMaterial } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   GestureType,
@@ -50,12 +50,14 @@ export default class WebXRManager {
   private fpsTimestamp = 0;
   private fpsFrameCount = 0;
   private currentFps = 0;
+  private depthRenderTarget: WebGLRenderTarget;
   private readonly config = {
     enableScreenHud: false,
     enableHandHud: false,
     enableDomOverlay: false,
     enableStats: true,
-    enableShadows: true
+    enableShadows: true,
+    enableDepth: false
   };
 
   constructor(sceneBuilder: SceneManagerInterface, useDefaultHandGestures: boolean, useAmmoLib: boolean) {
@@ -82,7 +84,7 @@ export default class WebXRManager {
           this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, antialias: false, alpha: false});
           this.renderer.shadowMap.enabled = this.config.enableShadows;
           this.renderer.shadowMap.autoUpdate = false;
-          this.shadowCamera = new PerspectiveCamera(175, 1, 0.1, 100);
+          this.shadowCamera = new PerspectiveCamera(120, 1, 0.1, 100);
           this.shadowCamera.updateProjectionMatrix();
           this.shadowCamera.matrixAutoUpdate = false;
           this.shadowCamera.frustumCulled = false;
@@ -192,10 +194,11 @@ export default class WebXRManager {
                 this.rotateOrigin(sceneBuilder.getInitialCameraAngle());
                 this.setInitialCameraPosition(sceneBuilder.getInitialCameraPosition());
 
-                let postProcessingConfig = sceneBuilder.getPostProcessingConfig();
-                if (postProcessingConfig) {
-                  this.initProjectionLayer(postProcessingConfig);
+                if (sceneBuilder.isDepthEnabled()) {
+                  this.config.enableDepth = true;
                 }
+                let postProcessingConfig = sceneBuilder.getPostProcessingConfig();
+                this.initProjectionLayer(postProcessingConfig);
               }, error => {
                 console.log(error.message);
               })
@@ -214,24 +217,24 @@ export default class WebXRManager {
   }
 
   private initProjectionLayer(postProcessingConfig: PostProcessingConfig) {
-    this.xrFramebuffer = this.gl.createFramebuffer();
-    // @ts-ignore
-    this.xrGLFactory = new XRWebGLBinding(this.session, this.gl);
-    this.proj_layer = this.xrGLFactory.createProjectionLayer({
-      space: this.xrReferenceSpace,
-      antialias: false,
-      colorFormat: (this.gl as any).RGBA8,
-      depthFormat: (this.gl as any).DEPTH_COMPONENT24
-    });
-    // @ts-ignore
-    this.session.updateRenderState({
-      layers: [this.proj_layer]
-    });
-    this.renderer.setDrawingBufferSize(this.proj_layer.textureWidth, this.proj_layer.textureHeight, 1);
-    this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight, { samples: 0, depthBuffer: true, stencilBuffer: false });
-    this.newRenderTarget.texture.name = 'WebXRManager.newRenderTarget';
-
     if (postProcessingConfig) {
+      this.xrFramebuffer = this.gl.createFramebuffer();
+      // @ts-ignore
+      this.xrGLFactory = new XRWebGLBinding(this.session, this.gl);
+      this.proj_layer = this.xrGLFactory.createProjectionLayer({
+        space: this.xrReferenceSpace,
+        antialias: false,
+        colorFormat: (this.gl as any).RGBA8,
+        depthFormat: (this.gl as any).DEPTH_COMPONENT24
+      });
+      // @ts-ignore
+      this.session.updateRenderState({
+        layers: [this.proj_layer]
+      });
+      this.renderer.setDrawingBufferSize(this.proj_layer.textureWidth, this.proj_layer.textureHeight, 1);
+      this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight, { samples: 0, depthBuffer: true, stencilBuffer: false });
+      this.newRenderTarget.texture.name = 'WebXRManager.newRenderTarget';
+
       this.composer = new EffectManager().createEffectComposer(
         this.renderer,
         this.cameraManager.cameraVR,
@@ -240,6 +243,14 @@ export default class WebXRManager {
         this.xrFramebuffer,
         postProcessingConfig
       )
+    }
+
+    if (this.config.enableDepth) {
+      const width = this.proj_layer ? this.proj_layer.textureWidth : this.baseLayer.framebufferWidth;
+      const height = this.proj_layer ? this.proj_layer.textureHeight : this.baseLayer.framebufferHeight;
+      this.depthRenderTarget = new WebGLRenderTarget(width, height, {
+        depthTexture: new DepthTexture(width, height)
+      });
     }
   }
 
@@ -365,96 +376,93 @@ export default class WebXRManager {
       }
     }
 
-    if (this.config.enableShadows) {
-      if (this.composer) {
-        this.renderer.setRenderTarget(null);
-        this.updateFps(); // Update FPS while null target is bound
-        this.renderer.shadowMap.needsUpdate = true;
-        // Use only one eye for shadow update if using composer (though composer usually handles its own camera)
-        // Note: composer usually uses its own internal render path, but here we just want to trigger shadowMap
-        this.composer.render();
+    // Pass 1: Preparation (Depth and/or Shadows)
+    // We only need a manual Pass 1 if depth is required OR if shadows are enabled without a composer
+    const needsManualPass1 = this.config.enableDepth || (this.config.enableShadows && !this.composer);
+
+    if (needsManualPass1) {
+      if (this.config.enableDepth && this.depthRenderTarget) {
+        this.renderer.setRenderTarget(this.depthRenderTarget);
       } else {
-        // Update shadows once per frame.
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+      }
+      this.renderer.clear();
+
+      if (this.config.enableShadows) {
         this.renderer.shadowMap.needsUpdate = true;
-
-        if (this.config.enableScreenHud && this.fpsText) {
-          this.fpsText.mesh.visible = false;
-        }
-        if (this.config.enableHandHud && this.fpsHandText) {
-          this.fpsHandText.mesh.visible = false;
-        }
-        if (this.config.enableStats && this.statsMesh) {
-          this.statsMesh.mesh.visible = false;
-        }
-
-        // Handle hand mesh visibility during shadow pass
-        const handMeshesVisibleStates: boolean[] = [];
-        const handMeshList = (this.trackedHandsManager as any).handMeshList || [];
-        if (this.trackedHandsManager) {
-          for (let i = 0; i < handMeshList.length; i++) {
-            handMeshesVisibleStates[i] = handMeshList[i].visible;
-            // We want hands to be visible for the shadow pass if they were already visible
-            // This is just a safeguard in case something else hides them.
-          }
-        }
-
-        // We use a dedicated shadowCamera for Pass 1.
-        // To avoid culling lights/shadows based on head pose, we ensure the shadowCamera
-        // covers the whole scene by using an extremely wide FOV and keeping it centered.
-        this.shadowCamera.matrixWorld.identity();
-        this.shadowCamera.matrixWorldInverse.identity();
-        this.shadowCamera.updateProjectionMatrix();
-        this.renderer.render(this.scene, this.shadowCamera);
-
-        // Update FPS texture HERE, after Pass 1 but before Pass 2
-        // This is while the default framebuffer is bound and after the shadow pass.
-        this.updateFps();
-
-        if (this.config.enableScreenHud && this.fpsText) {
-          this.fpsText.mesh.visible = true;
-        }
-        if (this.config.enableHandHud && this.fpsHandText) {
-          this.fpsHandText.mesh.visible = true;
-        }
-        if (this.config.enableStats && this.statsMesh) {
-          this.statsMesh.mesh.visible = true;
-        }
-
-        // Restore hand mesh visibility just in case (though we didn't hide them)
-        if (this.trackedHandsManager) {
-          for (let i = 0; i < handMeshList.length; i++) {
-            if (handMeshesVisibleStates[i] !== undefined) {
-              handMeshList[i].visible = handMeshesVisibleStates[i];
-            }
-          }
-        }
-
-        // Render the whole array camera (Three.js will handle the eyes)
-        let layer = frame.session.renderState.baseLayer;
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, layer.framebuffer);
-        // Ensure world matrix is fresh for HUD children before main pass
-        this.cameraManager.cameraVR.updateMatrixWorld(true);
-        // Force projection matrix update for ArrayCamera if it hasn't been set yet
-        // although sub-cameras have correct projection matrices.
-        this.renderer.render(this.scene, this.cameraManager.cameraVR);
+        if (this.config.enableScreenHud && this.fpsText) this.fpsText.mesh.visible = false;
+        if (this.config.enableHandHud && this.fpsHandText) this.fpsHandText.mesh.visible = false;
+        if (this.config.enableStats && this.statsMesh) this.statsMesh.mesh.visible = false;
       }
-    } else {
-      // Shadows disabled, just update FPS and render once
-      // FORCE shadowMap.enabled to false again just in case Proxy was bypassed
+
+      // Sync shadowCamera with head pose for consistent depth and shadow map updates
+      this.shadowCamera.position.copy(this.cameraManager.cameraVR.position);
+      this.shadowCamera.quaternion.copy(this.cameraManager.cameraVR.quaternion);
+      this.shadowCamera.updateMatrixWorld(true);
+      this.shadowCamera.matrixWorldInverse.copy(this.shadowCamera.matrixWorld).invert();
+      this.shadowCamera.updateProjectionMatrix();
+
+      // Hide ocean or any transparent objects that shouldn't contribute to depth for foam
+      this.scene.traverse((obj) => {
+        if (obj.name === 'OceanSurf' || (obj as any).material?.transparent) {
+          obj.userData.oldVisible = obj.visible;
+          obj.visible = false;
+        }
+      });
+
+      this.renderer.render(this.scene, this.shadowCamera);
+
+      // Restore visibility
+      this.scene.traverse((obj) => {
+        if (obj.userData.oldVisible !== undefined) {
+          obj.visible = obj.userData.oldVisible;
+          delete obj.userData.oldVisible;
+        }
+      });
+
+      this.renderer.setRenderTarget(null);
+
+      if (this.config.enableShadows) {
+        if (this.config.enableScreenHud && this.fpsText) this.fpsText.mesh.visible = true;
+        if (this.config.enableHandHud && this.fpsHandText) this.fpsHandText.mesh.visible = true;
+        if (this.config.enableStats && this.statsMesh) this.statsMesh.mesh.visible = true;
+      }
+
+      // Pass depth texture and matrices to the ocean material
+      if (this.config.enableDepth && this.depthRenderTarget) {
+        this.scene.traverse((obj) => {
+          if (obj.name === 'OceanSurf' && (obj as Mesh).material instanceof ShaderMaterial) {
+            const mat = (obj as Mesh).material as ShaderMaterial;
+            mat.uniforms.uDepthTexture.value = this.depthRenderTarget.depthTexture;
+            mat.uniforms.uCameraNear.value = this.shadowCamera.near;
+            mat.uniforms.uCameraFar.value = this.shadowCamera.far;
+            mat.uniforms.uProjMatrix.value.copy(this.shadowCamera.projectionMatrix);
+            mat.uniforms.uViewMatrix.value.copy(this.shadowCamera.matrixWorldInverse);
+          }
+        });
+      }
+    }
+
+    // Pass 2: Final Render
+    if (!this.config.enableShadows) {
       this.renderer.shadowMap.enabled = false;
+    }
 
-      if (this.composer) {
-        this.renderer.setRenderTarget(null);
-        this.updateFps();
-        this.composer.render();
-      } else {
-        this.updateFps();
-        let layer = frame.session.renderState.baseLayer;
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, layer.framebuffer);
-        this.cameraManager.cameraVR.updateMatrixWorld(true);
-        this.renderer.render(this.scene, this.cameraManager.cameraVR);
+    if (this.composer) {
+      if (this.config.enableShadows && !needsManualPass1) {
+        this.renderer.shadowMap.needsUpdate = true;
       }
+      this.renderer.setRenderTarget(null);
+      this.updateFps();
+      this.composer.render();
+    } else {
+      this.updateFps();
+      let layer = frame.session.renderState.baseLayer;
+      if (layer) {
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, layer.framebuffer);
+      }
+      this.cameraManager.cameraVR.updateMatrixWorld(true);
+      this.renderer.render(this.scene, this.cameraManager.cameraVR);
     }
     this.sceneBuilder.postUpdate();
   }
