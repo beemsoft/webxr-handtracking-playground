@@ -15,10 +15,7 @@ export default class VrmSkeletonUtils {
     const target = vrm.scene.children[5] || vrm.scene;
 
     let sourceBones = source.isObject3D ? source.skeleton.bones : this.getBones(source),
-      bindBones,
-      bone, name,
       i;
-
 
     if (options.preserveMatrix) {
       // reset matrix
@@ -30,49 +27,53 @@ export default class VrmSkeletonUtils {
       }
     }
 
-    if (options.offsets) {
-      bindBones = [];
-        bone = target;
-        name = options.names[bone.name] || bone.name;
-        if (options.offsets && options.offsets[name]) {
-          bone.matrix.multiply(options.offsets[name]);
-          bone.matrix.decompose(bone.position, bone.quaternion, bone.scale);
-          bone.updateMatrixWorld();
-        }
-        bindBones.push(bone.matrixWorld.clone());
+    const humanoid = vrm.humanoid;
+    const hips = humanoid.getNormalizedBoneNode('hips');
+
+    if (options.adjustScaling && hips && !hips.isAdjusted) {
+      this.adjustScaling(hips, sourceBones, options);
+      hips.isAdjusted = true;
     }
 
-    if (options.adjustScaling && !target.children[0].isAdjusted) {
-      this.adjustScaling(target.children[0], sourceBones, options);
-      target.children[0].isAdjusted = true;
-    }
-    this.retargetBone(options, sourceBones, target.children[0]);   // Hip
+    // Body
+    this.retargetBone(options, sourceBones, hips);
+    
+    const spine = humanoid.getNormalizedBoneNode('spine');
     if (!options.rotateModel) {
-      this.retargetBone(options, sourceBones, target.children[0].children[0]);   // Spine
+      this.retargetBone(options, sourceBones, spine);
     }
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0]);   // Chest
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0]);   // Upper chest
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0]);   // Neck
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0].children[0]);   // Head
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);   // Left hand
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1]);   // Right shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0]);   // Right upper arm
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0]);   // Right lower arm
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);   // Right hand
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('chest'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('upperChest'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('neck'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('head'));
+
+    // Left Arm
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftShoulder'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftUpperArm'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftLowerArm'));
+    const leftHand = humanoid.getNormalizedBoneNode('leftHand');
+    this.retargetBone(options, sourceBones, leftHand);
+
+    // Right Arm
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightShoulder'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightUpperArm'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightLowerArm'));
+    const rightHand = humanoid.getNormalizedBoneNode('rightHand');
+    this.retargetBone(options, sourceBones, rightHand);
+
     if (!options.proceduralFingers) {
-      this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);
-      this.retargetHand(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);
+      this.retargetHand(options, sourceBones, leftHand);
+      this.retargetHand(options, sourceBones, rightHand);
     }
     this.animateFingers(options, vrm);
-    this.retargetBone(options, sourceBones, target.children[0].children[2]);   // Right upper leg
-    this.retargetBone(options, sourceBones, target.children[0].children[2].children[0]);   // Right leg
-    this.retargetBone(options, sourceBones, target.children[0].children[2].children[0].children[0]);   // Right foot
-    this.retargetBone(options, sourceBones, target.children[0].children[1]);   // Left upper leg
-    this.retargetBone(options, sourceBones, target.children[0].children[1].children[0]);   // Left leg
-    this.retargetBone(options, sourceBones, target.children[0].children[1].children[0].children[0]);   // Left foot
+
+    // Legs
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightUpperLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightLowerLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightFoot'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftUpperLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftLowerLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftFoot'));
   };
 
   static retargetBone(options, sourceBones, target) {
@@ -287,9 +288,11 @@ export default class VrmSkeletonUtils {
     bone.updateMatrixWorld();
   }
 
-  static adjustScaling(targetBone, sourceBones, options) {
+  static adjustScaling(targetBone, sourceBones, options, accumulatedScale = 1) {
     const name = options.names[targetBone.name] || targetBone.name;
     const sourceBone = this.getBoneByName(name, sourceBones);
+
+    let currentWorldScale = accumulatedScale;
 
     if (sourceBone && sourceBone.children.length > 0 && targetBone.children.length > 0) {
       // Find matching source child
@@ -310,17 +313,23 @@ export default class VrmSkeletonUtils {
         const targetLength = targetChild.position.length();
 
         if (targetLength > 0 && sourceLength > 0) {
-          let scaleFactor = sourceLength / targetLength;
-          // Clamp scale factor to reasonable limits
-          scaleFactor = Math.max(0.1, Math.min(10, scaleFactor));
-          targetBone.scale.set(scaleFactor, scaleFactor, scaleFactor);
+          let desiredWorldScale = sourceLength / targetLength;
+          // Clamp desired world scale to reasonable limits
+          desiredWorldScale = Math.max(0.1, Math.min(10, desiredWorldScale));
+
+          // Local scale must compensate for inherited scale
+          const localScaleFactor = desiredWorldScale / accumulatedScale;
+          targetBone.scale.set(localScaleFactor, localScaleFactor, localScaleFactor);
+
+          // The world scale for children of this bone is now desiredWorldScale
+          currentWorldScale = desiredWorldScale;
         }
       }
     }
 
     for (const child of targetBone.children) {
       if (child.isBone || child.name.includes("Normalized") || (child.name && child.name.startsWith("Normalized"))) {
-        this.adjustScaling(child, sourceBones, options);
+        this.adjustScaling(child, sourceBones, options, currentWorldScale);
       }
     }
   }
