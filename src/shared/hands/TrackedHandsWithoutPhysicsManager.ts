@@ -146,6 +146,7 @@ export default class TrackedHandsWithoutPhysicsManager {
                   break;
               }
               handBody = new Mesh(sphere_geometry, mat);
+              handBody.name = 'HandJoint';
               handBody.castShadow = true;
               handBody.receiveShadow = true;
               handBody.frustumCulled = false;

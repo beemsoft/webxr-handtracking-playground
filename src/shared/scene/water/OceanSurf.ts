@@ -5,7 +5,9 @@ import {
   PlaneGeometry,
   ShaderMaterial,
   Vector3,
-  Matrix4
+  Matrix4,
+  PerspectiveCamera,
+  OrthographicCamera
 } from 'three';
 
 export class OceanSurf extends Mesh {
@@ -15,14 +17,15 @@ export class OceanSurf extends Mesh {
       uniforms: {
         uTime: { value: 0 },
         uWaveSpeed: { value: 0.25 },
-        uShallowColor: { value: new Color(0x45b1bf) },
-        uDeepColor: { value: new Color(0x001221) },
+        uShallowColor: { value: new Color(0x45b1bf).multiplyScalar(2.0) },
+        uDeepColor: { value: new Color(0x001221).multiplyScalar(2.0) },
         uDepthTexture: { value: null },
+        uInverseShadowMatrix: { value: new Matrix4() },
         uCameraNear: { value: 0.1 },
         uCameraFar: { value: 100 },
         uFoamColor: { value: new Color(0xffffff) },
         uFoamLimit: { value: 0.4 },
-        uOpacity: { value: 0.8 },
+        uOpacity: { value: 0.6 },
         uSunDirection: { value: new Vector3(1, 1, 1).normalize() },
         uProjMatrix: { value: new Matrix4() },
         uViewMatrix: { value: new Matrix4() },
@@ -85,6 +88,7 @@ export class OceanSurf extends Mesh {
         varying vec3 vNormal;
         
         uniform sampler2D uDepthTexture;
+        uniform mat4 uInverseShadowMatrix;
         uniform float uCameraNear;
         uniform float uCameraFar;
         uniform vec3 uShallowColor;
@@ -141,31 +145,58 @@ export class OceanSurf extends Mesh {
 
         void main() {
           vec3 normal = normalize(vNormal);
-          vec4 shadowScreenPos = uProjMatrix * uViewMatrix * vec4(vWorldPosition, 1.0);
-          vec2 screenUv = shadowScreenPos.xy / shadowScreenPos.w * 0.5 + 0.5;
+          
+          // Reconstruct screen UVs from the perspective of the SHADOW camera (which rendered the depth map)
+          vec4 shadowProjPos = uProjMatrix * uViewMatrix * vec4(vWorldPosition, 1.0);
+          vec2 screenUv = shadowProjPos.xy / shadowProjPos.w * 0.5 + 0.5;
+          
+          // Safety check for screen UVs to avoid sampling outside the texture
+          if (screenUv.x < 0.0 || screenUv.x > 1.0 || screenUv.y < 0.0 || screenUv.y > 1.0) {
+            // If outside shadow camera view, treat as deep water
+            gl_FragColor = vec4(uDeepColor, uOpacity);
+            return;
+          }
           
           float depthSample = texture2D(uDepthTexture, screenUv).x;
           
           // Convert both to linear view space depth for comparison
-          float sceneViewZ = perspectiveDepthToViewZ(depthSample, uCameraNear, uCameraFar);
+          // float sceneViewZ = perspectiveDepthToViewZ(depthSample, uCameraNear, uCameraFar);
           
-          // For surface depth, we must also use the viewZ relative to the shadow camera
-          // otherwise the comparison is invalid if the eye camera has a different view transform
-          vec4 shadowViewPos = uViewMatrix * vec4(vWorldPosition, 1.0);
-          float surfaceViewZ = shadowViewPos.z;
+          // Use the view position from standard Three.js viewMatrix for the current eye
+          vec4 viewPos = viewMatrix * vec4(vWorldPosition, 1.0);
+          float surfaceViewZ = viewPos.z;
           
-          // In Three.js viewZ is negative, so we use subtraction in this order
-          float diff = surfaceViewZ - sceneViewZ; 
+          // To fix the stereo mismatch:
+          // 1. Calculate world position of the scene from depthSample using uProjMatrix/uViewMatrix
+          // 2. Transform that world position to CURRENT eye view space
+          // 3. Compare with current eye's surfaceViewZ
+          
+          vec4 ndc = vec4(screenUv * 2.0 - 1.0, depthSample * 2.0 - 1.0, 1.0);
+          vec4 worldPosScene = uInverseShadowMatrix * ndc;
+          worldPosScene /= worldPosScene.w;
+          
+          vec4 currentViewPosScene = viewMatrix * worldPosScene;
+          float diff = surfaceViewZ - currentViewPosScene.z;
+
+          // If the reconstructed depth is very far (near the far plane), 
+          // it's likely we hit the sky/background instead of an object.
+          // In this case, we should treat it as deep water.
+          // We use a value very close to 1.0, but enough to avoid losing foam on distant objects.
+          if (depthSample >= 1.0) {
+             diff = 1e6;
+          }
 
           // Prevent water effects on parts of the island that are above water level
-          if (diff < 0.01) {
+          if (diff < -0.1) {
              discard;
           }
+          
+          diff = max(0.0, diff);
 
           // Normal perturbation for ripples
           vec2 rippleUv = vWorldPosition.xz * 4.0 + uTime * 0.1;
           float ripple = fbm(rippleUv);
-          normal = normalize(normal + vec3(ripple * 0.05, 0.0, ripple * 0.05));
+          normal = normalize(normal + vec3(ripple * 0.1, 0.0, ripple * 0.1));
 
           // Depth-based color (shallower = lighter turquoise, deeper = dark navy)
           float depthFactor = 1.0 - exp(-diff * 0.5);
@@ -180,10 +211,14 @@ export class OceanSurf extends Mesh {
           float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 5.0);
           
           vec3 reflectDir = reflect(-uSunDirection, normal);
-          float spec = pow(max(0.0, dot(viewDir, reflectDir)), 128.0);
+          float spec = pow(max(0.0, dot(viewDir, reflectDir)), 64.0);
           
-          color = mix(color, vec3(0.7, 0.85, 1.0), fresnel * 0.4); // Sky reflection approximation
-          color += spec * 0.6;
+          color = mix(color, vec3(0.7, 0.85, 1.0) * 1.5, fresnel * 0.4); // Sky reflection approximation
+          color += spec * 1.5;
+
+          // Blend water color with the scene color below to simulate transparency
+          // If we had the actual scene color texture we could do proper refraction/transparency
+          // But since we only have depth, we can at least make the water more transparent as it gets shallower
 
           // Foam at intersections (Beach foam)
           float foam = 0.0;
@@ -206,8 +241,11 @@ export class OceanSurf extends Mesh {
 
           // Fade out opacity at the very edge to avoid harsh intersections
           float edgeAlpha = smoothstep(0.0, 0.1, diff);
+          
+          // Overall water transparency - gets more opaque as it gets deeper
+          float waterAlpha = mix(0.1, uOpacity, smoothstep(0.0, 0.5, diff));
 
-          gl_FragColor = vec4(color, uOpacity * edgeAlpha);
+          gl_FragColor = vec4(color, waterAlpha * edgeAlpha);
         }
       `,
       transparent: true,
@@ -218,6 +256,20 @@ export class OceanSurf extends Mesh {
     const geometry = new PlaneGeometry(200, 200, 256, 256);
     geometry.rotateX(-Math.PI / 2);
     super(geometry, material);
+
+    this.onBeforeRender = (renderer, scene, camera) => {
+      // In WebXR, camera might be an eye camera (PerspectiveCamera) belonging to an ArrayCamera
+      // or it could be the main camera in non-XR mode.
+      // We DON'T update uProjMatrix and uViewMatrix here anymore, because they must match
+      // the camera used to render the depth texture, which is handled in WebXRManager or WebPageManager.
+
+      // Update NEAR and FAR for the current camera to ensure linear depth conversion is correct
+      // if we were using perspectiveDepthToViewZ.
+      if (camera instanceof PerspectiveCamera || camera instanceof OrthographicCamera) {
+        material.uniforms.uCameraNear.value = camera.near;
+        material.uniforms.uCameraFar.value = camera.far;
+      }
+    };
   }
 
   update(time: number) {

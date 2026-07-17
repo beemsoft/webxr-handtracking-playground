@@ -35,8 +35,8 @@ export default class SceneManager extends SceneManagerParent  {
   private target1SkeletonHelper: SkeletonHelper;
   private source2SkeletonHelper: SkeletonHelper;
   private target2SkeletonHelper: SkeletonHelper;
-  private target1Skeleton: Object3D;
-  private target2Skeleton: Object3D;
+  private target1Skeleton: VRM;
+  private target2Skeleton: VRM;
 
   private options = {
     hip: "hip",
@@ -112,7 +112,7 @@ export default class SceneManager extends SceneManagerParent  {
       } );
       this.playBlinkAnimationPerson1();
       this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-      this.target1Skeleton = this.person1.scene.children[5]
+      this.target1Skeleton = this.person1
       gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
         VRMUtils.combineSkeletons(gltf.scene);
         this.person2 = gltf.userData.vrm;
@@ -121,7 +121,7 @@ export default class SceneManager extends SceneManagerParent  {
         } );
         this.playBlinkAnimationPerson2();
         this.target2SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
-        this.target2Skeleton = this.person2.scene.children[5]
+        this.target2Skeleton = this.person2
         this.loadBVH(1);
         this.audioElement.play();
       })

@@ -196,8 +196,8 @@ export default class SceneManager extends SceneManagerParent {
       this.mixerDance1.update(delta);
       this.mixerDance2.update(delta);
       if (this.isAnimationStarted) {
-        VrmSkeletonUtils.retarget(this.person1.scene.children[5], this.source1SkeletonHelper, this.options);
-        VrmSkeletonUtils.retarget(this.person2.scene.children[5], this.source2SkeletonHelper, this.options);
+        VrmSkeletonUtils.retarget(this.person1, this.source1SkeletonHelper, this.options);
+        VrmSkeletonUtils.retarget(this.person2, this.source2SkeletonHelper, this.options);
       }
     }
     if (this.mixerBlink1) {

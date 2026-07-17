@@ -157,8 +157,8 @@ export default class SceneManager extends SceneManagerParent  {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
         VRMUtils.combineSkeletons(gltf.scene);
         this.scene.add(gltf.userData.vrm.scene);
-        gltf.scene.children[5].position.x = modelNames[i].offsetX;
-        gltf.scene.children[5].position.z = modelNames[i].offsetZ;
+        VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.x = modelNames[i].offsetX;
+        VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.z = modelNames[i].offsetZ;
         gltf.scene.traverse( function( object ) {
 
           object.frustumCulled = false;
@@ -170,8 +170,8 @@ export default class SceneManager extends SceneManagerParent  {
         gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
           VRMUtils.combineSkeletons(gltf.scene);
-          gltf2.scene.children[5].position.x = modelNames[i].offsetX;
-          gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
+          VrmSkeletonUtils.getRootBone(gltf2.userData.vrm).position.x = modelNames[i].offsetX;
+          VrmSkeletonUtils.getRootBone(gltf2.userData.vrm).position.z = modelNames[i].offsetZ;
           gltf2.scene.traverse( function( object ) {
 
             object.frustumCulled = false;
@@ -225,7 +225,6 @@ export default class SceneManager extends SceneManagerParent  {
 
         } );
         this.playBlinkAnimations();
-        this.audioElement.play();
       })
     });
   }
@@ -351,18 +350,25 @@ export default class SceneManager extends SceneManagerParent  {
 
   update() {
     super.update();
+    // Update audio listener position to camera position
+    if (this.camera) {
+      // Audio source is at (-3, 2, 1). Calculate relative distance for volume.
+      const audioPos = new Vector3(-3, 2, 1);
+      const relativePos = this.camera.position.clone().sub(audioPos);
+      this.audioHandler.setVolume(relativePos);
+    }
     // this.stats.begin();
     let delta = this.timer.getDelta();
     if (this.mixerDance1 && this.mixerDance2) {
       this.mixerDance1.update(delta/this.slowDownFactor);
       this.mixerDance2.update(delta/this.slowDownFactor);
       if (this.isAnimationStarted) {
-        VrmSkeletonUtils.retarget(this.person1.scene.children[5], this.source1SkeletonHelper, this.options1);
-        VrmSkeletonUtils.retarget(this.person2.scene.children[5], this.source2SkeletonHelper, this.options);
+        VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(this.person1), this.source1SkeletonHelper, this.options1);
+        VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(this.person2), this.source2SkeletonHelper, this.options);
         if (this.danceCouples && this.danceCouples.length > 0) {
           for (let i = 0; i < this.danceCouples.length; i++) {
-            VrmSkeletonUtils.retarget(this.danceCouples[i].leader.scene.children[5], this.source1SkeletonHelper, this.options1);
-            VrmSkeletonUtils.retarget(this.danceCouples[i].follower.scene.children[5], this.source2SkeletonHelper, this.options1);
+            VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(this.danceCouples[i].leader), this.source1SkeletonHelper, this.options1);
+            VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(this.danceCouples[i].follower), this.source2SkeletonHelper, this.options1);
           }
         }
         if (this.person1) {

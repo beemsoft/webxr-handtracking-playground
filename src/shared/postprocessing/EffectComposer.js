@@ -1,5 +1,6 @@
 import {
     HalfFloatType,
+    LinearFilter,
     Timer,
     Vector2,
     WebGLRenderTarget
@@ -26,7 +27,16 @@ class EffectComposer {
             this._width = size.width;
             this._height = size.height;
 
-            renderTarget = new WebGLRenderTarget( this._width * this._pixelRatio, this._height * this._pixelRatio, { type: HalfFloatType, samples: 0, depthBuffer: false, stencilBuffer: false } );
+            const isHalfFloatSupported = renderer.extensions.get('EXT_color_buffer_half_float');
+
+            renderTarget = new WebGLRenderTarget( this._width * this._pixelRatio, this._height * this._pixelRatio, {
+                type: isHalfFloatSupported ? HalfFloatType : undefined,
+                samples: 0,
+                depthBuffer: false,
+                stencilBuffer: false,
+                magFilter: LinearFilter,
+                minFilter: LinearFilter
+            } );
             renderTarget.texture.name = 'EffectComposer.rt1';
 
         } else {
@@ -54,6 +64,8 @@ class EffectComposer {
         this.onSessionStateChange = this.onSessionStateChange.bind( this );
         this.renderer.xr.addEventListener( 'sessionstart', this.onSessionStateChange );
         this.renderer.xr.addEventListener( 'sessionend', this.onSessionStateChange );
+
+        this.renderer._composer = this;
 
     }
 
@@ -193,7 +205,6 @@ class EffectComposer {
             // console.log('Set rendertarget: ' + currentRenderTarget);
             this.renderer.setRenderTarget( this.baseRenderTarget );
         }
-
     }
 
     reset( renderTarget ) {

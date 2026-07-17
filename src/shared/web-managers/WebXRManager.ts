@@ -1,4 +1,4 @@
-import { Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera, DepthTexture, Mesh, ShaderMaterial } from 'three';
+import { HalfFloatType, Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera, DepthTexture, Mesh, ShaderMaterial, LinearFilter, NoToneMapping } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   GestureType,
@@ -11,7 +11,6 @@ import {
   XRViewerPose,
   XRFrameOfReference,
   XRReferenceSpace,
-  XRRigidTransform,
   XRWebGLLayer,
   XRWebGLBinding,
   XRProjectionLayer
@@ -64,6 +63,10 @@ export default class WebXRManager {
     this.scene.userData.isXR = true;
     this.cameraManager.createVrCamera();
     this.sceneBuilder = sceneBuilder;
+    this.config.enableDepth = this.sceneBuilder.isDepthEnabled();
+    if (this.sceneBuilder.isShadowEnabled) {
+      this.config.enableShadows = this.sceneBuilder.isShadowEnabled();
+    }
     this.useDefaultHandGestures = useDefaultHandGestures;
     if (useAmmoLib) {
       this.trackedHandsManager = new TrackedHandsWithoutPhysicsManager(this.scene, this.cameraManager.cameraVR);
@@ -83,10 +86,11 @@ export default class WebXRManager {
             .then(() => {
           this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, antialias: false, alpha: false});
           this.renderer.shadowMap.enabled = this.config.enableShadows;
+          this.renderer.shadowMap.type = 1; // PCFShadowMap
           this.renderer.shadowMap.autoUpdate = false;
-          this.shadowCamera = new PerspectiveCamera(120, 1, 0.1, 100);
+          this.shadowCamera = new PerspectiveCamera(150, 1, 0.1, 1000);
           this.shadowCamera.updateProjectionMatrix();
-          this.shadowCamera.matrixAutoUpdate = false;
+          this.shadowCamera.matrixAutoUpdate = true;
           this.shadowCamera.frustumCulled = false;
 
           // Allow shadowMap.enabled to be controlled via config.enableShadows
@@ -221,18 +225,39 @@ export default class WebXRManager {
       this.xrFramebuffer = this.gl.createFramebuffer();
       // @ts-ignore
       this.xrGLFactory = new XRWebGLBinding(this.session, this.gl);
-      this.proj_layer = this.xrGLFactory.createProjectionLayer({
-        space: this.xrReferenceSpace,
-        antialias: false,
-        colorFormat: (this.gl as any).RGBA8,
-        depthFormat: (this.gl as any).DEPTH_COMPONENT24
-      });
+      const isHalfFloatSupported = this.renderer.extensions.get('EXT_color_buffer_half_float');
+      const colorFormat = isHalfFloatSupported ? ((this.gl as any).RGBA16F || 0x881A) : ((this.gl as any).RGBA8 || 0x8058);
+
+      console.log('WebGLManager: Attempting to create projection layer with colorFormat:', colorFormat.toString(16));
+
+      try {
+          this.proj_layer = this.xrGLFactory.createProjectionLayer({
+              space: this.xrReferenceSpace,
+              antialias: false,
+              colorFormat: colorFormat,
+              depthFormat: (this.gl as any).DEPTH_COMPONENT24 || 0x81A6
+          });
+      } catch (e) {
+          console.error('WebGLManager: Failed to create projection layer', e);
+          this.composer = undefined;
+          return;
+      }
       // @ts-ignore
       this.session.updateRenderState({
         layers: [this.proj_layer]
       });
       this.renderer.setDrawingBufferSize(this.proj_layer.textureWidth, this.proj_layer.textureHeight, 1);
-      this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight, { samples: 0, depthBuffer: true, stencilBuffer: false });
+
+      const type = isHalfFloatSupported ? HalfFloatType : undefined;
+
+      this.newRenderTarget = new WebGLRenderTarget(this.proj_layer.textureWidth, this.proj_layer.textureHeight, {
+        samples: 0,
+        depthBuffer: true,
+        stencilBuffer: false,
+        type: type,
+        magFilter: LinearFilter,
+        minFilter: LinearFilter
+      });
       this.newRenderTarget.texture.name = 'WebXRManager.newRenderTarget';
 
       this.composer = new EffectManager().createEffectComposer(
@@ -243,6 +268,14 @@ export default class WebXRManager {
         this.xrFramebuffer,
         postProcessingConfig
       )
+    } else {
+      // Standard path: ensure tone mapping is set on renderer for WebXR
+      if (postProcessingConfig) {
+        this.renderer.toneMapping = postProcessingConfig.toneMapping;
+        this.renderer.toneMappingExposure = postProcessingConfig.exposure;
+      } else {
+        this.renderer.toneMapping = NoToneMapping;
+      }
     }
 
     if (this.config.enableDepth) {
@@ -251,6 +284,10 @@ export default class WebXRManager {
       this.depthRenderTarget = new WebGLRenderTarget(width, height, {
         depthTexture: new DepthTexture(width, height)
       });
+      this.shadowCamera.aspect = width / height;
+      this.shadowCamera.near = 0.1;
+      this.shadowCamera.far = 1000;
+      this.shadowCamera.updateProjectionMatrix();
     }
   }
 
@@ -263,6 +300,7 @@ export default class WebXRManager {
     if (!pose) return;
 
     this.cameraManager.update(pose);
+
     let index = 0;
     for (let view of pose.views) {
       let viewport = this.getViewPort(view);
@@ -277,23 +315,51 @@ export default class WebXRManager {
   };
 
   private getViewPort(view) {
-    if (this.composer) {
+    if (this.composer && this.proj_layer) {
       // this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.xrFramebuffer);
       // // @ts-ignore
       // this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, null, 0);
       let glLayer = this.xrGLFactory.getViewSubImage(this.proj_layer, view);
       let viewport = glLayer.viewport;
-      // @ts-ignore
-      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.xrFramebuffer);
-      // @ts-ignore
-      this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, glLayer.colorTexture, 0);
-      // @ts-ignore
-      // this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_STENCIL_ATTACHMENT, this.gl.RENDERBUFFER, null);
 
-      const fbStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
-      if (fbStatus !== this.gl.FRAMEBUFFER_COMPLETE) {
-          console.error('Framebuffer incomplete: ' + fbStatus);
+      if (glLayer.colorTexture) {
+        // @ts-ignore
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.xrFramebuffer);
+
+        const imageIndex = glLayer.imageIndex;
+        if (imageIndex !== undefined && imageIndex !== null && (this.gl as any).framebufferTextureLayer) {
+           try {
+               // @ts-ignore
+               this.gl.framebufferTextureLayer(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, glLayer.colorTexture, 0, imageIndex);
+
+               if (this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER) !== this.gl.FRAMEBUFFER_COMPLETE) {
+                   throw new Error('framebufferTextureLayer resulted in incomplete framebuffer');
+               }
+           } catch (e) {
+               console.warn('framebufferTextureLayer failed, trying 2D_ARRAY fallback', e);
+               try {
+                  // @ts-ignore
+                  this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, (this.gl as any).TEXTURE_2D_ARRAY, glLayer.colorTexture, 0);
+                  if (this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER) !== this.gl.FRAMEBUFFER_COMPLETE) {
+                      throw new Error('TEXTURE_2D_ARRAY fallback failed');
+                  }
+               } catch (e2) {
+                  console.warn('TEXTURE_2D_ARRAY failed, trying standard TEXTURE_2D', e2);
+                  // @ts-ignore
+                  this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, glLayer.colorTexture, 0);
+               }
+           }
+        } else {
+           // @ts-ignore
+           this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, glLayer.colorTexture, 0);
+        }
+
+        const fbStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+        if (fbStatus !== this.gl.FRAMEBUFFER_COMPLETE) {
+          console.error('Framebuffer incomplete: ' + fbStatus + ' for texture ' + glLayer.colorTexture + ' imageIndex ' + glLayer.imageIndex);
+        }
       }
+
       return viewport;
     } else {
       return this.baseLayer.getViewport(view);
@@ -378,7 +444,7 @@ export default class WebXRManager {
 
     // Pass 1: Preparation (Depth and/or Shadows)
     // We only need a manual Pass 1 if depth is required OR if shadows are enabled without a composer
-    const needsManualPass1 = this.config.enableDepth || (this.config.enableShadows && !this.composer);
+    const needsManualPass1 = this.config.enableDepth || (this.config.enableShadows && !(this.composer && this.proj_layer));
 
     if (needsManualPass1) {
       if (this.config.enableDepth && this.depthRenderTarget) {
@@ -396,15 +462,33 @@ export default class WebXRManager {
       }
 
       // Sync shadowCamera with head pose for consistent depth and shadow map updates
-      this.shadowCamera.position.copy(this.cameraManager.cameraVR.position);
-      this.shadowCamera.quaternion.copy(this.cameraManager.cameraVR.quaternion);
-      this.shadowCamera.updateMatrixWorld(true);
-      this.shadowCamera.matrixWorldInverse.copy(this.shadowCamera.matrixWorld).invert();
+      this.shadowCamera.near = 0.1;
+      this.shadowCamera.far = 1000;
+      this.shadowCamera.fov = 150;
       this.shadowCamera.updateProjectionMatrix();
 
-      // Hide ocean or any transparent objects that shouldn't contribute to depth for foam
+      // Ensure the shadow camera is strictly aligned with the viewer pose's average transform
+      this.shadowCamera.position.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
+      this.shadowCamera.quaternion.set(pose.transform.orientation.x, pose.transform.orientation.y, pose.transform.orientation.z, pose.transform.orientation.w);
+      this.shadowCamera.updateMatrixWorld(true);
+
+      // IMPORTANT: In WebXR, we must ensure the shadowCamera's matrices are perfectly synced
+      // with the XRViewerPose for depth-based effects to remain stable when turning the head.
+      // salsa_party4 fix: Ensure matrixWorldInverse is updated from the new matrixWorld
+      this.shadowCamera.matrixWorldInverse.copy(this.shadowCamera.matrixWorld).invert();
+
+      // Ensure all objects that should be visible are not culled during this pass
       this.scene.traverse((obj) => {
-        if (obj.name === 'OceanSurf' || (obj as any).material?.transparent) {
+        if (obj.name === 'HandJoint' || obj.name.includes('Rock') || obj.name === 'Island') {
+          obj.frustumCulled = false;
+        }
+      });
+
+      // Hide ocean, hand joints, or any transparent objects that shouldn't contribute to depth for foam
+      this.scene.traverse((obj) => {
+        const material = (obj as Mesh).material;
+        const isTransparent = material && (Array.isArray(material) ? material.some(m => m.transparent) : material.transparent);
+        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || isTransparent) {
           obj.userData.oldVisible = obj.visible;
           obj.visible = false;
         }
@@ -433,11 +517,12 @@ export default class WebXRManager {
         this.scene.traverse((obj) => {
           if (obj.name === 'OceanSurf' && (obj as Mesh).material instanceof ShaderMaterial) {
             const mat = (obj as Mesh).material as ShaderMaterial;
-            mat.uniforms.uDepthTexture.value = this.depthRenderTarget.depthTexture;
-            mat.uniforms.uCameraNear.value = this.shadowCamera.near;
-            mat.uniforms.uCameraFar.value = this.shadowCamera.far;
-            mat.uniforms.uProjMatrix.value.copy(this.shadowCamera.projectionMatrix);
-            mat.uniforms.uViewMatrix.value.copy(this.shadowCamera.matrixWorldInverse);
+            if (mat.uniforms.uProjMatrix) mat.uniforms.uProjMatrix.value.copy(this.shadowCamera.projectionMatrix);
+            if (mat.uniforms.uViewMatrix) mat.uniforms.uViewMatrix.value.copy(this.shadowCamera.matrixWorldInverse);
+            if (mat.uniforms.uInverseShadowMatrix) mat.uniforms.uInverseShadowMatrix.value.copy(this.shadowCamera.projectionMatrix).multiply(this.shadowCamera.matrixWorldInverse).invert();
+            if (mat.uniforms.uDepthTexture) mat.uniforms.uDepthTexture.value = this.depthRenderTarget.depthTexture;
+            if (mat.uniforms.uCameraNear) mat.uniforms.uCameraNear.value = this.shadowCamera.near;
+            if (mat.uniforms.uCameraFar) mat.uniforms.uCameraFar.value = this.shadowCamera.far;
           }
         });
       }
@@ -448,12 +533,10 @@ export default class WebXRManager {
       this.renderer.shadowMap.enabled = false;
     }
 
-    if (this.composer) {
-      if (this.config.enableShadows && !needsManualPass1) {
-        this.renderer.shadowMap.needsUpdate = true;
-      }
+    if (this.composer && this.proj_layer) {
       this.renderer.setRenderTarget(null);
       this.updateFps();
+
       this.composer.render();
     } else {
       this.updateFps();

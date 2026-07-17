@@ -149,6 +149,7 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
                   break;
               }
               let mesh = new Mesh(sphere_geometry, mat);
+              mesh.name = 'HandJoint';
               mesh.castShadow = true;
               mesh.receiveShadow = true;
               mesh.frustumCulled = false;

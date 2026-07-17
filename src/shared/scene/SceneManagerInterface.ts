@@ -57,6 +57,7 @@ export interface SceneManagerInterface {
   getPostProcessingConfig(): PostProcessingConfig;
 
   isDepthEnabled(): boolean;
+  isShadowEnabled?(): boolean;
 
   setAmmoHandler(ammoHandler: AmmoHandler);
 

@@ -4,8 +4,8 @@ import { XRDevicePose, XRView, XRViewport } from './WebXRDeviceAPI';
 const FIELD_OF_VIEW_DEGREES = 75;
 
 export default class CameraManager {
-  private cameraL = new PerspectiveCamera(FIELD_OF_VIEW_DEGREES, 1, 0.1, 100);
-  private cameraR = new PerspectiveCamera(FIELD_OF_VIEW_DEGREES, 1, 0.1, 100);
+  private cameraL = new PerspectiveCamera(FIELD_OF_VIEW_DEGREES, 1, 0.1, 1000);
+  private cameraR = new PerspectiveCamera(FIELD_OF_VIEW_DEGREES, 1, 0.1, 1000);
   public cameraVR = new ArrayCamera([this.cameraL, this.cameraR]);
 
   public createVrCamera() {

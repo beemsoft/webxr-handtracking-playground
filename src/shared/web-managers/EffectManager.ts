@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, Vector2, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { HalfFloatType, PerspectiveCamera, Scene, Vector2, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { PostProcessingConfig, PostProcessingType } from '../scene/SceneManagerInterface';
 import { EffectComposer } from '../postprocessing/EffectComposer';
 import { RenderPass } from '../postprocessing/RenderPass';
@@ -8,6 +8,10 @@ import { OutputPass } from '../postprocessing/OutputPass';
 export default class EffectManager {
 
   createEffectComposer(renderer: WebGLRenderer, camera: PerspectiveCamera, scene: Scene, finalRenderTarget: WebGLRenderTarget, frameBufferTarget: WebGLFramebuffer, postProcessingConfig: PostProcessingConfig) {
+    if (finalRenderTarget) {
+      const isHalfFloatSupported = renderer.extensions.get('EXT_color_buffer_half_float');
+      (finalRenderTarget as any).type = isHalfFloatSupported ? HalfFloatType : undefined;
+    }
     let composer = new EffectComposer( renderer, finalRenderTarget );
     composer.addPass( new RenderPass( scene, camera ) );
     if (postProcessingConfig.postProcessingType == PostProcessingType.Bloom) {

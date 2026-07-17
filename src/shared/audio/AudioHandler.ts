@@ -57,19 +57,29 @@ export default class AudioHandler {
     });
     this.source = this.audioScene.createSource();
     this.audioElementSource.connect(this.source.input);
-    this.audioScene.output.connect(this.audioContext.destination);
     this.output = this.audioContext.createGain();
+    this.audioScene.output.connect(this.output);
+    this.output.connect(this.audioContext.destination);
     this.audioReady = true;
   }
 
+  resume() {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
+  }
+
   setPosition(v) {
-    this.source.setPosition(v.x, v.y, v.z);
+    if (this.source) {
+      this.source.setPosition(v.x, v.y, v.z);
+    }
   }
 
   setVolume(v) {
+    if (!this.output) return;
     let distance = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-    let gain = 1 - distance / 10;
+    let gain = 1 - distance / 100;
     gain = Math.max(0, Math.min(1, gain));
-    this.output.gain.value = gain;
+    this.output.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.1);
   }
 }

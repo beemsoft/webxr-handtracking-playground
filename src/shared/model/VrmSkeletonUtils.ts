@@ -12,7 +12,7 @@ export default class VrmSkeletonUtils {
     options.hip = options.hip !== undefined ? options.hip : "hip";
     options.names = options.names || {};
 
-    const target = vrm.scene.children[5] || vrm.scene; // Fallback just in case
+    const target = this.getRootBone(vrm);
 
     let sourceBones = source.isObject3D ? source.skeleton.bones : this.getBones(source),
       bindBones,
@@ -42,32 +42,49 @@ export default class VrmSkeletonUtils {
         bindBones.push(bone.matrixWorld.clone());
     }
 
-    this.retargetBone(options, sourceBones, target.children[0]);   // Hip
+    // Address every bone by its humanoid role via the normalized bone map rather
+    // than by scene-graph child index. Index order (e.g. which child of the upper
+    // chest is the left vs the right arm) differs between the raw and normalized
+    // VRM hierarchies, which previously caused the left/right hands to be swapped.
+    // Name-based lookup is unambiguous. Matches the salsa_party4 worker retarget.
+    const humanoid = vrm.humanoid;
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('hips'));
     if (!options.rotateModel) {
-      this.retargetBone(options, sourceBones, target.children[0].children[0]);   // Spine
+      this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('spine'));
     }
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0]);   // Chest
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0]);   // Upper chest
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0]);   // Neck
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[0].children[0]);   // Head
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0]);   // Left shoulder
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[0]);   // Left hand
-    this.retargetBone(options, sourceBones, target.children[0].children[0].children[0].children[0].children[1].children[0].children[0].children[0]);   // Right hand
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('chest'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('upperChest'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('neck'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('head'));
+
+    // Left arm
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftShoulder'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftUpperArm'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftLowerArm'));
+    const leftHand = humanoid.getNormalizedBoneNode('leftHand');
+    this.retargetBone(options, sourceBones, leftHand);
+
+    // Right arm
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightShoulder'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightUpperArm'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightLowerArm'));
+    const rightHand = humanoid.getNormalizedBoneNode('rightHand');
+    this.retargetBone(options, sourceBones, rightHand);
 
     // Fingers
     if (!options.proceduralFingers) {
-      this.retargetFingers(options, sourceBones, target);
+      this.retargetHand(options, sourceBones, leftHand);
+      this.retargetHand(options, sourceBones, rightHand);
     }
     this.animateFingers(options, vrm);
 
-    this.retargetBone(options, sourceBones, target.children[0].children[2]);   // Right upper leg
-    this.retargetBone(options, sourceBones, target.children[0].children[2].children[0]);   // Right leg
-    this.retargetBone(options, sourceBones, target.children[0].children[2].children[0].children[0]);   // Right foot
-    this.retargetBone(options, sourceBones, target.children[0].children[1]);   // Left upper leg
-    this.retargetBone(options, sourceBones, target.children[0].children[1].children[0]);   // Left leg
-    this.retargetBone(options, sourceBones, target.children[0].children[1].children[0].children[0]);   // Left foot
+    // Legs
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightUpperLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightLowerLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('rightFoot'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftUpperLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftLowerLeg'));
+    this.retargetBone(options, sourceBones, humanoid.getNormalizedBoneNode('leftFoot'));
   };
 
   static animateFingers(options, vrm) {
@@ -149,7 +166,7 @@ export default class VrmSkeletonUtils {
         const bone = vrm ? vrm.humanoid.getNormalizedBoneNode(vrmBoneName) : null;
 
         if (bone) {
-           this.applyFingerCurl(bone, baseCurl, splayBase, time, timeOffset + jIdx * 0.05, extensionFactor, isThumb, jIdx, isLeft, isMetacarpal, isPinky);
+           this.applyFingerCurl(bone, baseCurl, splayBase, time, timeOffset + jIdx * 0.05, extensionFactor, isThumb, jIdx, isLeft, isMetacarpal, isPinky, options);
         } else {
            // console.warn(`Bone not found: ${boneName} (vrmBoneName: ${vrmBoneName})`);
         }
@@ -157,7 +174,7 @@ export default class VrmSkeletonUtils {
     });
   }
 
-  static applyFingerCurl(bone, baseCurl, splayBase, time, offset, extensionFactor, isThumb, jointIdx, isLeft, isMetacarpal = false, isPinky = false) {
+  static applyFingerCurl(bone, baseCurl, splayBase, time, offset, extensionFactor, isThumb, jointIdx, isLeft, isMetacarpal = false, isPinky = false, options: any = {}) {
     if (!bone) return;
 
     // Movement is more of a "breathing" or "swaying" motion rather than a pure sine wave
@@ -223,6 +240,16 @@ export default class VrmSkeletonUtils {
       return;
     }
 
+    // Some VRM models have the thumb bone axes mirrored relative to the model the
+    // procedural offsets were tuned for, which makes the thumb oppose to the
+    // OUTSIDE of the hand instead of tucking toward the palm. options.invertThumb
+    // flips the thumb's sideways rotation (splay + opposition tilt) without
+    // touching the curl, bringing it back inside. Only affects the thumb.
+    if (isThumb && options && options.invertThumb) {
+      splayValue = -splayValue;
+      thumbTilt = -thumbTilt;
+    }
+
     // We use a very soft slerp to maintain fluid, organic movement
     const targetQuat = new Quaternion().setFromEuler(new Euler(totalCurl, splayValue, thumbTilt, 'YXZ'));
     bone.quaternion.slerp(targetQuat, 0.12);
@@ -230,36 +257,25 @@ export default class VrmSkeletonUtils {
     bone.updateMatrixWorld();
   }
 
-  static retargetFingers(options, sourceBones, target) {
-    const root = target.children[0].children[0].children[0].children[0];
-    const leftHand = root.children[1].children[0].children[0].children[0];
-    const rightHand = root.children[2].children[0].children[0].children[0];
+  // Recursively retarget the finger bones under a hand, matching each bone to its
+  // source by name. Used only when procedural finger animation is disabled.
+  static retargetHand(options, sourceBones, handBone) {
+    if (!handBone) return;
 
-    // Left hand fingers
-    if (leftHand && leftHand.children) {
-      leftHand.children.forEach(fingerBase => {
-        this.retargetFingerChain(options, sourceBones, fingerBase);
-      });
-    }
-
-    // Right hand fingers
-    if (rightHand && rightHand.children) {
-      rightHand.children.forEach(fingerBase => {
-        this.retargetFingerChain(options, sourceBones, fingerBase);
-      });
-    }
-  }
-
-  static retargetFingerChain(options, sourceBones, bone) {
-    this.retargetBone(options, sourceBones, bone);
-    if (bone.children && bone.children.length > 0) {
-      bone.children.forEach(child => {
-        this.retargetFingerChain(options, sourceBones, child);
-      });
+    for (const child of handBone.children) {
+      if (child.isBone || (child.name && child.name.startsWith("Normalized"))) {
+        const name = options.names[child.name] || child.name;
+        const sourceBone = this.getBoneByName(name, sourceBones);
+        if (sourceBone) {
+          this.retargetBone(options, sourceBones, child);
+        }
+        this.retargetHand(options, sourceBones, child);
+      }
     }
   }
 
   static retargetBone(options, sourceBones, target) {
+    if (!target) return;
     const quat = new Quaternion(),
       relativeMatrix = new Matrix4(),
       globalMatrix = new Matrix4();
@@ -283,11 +299,40 @@ export default class VrmSkeletonUtils {
     bone.matrix.copy(bone.parent.matrixWorld).invert();
     bone.matrix.multiply(globalMatrix);
 
+    // Retargeting only transfers rotation/position; the source (BVH) skeleton
+    // carries its own accumulated scale that must NOT leak into the VRM bones or
+    // it distorts small bones like the hand/fingers/thumb. Reset scale to 1
+    // unless the caller explicitly opts in to source scaling. (Matches the fix
+    // already applied in the salsa_party4 worker retarget.)
+    const oldScale = bone.scale.clone();
     bone.matrix.decompose(bone.position, bone.quaternion, bone.scale);
+    if (!options.adjustScaling) {
+      bone.scale.set(1, 1, 1);
+    } else {
+      bone.scale.copy(oldScale);
+    }
     if (options.rotateModel) {
       bone.quaternion.multiply(new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI));
     }
     bone.updateMatrixWorld();
+  }
+
+  // Resolve the normalized-bone root used as the retarget target. The retarget
+  // operates on three-vrm's *normalized* humanoid hierarchy (bones named
+  // "Normalized_J_Bip_*"), whose root three-vrm attaches to vrm.scene. Older code
+  // hard-coded this as vrm.scene.children[5], but that index is not stable across
+  // VRM models or three-vrm versions (e.g. after VRMUtils.combineSkeletons merges
+  // meshes the index shifts and becomes undefined). Reading it from the humanoid
+  // works for any model. Accepts either a VRM or an already-resolved root Object3D.
+  static getRootBone(vrmOrRoot) {
+    if (vrmOrRoot && vrmOrRoot.humanoid) {
+      const root = vrmOrRoot.humanoid.normalizedHumanBonesRoot;
+      if (root) {
+        return root;
+      }
+      return vrmOrRoot.scene.children[5] || vrmOrRoot.scene;
+    }
+    return vrmOrRoot;
   }
 
   static getBones(skeleton) {

@@ -39,6 +39,7 @@ export default class SceneManager extends SceneManagerParent {
     preserveHipPosition: false,
     useTargetMatrix: true,
     proceduralFingers: true,
+    invertThumb: true,
     names: {
       "Normalized_J_Bip_C_Hips": "hips_JNT",
       "Normalized_J_Bip_C_Spine": "spine_JNT",

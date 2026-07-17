@@ -10,6 +10,7 @@ import {
   MeshNormalMaterial,
   MeshStandardMaterial,
   NumberKeyframeTrack,
+  Object3D,
   PerspectiveCamera,
   PlaneGeometry,
   PointLight,
@@ -129,6 +130,12 @@ export default class SceneManager extends SceneManagerParent  {
     { leader: "eric", follower: "Shina2", offsetX: 0, offsetZ: 2 },
     { leader: "eric", follower: "Shina2", offsetX: 2, offsetZ: 0 },
   ];
+  // Optimization: every couple performs exactly the same choreography, so the
+  // (expensive) retarget from the shared BVH source skeleton is computed once on a
+  // reference dancer and its normalized-bone pose is copied to the other couples.
+  private shareCoupleAnimation = true;
+  private readonly allLeadersIdentical = this.modelNames.every(m => m.leader === this.modelNames[0].leader);
+  private readonly allFollowersIdentical = this.modelNames.every(m => m.follower === this.modelNames[0].follower);
   private animationActionsEndOfDance: VRM[] = [];
   private animationMixersEndOfDance: AnimationMixer[] = [];
   private animationActionsBlink: VRM[] = [];
@@ -273,8 +280,8 @@ export default class SceneManager extends SceneManagerParent  {
         VRMUtils.combineSkeletons(gltf.scene);
         gltf.scene.userData.vrm = gltf.userData.vrm;
         this.scene.add(gltf.userData.vrm.scene);
-        gltf.scene.children[5].position.x = modelNames[i].offsetX;
-        gltf.scene.children[5].position.z = modelNames[i].offsetZ;
+        VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.x = modelNames[i].offsetX;
+        VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.z = modelNames[i].offsetZ;
         gltf.scene.traverse( function( object ) {
           object.frustumCulled = false;
           if ((object as any).isMesh) {
@@ -292,8 +299,8 @@ export default class SceneManager extends SceneManagerParent  {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
           VRMUtils.combineSkeletons(gltf2.scene);
           gltf2.scene.userData.vrm = gltf2.userData.vrm;
-          gltf2.scene.children[5].position.x = modelNames[i].offsetX;
-          gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
+          VrmSkeletonUtils.getRootBone(gltf2.userData.vrm).position.x = modelNames[i].offsetX;
+          VrmSkeletonUtils.getRootBone(gltf2.userData.vrm).position.z = modelNames[i].offsetZ;
           gltf2.scene.traverse( function( object ) {
             object.frustumCulled = false;
             if ((object as any).isMesh) {
@@ -472,24 +479,47 @@ export default class SceneManager extends SceneManagerParent  {
         this.mixerDance1.update(delta/this.slowDownFactor);
         this.mixerDance2.update(delta/this.slowDownFactor);
         if (this.danceCouples && this.danceCouples.length > 0) {
-          for (let i = 0; i < this.danceCouples.length; i++) {
-            VrmSkeletonUtils.retarget(this.danceCouples[i].leader, this.source1SkeletonHelper, this.modelOptions);
-            VrmSkeletonUtils.retarget(this.danceCouples[i].follower, this.source2SkeletonHelper, this.modelOptions);
-            this.danceCouples[i].leader.update(delta);
-            this.danceCouples[i].follower.update(delta);
+          if (this.shareCoupleAnimation && this.allLeadersIdentical && this.allFollowersIdentical) {
+            // Compute the retargeted pose ONCE on the reference couple.
+            const refLeader = this.danceCouples[0].leader;
+            const refFollower = this.danceCouples[0].follower;
+            VrmSkeletonUtils.retarget(refLeader, this.source1SkeletonHelper, this.modelOptions);
+            VrmSkeletonUtils.retarget(refFollower, this.source2SkeletonHelper, this.modelOptions);
 
-            // Adjust Y position to keep feet on the ground
-            [this.danceCouples[i].leader, this.danceCouples[i].follower].forEach(vrm => {
-              vrm.scene.updateMatrixWorld(true);
-              const box = new Box3();
-              vrm.scene.traverse(obj => {
-                if ((obj as any).isMesh) {
-                  box.expandByObject(obj);
-                }
+            // Reuse that pose for every other couple by copying the normalized-bone
+            // transforms; this is bit-identical to running retarget per couple.
+            for (let i = 1; i < this.danceCouples.length; i++) {
+              this.copyNormalizedPose(refLeader, this.danceCouples[i].leader);
+              this.copyNormalizedPose(refFollower, this.danceCouples[i].follower);
+            }
+
+            // Propagate to each instance's skinned skeleton + spring bones.
+            for (let i = 0; i < this.danceCouples.length; i++) {
+              this.danceCouples[i].leader.update(delta);
+              this.danceCouples[i].follower.update(delta);
+            }
+
+            // Feet-on-ground correction is identical for identical poses:
+            // measure once per archetype and apply the same offset to every couple.
+            const leaderOffset = this.computeGroundOffset(refLeader);
+            const followerOffset = this.computeGroundOffset(refFollower);
+            for (let i = 0; i < this.danceCouples.length; i++) {
+              this.danceCouples[i].leader.scene.position.y -= leaderOffset;
+              this.danceCouples[i].follower.scene.position.y -= followerOffset;
+            }
+          } else {
+            // Fallback: retarget every couple independently (couples differ).
+            for (let i = 0; i < this.danceCouples.length; i++) {
+              VrmSkeletonUtils.retarget(this.danceCouples[i].leader, this.source1SkeletonHelper, this.modelOptions);
+              VrmSkeletonUtils.retarget(this.danceCouples[i].follower, this.source2SkeletonHelper, this.modelOptions);
+              this.danceCouples[i].leader.update(delta);
+              this.danceCouples[i].follower.update(delta);
+
+              // Adjust Y position to keep feet on the ground
+              [this.danceCouples[i].leader, this.danceCouples[i].follower].forEach(vrm => {
+                vrm.scene.position.y -= this.computeGroundOffset(vrm);
               });
-              const lowestY = box.min.y;
-              vrm.scene.position.y -= (lowestY + 0.5);
-            });
+            }
           }
         }
         if (this.animationMixersEndOfDance.length > 0) {
@@ -513,6 +543,40 @@ export default class SceneManager extends SceneManagerParent  {
     this.cubeSound2.position.set(position.x - direction4.x, position.y - direction4.y, position.z - direction4.z);
     this.audioHandler.setPosition(direction4);
     this.audioHandler.setVolume(direction4);
+  }
+
+  // Copies the normalized-bone pose (position/rotation/scale) from a reference VRM
+  // onto another instance of the same model. Walks the humanoid bone tree from the
+  // hips down; both VRMs share an identical hierarchy so we can match children by index.
+  private copyNormalizedPose(src: VRM, dst: VRM) {
+    const srcHips = src.humanoid.getNormalizedBoneNode('hips');
+    const dstHips = dst.humanoid.getNormalizedBoneNode('hips');
+    if (srcHips && dstHips) {
+      this.copyBoneTransforms(srcHips, dstHips);
+    }
+  }
+
+  private copyBoneTransforms(src: Object3D, dst: Object3D) {
+    dst.position.copy(src.position);
+    dst.quaternion.copy(src.quaternion);
+    dst.scale.copy(src.scale);
+    const count = Math.min(src.children.length, dst.children.length);
+    for (let i = 0; i < count; i++) {
+      this.copyBoneTransforms(src.children[i], dst.children[i]);
+    }
+  }
+
+  // Returns how far the dancer must be lowered so its lowest mesh point sits on the
+  // floor (y = -0.5). Identical poses of the same model yield the same offset.
+  private computeGroundOffset(vrm: VRM): number {
+    vrm.scene.updateMatrixWorld(true);
+    const box = new Box3();
+    vrm.scene.traverse(obj => {
+      if ((obj as any).isMesh) {
+        box.expandByObject(obj);
+      }
+    });
+    return box.min.y + 0.5;
   }
 
   updateHandPose(result) {

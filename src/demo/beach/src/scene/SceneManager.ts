@@ -67,7 +67,6 @@ export default class SceneManager extends SceneManagerParent {
       model.position.x = 0;
       model.rotateY(Math.PI/2);
       scene.add(model);
-      this.audioElement.play();
     });
   }
 
@@ -141,6 +140,11 @@ export default class SceneManager extends SceneManagerParent {
 
   update() {
     super.update();
+    // Update audio listener position to camera position
+    if (this.camera) {
+      // Audio source is at origin (default). Calculate relative distance for volume.
+      this.audioHandler.setVolume(this.camera.position);
+    }
     const time = performance.now() * 0.001;
     if (this.grid && this.player && this.sourceSkeletonHelper) {
       this.grid.rotation.x = Math.sin(time) * 0.2;

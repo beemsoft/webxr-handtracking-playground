@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, Timer, WebGLRenderer, WebGLRenderTarget, DepthTexture, Mesh, ShaderMaterial} from 'three';
+import {PerspectiveCamera, Scene, Timer, WebGLRenderer, WebGLRenderTarget, DepthTexture, Mesh, ShaderMaterial, HalfFloatType} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
@@ -29,10 +29,18 @@ export default class WebPageManager {
     }
     this.renderer = new WebGLRenderer({alpha: false, antialias: false});
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    if (sceneManager.isShadowEnabled && sceneManager.isShadowEnabled()) {
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = 1; // PCFShadowMap (Default)
+    }
 
+    this.camera.near = 0.1;
+    this.camera.far = 1000;
     if (sceneManager.isDepthEnabled()) {
+      const isHalfFloatSupported = this.renderer.extensions.get('EXT_color_buffer_half_float');
       this.depthRenderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-        depthTexture: new DepthTexture(window.innerWidth, window.innerHeight)
+        depthTexture: new DepthTexture(window.innerWidth, window.innerHeight),
+        type: isHalfFloatSupported ? HalfFloatType : undefined
       });
     }
 
@@ -69,7 +77,9 @@ export default class WebPageManager {
       this.renderer.setRenderTarget(this.depthRenderTarget);
       this.renderer.clear();
       this.scene.traverse((obj) => {
-        if (obj.name === 'OceanSurf' || (obj as any).material?.transparent) {
+        const material = (obj as Mesh).material;
+        const isTransparent = material && (Array.isArray(material) ? material.some(m => m.transparent) : material.transparent);
+        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || isTransparent) {
           obj.userData.oldVisible = obj.visible;
           obj.visible = false;
         }
@@ -88,9 +98,10 @@ export default class WebPageManager {
           const mat = (obj as Mesh).material as ShaderMaterial;
           mat.uniforms.uDepthTexture.value = this.depthRenderTarget.depthTexture;
           mat.uniforms.uCameraNear.value = this.camera.near;
-          mat.uniforms.uCameraFar.value = this.camera.far;
-          mat.uniforms.uProjMatrix.value.copy(this.camera.projectionMatrix);
-          mat.uniforms.uViewMatrix.value.copy(this.camera.matrixWorldInverse);
+          if (mat.uniforms.uProjMatrix) mat.uniforms.uProjMatrix.value.copy(this.camera.projectionMatrix);
+          if (mat.uniforms.uViewMatrix) mat.uniforms.uViewMatrix.value.copy(this.camera.matrixWorldInverse);
+          if (mat.uniforms.uInverseShadowMatrix) mat.uniforms.uInverseShadowMatrix.value.copy(this.camera.projectionMatrix).multiply(this.camera.matrixWorldInverse).invert();
+          if (mat.uniforms.uCameraFar) mat.uniforms.uCameraFar.value = this.camera.far;
         }
       });
     }

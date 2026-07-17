@@ -278,12 +278,12 @@ function render() {
         mixerDance1.update(delta/slowDownFactor);
         mixerDance2.update(delta/slowDownFactor);
         if (!isAnimationPaused) {
-            VrmSkeletonUtils.retarget(person1.scene.children[5], source1SkeletonHelper, options1);
-            VrmSkeletonUtils.retarget(person2.scene.children[5], source2SkeletonHelper, options);
+            VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(person1), source1SkeletonHelper, options1);
+            VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(person2), source2SkeletonHelper, options);
             if (danceCouples && danceCouples.length > 0) {
                 for (let i = 0; i < danceCouples.length; i++) {
-                    VrmSkeletonUtils.retarget(danceCouples[i].leader.scene.children[5], source1SkeletonHelper, options1);
-                    VrmSkeletonUtils.retarget(danceCouples[i].follower.scene.children[5], source2SkeletonHelper, options1);
+                    VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(danceCouples[i].leader), source1SkeletonHelper, options1);
+                    VrmSkeletonUtils.retarget(VrmSkeletonUtils.getRootBone(danceCouples[i].follower), source2SkeletonHelper, options1);
                 }
             }
             if (person1) {
@@ -328,8 +328,8 @@ function loadModels2(modelNames) {
             VRMUtils.removeUnnecessaryVertices(gltf.scene);
             VRMUtils.combineSkeletons(gltf.scene);
             scene.add(gltf.userData.vrm.scene);
-            gltf.scene.children[5].position.x = modelNames[i].offsetX;
-            gltf.scene.children[5].position.z = modelNames[i].offsetZ;
+            VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.x = modelNames[i].offsetX;
+            VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.z = modelNames[i].offsetZ;
             gltf.scene.traverse( function( object ) {
                 object.frustumCulled = false;
                 object.castShadow = true;
@@ -340,8 +340,8 @@ function loadModels2(modelNames) {
             gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
                 VRMUtils.removeUnnecessaryVertices(gltf2.scene);
                 VRMUtils.combineSkeletons(gltf.scene);
-                gltf2.scene.children[5].position.x = modelNames[i].offsetX;
-                gltf2.scene.children[5].position.z = modelNames[i].offsetZ;
+                VrmSkeletonUtils.getRootBone(gltf2.userData.vrm).position.x = modelNames[i].offsetX;
+                VrmSkeletonUtils.getRootBone(gltf2.userData.vrm).position.z = modelNames[i].offsetZ;
                 gltf2.scene.traverse( function( object ) {
                     object.frustumCulled = false;
                     object.castShadow = true;
@@ -376,8 +376,8 @@ function loadModels() {
         VRMUtils.combineSkeletons(gltf.scene);
         const vrm = gltf.userData.vrm;
         console.log(vrm);
-        gltf.scene.children[5].position.x = 2;
-        gltf.scene.children[5].position.z = 1;
+        VrmSkeletonUtils.getRootBone(vrm).position.x = 2;
+        VrmSkeletonUtils.getRootBone(vrm).position.z = 1;
         person1 = vrm;
         gltf.scene.traverse( function( object ) {
             object.frustumCulled = false;
@@ -389,8 +389,8 @@ function loadModels() {
         gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
             VRMUtils.removeUnnecessaryVertices(gltf.scene);
             VRMUtils.combineSkeletons(gltf.scene);
-            gltf.scene.children[5].position.x = 2;
-            gltf.scene.children[5].position.z = 1;
+            VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.x = 2;
+            VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.z = 1;
             person2 = gltf.userData.vrm;
             // this.initBlinkAnimation(gltf.userData.vrm);
             // this.initHappyAnimation(gltf.userData.vrm);

@@ -95,6 +95,24 @@ export default class VrmSkeletonUtils {
     bone.updateMatrixWorld();
   }
 
+  // Resolve the normalized-bone root used as the retarget target. The retarget
+  // operates on three-vrm's *normalized* humanoid hierarchy (bones named
+  // "Normalized_J_Bip_*"), whose root three-vrm attaches to vrm.scene. Older code
+  // hard-coded this as vrm.scene.children[5], but that index is not stable across
+  // VRM models or three-vrm versions (e.g. after VRMUtils.combineSkeletons merges
+  // meshes the index shifts and becomes undefined). Reading it from the humanoid
+  // works for any model. Accepts either a VRM or an already-resolved root Object3D.
+  static getRootBone(vrmOrRoot) {
+    if (vrmOrRoot && vrmOrRoot.humanoid) {
+      const root = vrmOrRoot.humanoid.normalizedHumanBonesRoot;
+      if (root) {
+        return root;
+      }
+      return vrmOrRoot.scene.children[5] || vrmOrRoot.scene;
+    }
+    return vrmOrRoot;
+  }
+
   static getBones(skeleton) {
     return Array.isArray(skeleton) ? skeleton : skeleton.bones;
   }
