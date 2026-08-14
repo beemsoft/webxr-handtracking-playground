@@ -1,4 +1,4 @@
-import { HalfFloatType, Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera, DepthTexture, Mesh, ShaderMaterial, LinearFilter, NoToneMapping } from 'three';
+import { HalfFloatType, Quaternion, Scene, Vector3, WebGLRenderer, WebGLRenderTarget, RawShaderMaterial, PerspectiveCamera, DepthTexture, Mesh, ShaderMaterial, LinearFilter, NoToneMapping, FloatType, NearestFilter, ClampToEdgeWrapping } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import {
   GestureType,
@@ -88,7 +88,7 @@ export default class WebXRManager {
           this.renderer.shadowMap.enabled = this.config.enableShadows;
           this.renderer.shadowMap.type = 1; // PCFShadowMap
           this.renderer.shadowMap.autoUpdate = false;
-          this.shadowCamera = new PerspectiveCamera(150, 1, 0.1, 1000);
+          this.shadowCamera = new PerspectiveCamera(90, 1, 0.1, 500);
           this.shadowCamera.updateProjectionMatrix();
           this.shadowCamera.matrixAutoUpdate = true;
           this.shadowCamera.frustumCulled = false;
@@ -119,7 +119,7 @@ export default class WebXRManager {
 
           if (this.config.enableScreenHud) {
             this.fpsText = new TextMesh(this.renderer.capabilities.getMaxAnisotropy(), 0.4, 0.2, 2, 60);
-            this.fpsText.mesh.position.set(0, 0.2, -0.8); // More central and further away to be visible
+            this.fpsText.mesh.position.set(-0.4, 0.3, -0.8); // Positioned in top-left
             this.fpsText.mesh.frustumCulled = false;
             this.fpsText.mesh.renderOrder = 1000;
             if (this.fpsText.mesh.material instanceof RawShaderMaterial) {
@@ -132,7 +132,7 @@ export default class WebXRManager {
 
           if (this.config.enableStats) {
             this.statsMesh = new StatsMesh(this.renderer.capabilities.getMaxAnisotropy());
-            this.statsMesh.mesh.position.set(0, 0.1, -0.9); // Positioned lower (changed from 0.3)
+            this.statsMesh.mesh.position.set(-0.4, 0.3, -0.9); // Positioned in top-left of stereoscopic rendering
             this.statsMesh.mesh.scale.set(0.3, 0.3, 0.3); // Scaled to 30%
             this.statsMesh.mesh.frustumCulled = false;
             this.statsMesh.mesh.renderOrder = 1002;
@@ -281,12 +281,21 @@ export default class WebXRManager {
     if (this.config.enableDepth) {
       const width = this.proj_layer ? this.proj_layer.textureWidth : this.baseLayer.framebufferWidth;
       const height = this.proj_layer ? this.proj_layer.textureHeight : this.baseLayer.framebufferHeight;
+
+      const depthTex = new DepthTexture(width, height, FloatType);
+      depthTex.minFilter = NearestFilter;
+      depthTex.magFilter = NearestFilter;
+      depthTex.wrapS = ClampToEdgeWrapping;
+      depthTex.wrapT = ClampToEdgeWrapping;
+      depthTex.generateMipmaps = false;
+
       this.depthRenderTarget = new WebGLRenderTarget(width, height, {
-        depthTexture: new DepthTexture(width, height)
+        depthTexture: depthTex
       });
+
       this.shadowCamera.aspect = width / height;
       this.shadowCamera.near = 0.1;
-      this.shadowCamera.far = 1000;
+      this.shadowCamera.far = 500;
       this.shadowCamera.updateProjectionMatrix();
     }
   }
@@ -462,10 +471,10 @@ export default class WebXRManager {
       }
 
       // Sync shadowCamera with head pose for consistent depth and shadow map updates
-      this.shadowCamera.near = 0.1;
-      this.shadowCamera.far = 1000;
-      this.shadowCamera.fov = 150;
-      this.shadowCamera.updateProjectionMatrix();
+      const vrNear = (this.cameraManager.cameraVR.cameras[0] && this.cameraManager.cameraVR.cameras[0].near) || 0.1;
+      const vrFar = (this.cameraManager.cameraVR.cameras[0] && this.cameraManager.cameraVR.cameras[0].far) || 500;
+      this.shadowCamera.near = vrNear;
+      this.shadowCamera.far = vrFar;
 
       // Ensure the shadow camera is strictly aligned with the viewer pose's average transform
       this.shadowCamera.position.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
@@ -474,30 +483,42 @@ export default class WebXRManager {
 
       // IMPORTANT: In WebXR, we must ensure the shadowCamera's matrices are perfectly synced
       // with the XRViewerPose for depth-based effects to remain stable when turning the head.
-      // salsa_party4 fix: Ensure matrixWorldInverse is updated from the new matrixWorld
       this.shadowCamera.matrixWorldInverse.copy(this.shadowCamera.matrixWorld).invert();
 
-      // Ensure all objects that should be visible are not culled during this pass
-      this.scene.traverse((obj) => {
-        if (obj.name === 'HandJoint' || obj.name.includes('Rock') || obj.name === 'Island') {
-          obj.frustumCulled = false;
-        }
-      });
+      // Use the actual XR view projection to ensure depth texture resolution matches what's seen
+      if (pose.views.length > 0) {
+        const view = pose.views[0];
+        this.shadowCamera.projectionMatrix.fromArray(view.projectionMatrix);
+        this.shadowCamera.projectionMatrixInverse.copy(this.shadowCamera.projectionMatrix).invert();
+      } else {
+        this.shadowCamera.aspect = this.depthRenderTarget.width / this.depthRenderTarget.height;
+        this.shadowCamera.fov = 90;
+        this.shadowCamera.updateProjectionMatrix();
+      }
 
-      // Hide ocean, hand joints, or any transparent objects that shouldn't contribute to depth for foam
+      // Hide ocean, hand joints, sky, or any transparent objects that shouldn't contribute to depth for foam
       this.scene.traverse((obj) => {
         const material = (obj as Mesh).material;
         const isTransparent = material && (Array.isArray(material) ? material.some(m => m.transparent) : material.transparent);
-        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || isTransparent) {
+        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || obj.name === 'Sky' || isTransparent) {
           obj.userData.oldVisible = obj.visible;
+          obj.visible = false;
+        }
+        if (obj.name === 'DepthScreen') {
+          obj.userData.oldVisibleScreen = obj.visible;
           obj.visible = false;
         }
       });
 
+      this.shadowCamera.updateMatrixWorld(true);
       this.renderer.render(this.scene, this.shadowCamera);
 
       // Restore visibility
       this.scene.traverse((obj) => {
+        if (obj.userData.oldVisibleScreen !== undefined) {
+          obj.visible = obj.userData.oldVisibleScreen;
+          delete obj.userData.oldVisibleScreen;
+        }
         if (obj.userData.oldVisible !== undefined) {
           obj.visible = obj.userData.oldVisible;
           delete obj.userData.oldVisible;
@@ -512,11 +533,11 @@ export default class WebXRManager {
         if (this.config.enableStats && this.statsMesh) this.statsMesh.mesh.visible = true;
       }
 
-      // Pass depth texture and matrices to the ocean material
+      // Pass depth texture and matrices to materials
       if (this.config.enableDepth && this.depthRenderTarget) {
         this.scene.traverse((obj) => {
-          if (obj.name === 'OceanSurf' && (obj as Mesh).material instanceof ShaderMaterial) {
-            const mat = (obj as Mesh).material as ShaderMaterial;
+          const mat = (obj as Mesh).material as ShaderMaterial;
+          if (mat instanceof ShaderMaterial && mat.uniforms && mat.uniforms.uDepthTexture !== undefined) {
             if (mat.uniforms.uProjMatrix) mat.uniforms.uProjMatrix.value.copy(this.shadowCamera.projectionMatrix);
             if (mat.uniforms.uViewMatrix) mat.uniforms.uViewMatrix.value.copy(this.shadowCamera.matrixWorldInverse);
             if (mat.uniforms.uInverseShadowMatrix) mat.uniforms.uInverseShadowMatrix.value.copy(this.shadowCamera.projectionMatrix).multiply(this.shadowCamera.matrixWorldInverse).invert();

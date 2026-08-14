@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, Timer, WebGLRenderer, WebGLRenderTarget, DepthTexture, Mesh, ShaderMaterial, HalfFloatType} from 'three';
+import {PerspectiveCamera, Scene, Timer, WebGLRenderer, WebGLRenderTarget, DepthTexture, Mesh, ShaderMaterial, HalfFloatType, FloatType, NearestFilter, ClampToEdgeWrapping} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { SceneManagerInterface } from '../scene/SceneManagerInterface';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
@@ -35,11 +35,21 @@ export default class WebPageManager {
     }
 
     this.camera.near = 0.1;
-    this.camera.far = 1000;
+    this.camera.far = 500;
+    // Set correct aspect ratio on initial load for proper depth texture rendering
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
     if (sceneManager.isDepthEnabled()) {
       const isHalfFloatSupported = this.renderer.extensions.get('EXT_color_buffer_half_float');
+      const depthTex = new DepthTexture(window.innerWidth, window.innerHeight, FloatType);
+      depthTex.minFilter = NearestFilter;
+      depthTex.magFilter = NearestFilter;
+      depthTex.wrapS = ClampToEdgeWrapping;
+      depthTex.wrapT = ClampToEdgeWrapping;
+      depthTex.generateMipmaps = false;
+
       this.depthRenderTarget = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-        depthTexture: new DepthTexture(window.innerWidth, window.innerHeight),
+        depthTexture: depthTex,
         type: isHalfFloatSupported ? HalfFloatType : undefined
       });
     }
@@ -76,16 +86,30 @@ export default class WebPageManager {
     if (this.depthRenderTarget) {
       this.renderer.setRenderTarget(this.depthRenderTarget);
       this.renderer.clear();
+
       this.scene.traverse((obj) => {
         const material = (obj as Mesh).material;
         const isTransparent = material && (Array.isArray(material) ? material.some(m => m.transparent) : material.transparent);
-        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || isTransparent) {
+        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || obj.name === 'Sky' || isTransparent) {
           obj.userData.oldVisible = obj.visible;
           obj.visible = false;
         }
+        if (obj.name === 'DepthScreen') {
+          obj.userData.oldVisibleScreen = obj.visible;
+          obj.visible = false;
+        }
       });
+
+      this.camera.updateMatrixWorld(true);
+      this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
+
       this.renderer.render(this.scene, this.camera);
+
       this.scene.traverse((obj) => {
+        if (obj.userData.oldVisibleScreen !== undefined) {
+          obj.visible = obj.userData.oldVisibleScreen;
+          delete obj.userData.oldVisibleScreen;
+        }
         if (obj.userData.oldVisible !== undefined) {
           obj.visible = obj.userData.oldVisible;
           delete obj.userData.oldVisible;
@@ -94,14 +118,14 @@ export default class WebPageManager {
       this.renderer.setRenderTarget(null);
 
       this.scene.traverse((obj) => {
-        if (obj.name === 'OceanSurf' && (obj as Mesh).material instanceof ShaderMaterial) {
-          const mat = (obj as Mesh).material as ShaderMaterial;
+        const mat = (obj as Mesh).material as ShaderMaterial;
+        if (mat instanceof ShaderMaterial && mat.uniforms && mat.uniforms.uDepthTexture !== undefined) {
           mat.uniforms.uDepthTexture.value = this.depthRenderTarget.depthTexture;
           mat.uniforms.uCameraNear.value = this.camera.near;
+          mat.uniforms.uCameraFar.value = this.camera.far;
           if (mat.uniforms.uProjMatrix) mat.uniforms.uProjMatrix.value.copy(this.camera.projectionMatrix);
           if (mat.uniforms.uViewMatrix) mat.uniforms.uViewMatrix.value.copy(this.camera.matrixWorldInverse);
           if (mat.uniforms.uInverseShadowMatrix) mat.uniforms.uInverseShadowMatrix.value.copy(this.camera.projectionMatrix).multiply(this.camera.matrixWorldInverse).invert();
-          if (mat.uniforms.uCameraFar) mat.uniforms.uCameraFar.value = this.camera.far;
         }
       });
     }

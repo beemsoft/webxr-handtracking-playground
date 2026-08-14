@@ -171,7 +171,7 @@ export default class TrackedHandsManager extends TrackedHandsWithoutPhysicsManag
                 break;
               }
               case GestureType.Index_Thumb: {
-                console.log("Check pinch!");
+                // console.log("Check pinch!");
                 if (joint1 == pinchFingerTip || joint1 == thumbTip) {
                   fingerJointMaterial[joint1].color.set(0x33fdff);
                 }
