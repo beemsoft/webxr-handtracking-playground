@@ -433,6 +433,8 @@ export default class WebXRManager {
               this.trackedHandsManager.material.color.set(0xFF3333);
               this.trackedHandsManager.isPinchingEnabled = true;
             }
+          } else if (handTrackingResult.gestureType == GestureType.Open_Hand) {
+            this.sceneBuilder.handleGesture(handTrackingResult);
           }
         } else {
           this.sceneBuilder.handleGesture(handTrackingResult);

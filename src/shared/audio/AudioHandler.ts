@@ -5,7 +5,8 @@ export enum AudioDemo {
   "dance",
   "salsaDanceFast",
   "salsaDanceSlow",
-  "ocean"
+  "ocean",
+  "underwater"
 }
 
 export default class AudioHandler {
@@ -32,10 +33,12 @@ export default class AudioHandler {
     this.materials = materials;
   }
 
-  initAudio(audioDemo: AudioDemo) {
-    this.audioContext = new AudioContext();
+  initAudio(audioDemo?: AudioDemo, customSrc?: string, sharedContext?: AudioContext) {
+    this.audioContext = sharedContext || new AudioContext();
     this.audioElement = document.createElement('audio');
-    if (audioDemo == AudioDemo.basketball) {
+    if (customSrc) {
+      this.audioElement.src = customSrc;
+    } else if (audioDemo == AudioDemo.basketball) {
       this.audioElement.src = '/vr/sound/bounce.mp3';
     } else if (audioDemo == AudioDemo.dance) {
       this.audioElement.src = '/vr/sound/bachata.mp3';
@@ -45,6 +48,8 @@ export default class AudioHandler {
       this.audioElement.src = '/vr/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
     } else if (audioDemo == AudioDemo.ocean) {
       this.audioElement.src = '/vr/sound/ocean-waves-sounds.mp3';
+    } else if (audioDemo == AudioDemo.underwater) {
+      this.audioElement.src = '/vr/sound/Underwater sound effect.mp3';
     }
     this.audioElement.load();
     this.audioElement.loop = true;
@@ -63,6 +68,10 @@ export default class AudioHandler {
     this.audioReady = true;
   }
 
+  getAudioContext(): AudioContext {
+    return this.audioContext;
+  }
+
   resume() {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       this.audioContext.resume();
@@ -76,10 +85,31 @@ export default class AudioHandler {
   }
 
   setVolume(v) {
-    if (!this.output) return;
+    if (!this.output || !this.audioContext) return;
     let distance = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     let gain = 1 - distance / 100;
     gain = Math.max(0, Math.min(1, gain));
     this.output.gain.setTargetAtTime(gain, this.audioContext.currentTime, 0.1);
+  }
+
+  setGain(gain: number) {
+    if (this.output && this.audioContext) {
+      this.output.gain.setTargetAtTime(Math.max(0, Math.min(1, gain)), this.audioContext.currentTime, 0.05);
+    } else if (this.audioElement) {
+      this.audioElement.volume = Math.max(0, Math.min(1, gain));
+    }
+  }
+
+  playFromStart() {
+    if (this.audioElement) {
+      try {
+        this.audioElement.currentTime = 0;
+        if (this.audioElement.paused) {
+          this.audioElement.play().catch(() => {});
+        }
+      } catch (e) {
+        // Audio element not yet playable or loaded
+      }
+    }
   }
 }
