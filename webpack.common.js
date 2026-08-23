@@ -35,6 +35,9 @@ module.exports = {
         ocean_surf: './src/demo/ocean_surf/src',
         depth_visualization: './src/demo/depth_visualization/src',
         ship_fog: './src/demo/ship_fog/src',
+        beautiful_water: './src/demo/beautiful_water/src',
+        'beautiful-water': './src/demo/beautiful_water/src',
+        webgl_water_ocean: './src/demo/webgl_water_ocean/src',
     },
     module: {
         rules: [
