@@ -70,6 +70,8 @@ export default class SkeletonUtils {
       name = options.names[bone.name] || bone.name;
       boneTo = this.getBoneByName(name, sourceBones);
       globalMatrix.copy(bone.matrixWorld);
+      // Store original local position to preserve bone chain structure
+      const originalLocalPos = bone.position.clone();
       if (boneTo) {
         boneTo.updateMatrixWorld();
         if (options.useTargetMatrix) {
@@ -88,7 +90,11 @@ export default class SkeletonUtils {
             wBindMatrix = bindBones ? bindBones[ boneIndex ] : bindBoneMatrix.copy( target.skeleton.boneInverses[ boneIndex ] ).invert();
           globalMatrix.multiply(wBindMatrix);
         }
-        globalMatrix.copyPosition(relativeMatrix);
+        // Only copy position for root bone (hips), not for child bones to preserve bone chain distances
+        if (name === options.hip) {
+          globalMatrix.copyPosition(relativeMatrix);
+        }
+        // For child bones, position is not applied from source - we'll restore the original local position later
       }
 
       bone.matrix.copy( bone.parent.matrixWorld ).invert();
@@ -98,6 +104,12 @@ export default class SkeletonUtils {
         bone.matrix.setPosition(pos.set(0, bone.position.y, 0));
       }
       bone.matrix.decompose(bone.position, bone.quaternion, bone.scale);
+
+      // Restore original local position for non-hip bones to maintain bone chain distances
+      if (name !== options.hip) {
+        bone.position.copy(originalLocalPos);
+      }
+
       bone.updateMatrixWorld();
     }
     if (options.preservePosition) {
