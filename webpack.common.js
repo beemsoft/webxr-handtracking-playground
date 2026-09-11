@@ -40,6 +40,8 @@ module.exports = {
         webgl_water_ocean: './src/demo/webgl_water_ocean/src',
         natural_disasters: './src/demo/natural_disasters/src',
         'natural-disasters': './src/demo/natural_disasters/src',
+        ocean_simulation: './src/demo/ocean_simulation/src',
+        'ocean-simulation': './src/demo/ocean_simulation/src',
     },
     module: {
         rules: [
