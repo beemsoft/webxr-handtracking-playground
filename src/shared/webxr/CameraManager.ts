@@ -47,6 +47,7 @@ export default class CameraManager {
     this.cameraVR.quaternion.w = pose.transform.orientation.w;
     this.cameraVR.updateMatrix();
     this.cameraVR.updateMatrixWorld(true);
+    this.cameraVR.matrixWorldInverse.copy(this.cameraVR.matrixWorld).invert();
     // Explicitly update sub-cameras world matrix as they are removed from normal scene graph logic
     for (let camera of this.cameraVR.cameras) {
       camera.updateMatrixWorld(true);

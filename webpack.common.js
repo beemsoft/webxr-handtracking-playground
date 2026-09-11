@@ -38,6 +38,8 @@ module.exports = {
         beautiful_water: './src/demo/beautiful_water/src',
         'beautiful-water': './src/demo/beautiful_water/src',
         webgl_water_ocean: './src/demo/webgl_water_ocean/src',
+        natural_disasters: './src/demo/natural_disasters/src',
+        'natural-disasters': './src/demo/natural_disasters/src',
     },
     module: {
         rules: [
