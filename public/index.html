@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>WebXR hand tracking playground</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
     <style>
         :root{
             --bg: #0b0f17;
@@ -106,7 +106,6 @@
         .card a:hover{ text-decoration: none; }
         .card h3{ font-size: 18px; margin: 0; }
         .card p{ margin: 0; color: var(--muted); font-size: 14px; }
-        .thumb{ width: 100%; height: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,.06); box-shadow: 0 6px 16px rgba(0,0,0,.35), 0 0 14px rgba(138,122,255,.10); }
         .icon{ margin-right: 6px; filter: drop-shadow(0 0 6px rgba(0,240,255,.18)); }
         .badge{ display:inline-block; font-size: 11px; letter-spacing: .3px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: #cfe9ff; background: rgba(124,108,255,.08); }
         .lists{ display:flex; gap:16px; flex-wrap:wrap; }
@@ -154,38 +153,39 @@
         <div class="grid">
             <div class="card"><a href="src/demo/ball/index.html"><h3><span class="icon" aria-hidden="true">🏀</span>Catch and throw the ball</h3><p>A basketball is dropped from the sky. You can grab it and throw it away.</p></a></div>
             <div class="card"><a href="src/demo/get_ball/index.html"><h3><span class="icon" aria-hidden="true">✋</span>Get the ball with hand gesture</h3><p>You are in an empty basketball court. Open your hand to get the ball.</p></a></div>
-            <div class="card"><a href="src/demo/dance/index.html"><img class="thumb" src="/img/dance.png" alt="Dance" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">💃</span>Dance</h3><p>Start the dance by opening your hand.</p></a></div>
-            <div class="card"><a href="src/demo/vrm_animation/index.html"><img class="thumb" src="/img/vrm_animation.png" alt="VRM model animation" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🤖</span>VRM model animation</h3><p>Start the animation by opening your hand.</p></a></div>
-            <div class="card"><a href="src/demo/vrm_dance/index.html"><img class="thumb" src="/img/vrm_dance.png" alt="VRM model dance" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🤖</span>VRM model dance</h3><p>Start the dance by opening your hand.</p></a></div>
-            <div class="card"><a href="src/demo/bar/index.html"><img class="thumb" src="/img/bar.png" alt="Salsa bar (fast)" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🍹</span>Salsa bar (fast)</h3><p>Start the dance by opening your hand.</p></a></div>
-            <div class="card"><a href="src/demo/bar2/index.html"><img class="thumb" src="/img/bar2.png" alt="Salsa bar (slow)" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🍹</span>Salsa bar (slow)</h3><p>2 VRM models animated with the complete Salsa BVH collection, originally from CMU.</p></a></div>
-            <div class="card"><a href="src/demo/salsa_lesson/index.html"><img class="thumb" src="/img/salsa_lesson.png" alt="Salsa lesson" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🧑‍🏫</span>Salsa lesson</h3><p>Follow the leader’s hand and shoe moves. Open your hand to resume, close to pause. Camera: Thumb+Ring = orbit camera; Thumb+Pinky = orbit origin.</p></a></div>
-            <div class="card"><a href="src/demo/elements/index.html"><img class="thumb" src="/img/elements.png" alt="Elements" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">⚛️</span>Elements</h3><p>Atom Visualizer.</p></a></div>
-            <div class="card"><a href="src/demo/ocean/index.html"><img class="thumb" src="/img/ocean.png" alt="Ocean" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean</h3><p>Three.js ocean demo.</p></a></div>
-            <div class="card"><a href="src/demo/ship/index.html"><img class="thumb" src="/img/ship.png" alt="Ship" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🚢</span>Ship</h3><p>Three.js ocean + The Black Pearl + Jack Sparrow.</p></a></div>
-            <div class="card"><a href="src/demo/beach/index.html"><img class="thumb" src="/img/beach.png" alt="Beach" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🏖️</span>Beach</h3><p>Beach.</p></a></div>
-            <div class="card"><a href="src/demo/bvh_test/index.html"><img class="thumb" src="/img/bvh_test.png" alt="BVH test" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🧍</span>BVH test</h3><p>Drunk walking 10‑minute rigged pirate.</p></a></div>
-            <div class="card"><a href="src/demo/bvh_test_2/index.html"><img class="thumb" src="/img/bvh_test_2.png" alt="BVH test 2" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🧍</span>BVH test 2</h3><p>Jack Sparrow drunk walking on a tilting plane.</p></a></div>
-            <div class="card"><a href="src/demo/salsa_party/index.html"><img class="thumb" src="/img/salsa_party.png" alt="Salsa party" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party</h3><p>Victorian Greenhouse. 8 VRM models animated with the Salsa BVH collection (CMU).</p></a></div>
-            <div class="card"><a href="src/demo/salsa_party2/index.html"><img class="thumb" src="/img/salsa_party2.png" alt="Salsa party 2" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 2</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. 6 VRM models animated with Salsa BVH (CMU).</p></a></div>
-            <div class="card"><a href="src/demo/handinput_profiles/index.html"><img class="thumb" src="/img/handinput_profiles.png" alt="Hand input profiles" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">✋</span>Hand input profiles</h3><p>Ported from Three.js examples.</p></a></div>
-            <div class="card"><a href="src/demo/salsa_party3/index.html"><img class="thumb" src="/img/salsa_party3.png" alt="Salsa party 3" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 3</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. Three.js VR hand models + 2 VRM models (Salsa BVH). JS implementation.</p></a></div>
-            <div class="card"><a href="src/demo/salsa_party4/index.html"><img class="thumb" src="/img/salsa_party4.png" alt="Salsa party 4" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 4</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. 8 VRM models (Salsa BVH). Control animation with hand gestures.</p></a></div>
-            <div class="card"><a href="src/demo/mediapipe_face/index.html"><img class="thumb" src="/img/mediapipe_face.png" alt="Mediapipe Face Raccoon" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🦝</span>Mediapipe Face Raccoon</h3><p>Face tracking fun.</p></a></div>
-            <div class="card"><a href="src/demo/mediapipe_face_vrm/index.html"><img class="thumb" src="/img/mediapipe_face_vrm.png" alt="Mediapipe Face VRM" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🤖</span>Mediapipe Face VRM</h3><p>Drive a VRM with Mediapipe face tracking.</p></a></div>
-            <div class="card"><a href="src/demo/webxr_vr_postprocessing/index.html"><img class="thumb" src="/img/webxr_vr_postprocessing.png" alt="WebXR postprocessing" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">✨</span>WebXR postprocessing</h3><p>Three triangles with Bloom effect (ported from Cody Bennet’s PR).</p></a></div>
-            <div class="card"><a href="src/demo/webxr_vr_postprocessing_unreal_bloom/index.html"><img class="thumb" src="/img/webxr_vr_postprocessing_unreal_bloom.png" alt="Unreal Bloom (WebXR)" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">✨</span>Unreal Bloom (WebXR)</h3><p>Ported from Three.js.</p></a></div>
-            <div class="card"><a href="src/demo/moon_walk/index.html"><img class="thumb" src="/img/moon_walk.png" alt="Moon walk" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🌕</span>Moon walk</h3><p>Apollo 11 moon landing scene.</p></a></div>
-            <div class="card"><a href="src/demo/webgl_water/index.html"><img class="thumb" src="/img/webgl_water.png" alt="Water reflection + refraction" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">💧</span>Water reflection + refraction</h3><p>Ported from Three.js.</p></a></div>
-            <div class="card"><a href="src/demo/threejs_water/index.html"><img class="thumb" src="/img/threejs_water.png" alt="Water caustics" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">💧</span>Water caustics</h3><p>Ported from Three.js Water.</p></a></div>
-            <div class="card"><a href="src/demo/threejs_water_shark/index.html"><img class="thumb" src="/img/threejs_water.png" alt="Water caustics with shark" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🦈</span>Water caustics with shark</h3><p>Three.js water caustics simulation with animated swimming shark.</p></a></div>
-            <div class="card"><a href="src/demo/threejs_physics_ammo_break/index.html"><img class="thumb" src="/img/threejs_physics_ammo_break.png" alt="Physics Ammo Break" onerror="this.remove()"><h3>Physics Ammo Break</h3><p>Ported from Three.js Physics Ammo Break demo.</p></a></div>
+            <div class="card"><a href="src/demo/dance/index.html"><h3><span class="icon" aria-hidden="true">💃</span>Dance</h3><p>Start the dance by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/vrm_animation/index.html"><h3><span class="icon" aria-hidden="true">🤖</span>VRM model animation</h3><p>Start the animation by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/vrm_dance/index.html"><h3><span class="icon" aria-hidden="true">🤖</span>VRM model dance</h3><p>Start the dance by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/bar/index.html"><h3><span class="icon" aria-hidden="true">🍹</span>Salsa bar (fast)</h3><p>Start the dance by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/bar2/index.html"><h3><span class="icon" aria-hidden="true">🍹</span>Salsa bar (slow)</h3><p>2 VRM models animated with the complete Salsa BVH collection, originally from CMU.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_lesson/index.html"><h3><span class="icon" aria-hidden="true">🧑‍🏫</span>Salsa lesson</h3><p>Follow the leader’s hand and shoe moves. Open your hand to resume, close to pause. Camera: Thumb+Ring = orbit camera; Thumb+Pinky = orbit origin.</p></a></div>
+            <div class="card"><a href="src/demo/elements/index.html"><h3><span class="icon" aria-hidden="true">⚛️</span>Elements</h3><p>Atom Visualizer.</p></a></div>
+            <div class="card"><a href="src/demo/ocean/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean</h3><p>Three.js ocean demo.</p></a></div>
+            <div class="card"><a href="src/demo/ship/index.html"><h3><span class="icon" aria-hidden="true">🚢</span>Ship</h3><p>Three.js ocean + The Black Pearl + Jack Sparrow.</p></a></div>
+            <div class="card"><a href="src/demo/beach/index.html"><h3><span class="icon" aria-hidden="true">🏖️</span>Beach</h3><p>Beach.</p></a></div>
+            <div class="card"><a href="src/demo/bvh_test/index.html"><h3><span class="icon" aria-hidden="true">🧍</span>BVH test</h3><p>Drunk walking 10‑minute rigged pirate.</p></a></div>
+            <div class="card"><a href="src/demo/bvh_test_2/index.html"><h3><span class="icon" aria-hidden="true">🧍</span>BVH test 2</h3><p>Jack Sparrow drunk walking on a tilting plane.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party</h3><p>Victorian Greenhouse. 8 VRM models animated with the Salsa BVH collection (CMU).</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party2/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 2</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. 6 VRM models animated with Salsa BVH (CMU).</p></a></div>
+            <div class="card"><a href="src/demo/handinput_profiles/index.html"><h3><span class="icon" aria-hidden="true">✋</span>Hand input profiles</h3><p>Ported from Three.js examples.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party3/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 3</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. Three.js VR hand models + 2 VRM models (Salsa BVH). JS implementation.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party4/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 4</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. 8 VRM models (Salsa BVH). Control animation with hand gestures.</p></a></div>
+            <div class="card"><a href="src/demo/mediapipe_face/index.html"><h3><span class="icon" aria-hidden="true">🦝</span>Mediapipe Face Raccoon</h3><p>Face tracking fun.</p></a></div>
+            <div class="card"><a href="src/demo/mediapipe_face_vrm/index.html"><h3><span class="icon" aria-hidden="true">🤖</span>Mediapipe Face VRM</h3><p>Drive a VRM with Mediapipe face tracking.</p></a></div>
+            <div class="card"><a href="src/demo/webxr_vr_postprocessing/index.html"><h3><span class="icon" aria-hidden="true">✨</span>WebXR postprocessing</h3><p>Three triangles with Bloom effect (ported from Cody Bennet’s PR).</p></a></div>
+            <div class="card"><a href="src/demo/webxr_vr_postprocessing_unreal_bloom/index.html"><h3><span class="icon" aria-hidden="true">✨</span>Unreal Bloom (WebXR)</h3><p>Ported from Three.js.</p></a></div>
+            <div class="card"><a href="src/demo/moon_walk/index.html"><h3><span class="icon" aria-hidden="true">🌕</span>Moon walk</h3><p>Apollo 11 moon landing scene.</p></a></div>
+            <div class="card"><a href="src/demo/webgl_water/index.html"><h3><span class="icon" aria-hidden="true">💧</span>Water reflection + refraction</h3><p>Ported from Three.js.</p></a></div>
+            <div class="card"><a href="src/demo/threejs_water/index.html"><h3><span class="icon" aria-hidden="true">💧</span>Water caustics</h3><p>Ported from Three.js Water.</p></a></div>
+            <div class="card"><a href="src/demo/threejs_water_shark/index.html"><h3><span class="icon" aria-hidden="true">🦈</span>Water caustics with shark</h3><p>Three.js water caustics simulation with animated swimming shark.</p></a></div>
+            <div class="card"><a href="src/demo/threejs_physics_ammo_break/index.html"><h3>Physics Ammo Break</h3><p>Ported from Three.js Physics Ammo Break demo.</p></a></div>
             <div class="card"><a href="src/demo/threejs_physics_ammo_break_movable/index.html"><h3>Physics Ammo Break 2</h3><p>Ammo Break demo with movable target.</p></a></div>
-            <div class="card"><a href="src/demo/ocean_surf/index.html"><img class="thumb" src="/img/ocean_surf.png" alt="Ocean surf" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean surf</h3><p>Procedural ocean surf shader with foam and Gerstner waves, utilizing a depth pass for shoreline interaction.</p></a></div>
-            <div class="card"><a href="src/demo/depth_visualization/index.html"><img class="thumb" src="/img/ocean_surf.png" alt="Depth Visualization" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">📐</span>Depth Visualization</h3><p>Real-time linear depth visualization across 3D geometry in WebXR (stereo VR) and desktop mode.</p></a></div>
-            <div class="card"><a href="src/demo/ship_fog/index.html"><img class="thumb" src="/img/ocean_surf.png" alt="Ship in the Fog" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">⛵</span>Ship in the Fog</h3><p>17th century sailing ship emerging from atmospheric sea fog with ocean waves and depth-based keel foam.</p></a></div>
-            <div class="card"><a href="src/demo/beautiful_water/index.html"><img class="thumb" src="/img/ocean.png" alt="Beautiful Water" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🌊</span>Beautiful Water</h3><p>Cinematic shallow-ocean environment with directional wave spectrum, floating buoy, seabed habitat, fish schools, and underwater light rays.</p></a></div>
-            <div class="card"><a href="src/demo/webgl_water_ocean/index.html"><img class="thumb" src="/img/threejs_water.png" alt="WebGL Water Ocean" onerror="this.remove()"><h3><span class="icon" aria-hidden="true">🌊</span>WebGL Water Ocean</h3><p>Interactive water caustics simulation with sandy seabed, fish schools, patrolling shark, dynamic clouds, and 10m abyss fog.</p></a></div>
+            <div class="card"><a href="src/demo/ocean_surf/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean surf</h3><p>Procedural ocean surf shader with foam and Gerstner waves, utilizing a depth pass for shoreline interaction.</p></a></div>
+            <div class="card"><a href="src/demo/depth_visualization/index.html"><h3><span class="icon" aria-hidden="true">📐</span>Depth Visualization</h3><p>Real-time linear depth visualization across 3D geometry in WebXR (stereo VR) and desktop mode.</p></a></div>
+            <div class="card"><a href="src/demo/ship_fog/index.html"><h3><span class="icon" aria-hidden="true">⛵</span>Ship in the Fog</h3><p>17th century sailing ship emerging from atmospheric sea fog with ocean waves and depth-based keel foam.</p></a></div>
+            <div class="card"><a href="src/demo/beautiful_water/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>Beautiful Water</h3><p>Cinematic shallow-ocean environment with directional wave spectrum, floating buoy, seabed habitat, fish schools, and underwater light rays.</p></a></div>
+            <div class="card"><a href="src/demo/webgl_water_ocean/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>WebGL Water Ocean</h3><p>Interactive water caustics simulation with sandy seabed, fish schools, patrolling shark, dynamic clouds, and 10m abyss fog.</p></a></div>
+            <div class="card"><a href="src/demo/natural_disasters/index.html"><h3><span class="icon" aria-hidden="true">🌪️</span>Natural Disasters (ABYSSAL)</h3><p>Procedural extreme ocean & weather simulation with multi-cascade FFT waves, volumetric clouds, hurricanes, waterspouts, rogue waves, and tsunamis in WebXR.</p></a></div>
         </div>
     </section>
 
@@ -219,7 +219,7 @@
 </main>
 
 <footer class="container">
-    <div>© 2025 WebXR Hand Tracking Playground</div>
+    <div>© 2026 WebXR Hand Tracking Playground</div>
 </footer>
 </body>
 </html>

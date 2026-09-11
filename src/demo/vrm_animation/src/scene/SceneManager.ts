@@ -43,7 +43,7 @@ export default class SceneManager extends SceneManagerParent {
   private loadModel(scene: Scene) {
     let gltfLoader = new GLTFLoader();
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
-    gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+    gltfLoader.loadAsync('../../../shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
       const vrm = gltf.userData.vrm;
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.combineSkeletons(gltf.scene);

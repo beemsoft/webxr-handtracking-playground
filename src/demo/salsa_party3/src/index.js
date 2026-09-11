@@ -386,7 +386,7 @@ function loadModels() {
         scene.add(gltf.userData.vrm.scene);
         // this.initBlinkAnimation(vrm);
         // this.initHappyAnimation(vrm);
-        gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+        gltfLoader.loadAsync('../../../shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
             VRMUtils.removeUnnecessaryVertices(gltf.scene);
             VRMUtils.combineSkeletons(gltf.scene);
             VrmSkeletonUtils.getRootBone(gltf.userData.vrm).position.x = 2;

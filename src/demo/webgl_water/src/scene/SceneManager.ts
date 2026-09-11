@@ -62,7 +62,7 @@ export default class SceneManager extends SceneManagerParent {
     this.addWater();
     renderer.toneMapping = ACESFilmicToneMapping;
 
-    let texture = this.loader.load('/textures/basketball/equirectangular_court.jpg');
+    let texture = this.loader.load('../../../textures/basketball/equirectangular_court.jpg');
     let sphere = new Mesh(
         new SphereGeometry(16, 32, 32),
         new MeshBasicMaterial({

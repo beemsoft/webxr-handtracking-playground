@@ -26,7 +26,8 @@ import WaterManager from '../../../../shared/web-managers/WaterManager';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 
 export default class SceneManager extends SceneManagerParent {
-  private isAnimationStarted: boolean;
+  private isAnimationStarted: boolean = false;
+  private isLoaded: boolean = false; // Readiness guard
   private player: any;
   private sourceSkeletonHelper: SkeletonHelper;
   private bvh: BVH;
@@ -41,55 +42,129 @@ export default class SceneManager extends SceneManagerParent {
   private audioHandler = new AudioHandler();
   private audioElement: HTMLAudioElement;
 
-  build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
+  async build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
     super.build(camera, scene, renderer, physicsHandler);
     this.waterManager = new WaterManager();
-    let light = new DirectionalLight( 0xffffff, 0.8 );
+
+    let light = new DirectionalLight(0xffffff, 0.8);
     this.light = light;
     this.scene.add(light);
+
     this.addWater();
     this.audioHandler.initAudio(AudioDemo.ocean);
     this.audioElement = this.audioHandler.audioElement;
     this.audioElement.loop = true;
+
     this.sun = new Vector3();
     renderer.toneMapping = ACESFilmicToneMapping;
-    this.pmremGenerator = new PMREMGenerator( renderer );
+    this.pmremGenerator = new PMREMGenerator(renderer);
+
     this.addSky();
-    this.loadModel(scene);
+
+    try {
+      // 1. Await GLB model load cleanly
+      await this.loadModel(scene);
+
+      // 2. Mark scene ready
+      this.isLoaded = true;
+
+      // 3. Play audio after loading completes
+      await this.audioElement.play();
+    } catch (error) {
+      console.error('Failed to initialize scene assets:', error);
+    }
   }
 
-  private loadModel(scene: Scene) {
+  private async loadModel(scene: Scene): Promise<void> {
+    const modelParts = [
+      'models/beach_terrain.glb',
+      'models/beach_buildings.glb',
+      'models/beach_foliage.glb',
+      'models/beach_furniture.glb',
+      'models/beach_props.glb'
+    ];
+
+    await Promise.all(modelParts.map(partUrl => this.loadModelPart(scene, partUrl)));
+  }
+
+  private async loadModelPart(scene: Scene, modelUrl: string): Promise<void> {
     const loader = new GLTFLoader();
-    loader.load('models/beach_exported_from_blender.glb', (gltf) => {
-      let model = gltf.scene;
-      model.position.y = -2;
-      model.position.z = 0;
-      model.position.x = 0;
-      model.rotateY(Math.PI/2);
+    const CACHE_NAME = 'webxr-assets-v1';
+
+    try {
+      let arrayBuffer: ArrayBuffer;
+
+      if (typeof caches !== 'undefined') {
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(modelUrl);
+
+        if (cachedResponse) {
+          console.log(`Loading GLB model part from CacheStorage: ${modelUrl}`);
+          arrayBuffer = await cachedResponse.arrayBuffer();
+        } else {
+          console.log(`Fetching GLB model part: ${modelUrl}`);
+          const response = await fetch(modelUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch ${modelUrl}: ${response.status} ${response.statusText}`);
+          }
+          arrayBuffer = await response.arrayBuffer();
+
+          // Only cache after full download completes successfully
+          try {
+            await cache.put(
+              modelUrl,
+              new Response(arrayBuffer, {
+                headers: {
+                  'Content-Type': response.headers.get('Content-Type') || 'model/gltf-binary'
+                }
+              })
+            );
+            console.log(`Successfully cached ${modelUrl} in CacheStorage`);
+          } catch (cacheError) {
+            console.warn(`Failed to save ${modelUrl} to CacheStorage:`, cacheError);
+          }
+        }
+      } else {
+        const response = await fetch(modelUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${modelUrl}: ${response.status} ${response.statusText}`);
+        }
+        arrayBuffer = await response.arrayBuffer();
+      }
+
+      const gltf = await loader.parseAsync(arrayBuffer, '');
+      const model = gltf.scene;
+
+      model.position.set(0, -2, 0);
+      model.rotateY(Math.PI / 2);
+
       scene.add(model);
-    });
+    } catch (error) {
+      console.error(`Error loading GLB model part at ${modelUrl}:`, error);
+      throw error;
+    }
   }
 
   addWater() {
-    let waterGeometry = new PlaneGeometry( 10000, 10000 );
+    let waterGeometry = new PlaneGeometry(10000, 10000);
     let water = new Water(
-      waterGeometry,
-      {
-        textureWidth: 512,
-        textureHeight: 512,
-        waterNormals: this.loader.load( '/textures/water/waternormals.jpg', function ( texture ) {
-          texture.wrapS = texture.wrapT = RepeatWrapping;
-        } ),
-        alpha: 1.0,
-        sunDirection: this.light.position.clone().normalize(),
-        sunColor: 0xffffff,
-        waterColor: 0x001e0f,
-        distortionScale: 3.7,
-        fog: this.scene.fog !== undefined
-      }
+        waterGeometry,
+        {
+          textureWidth: 512,
+          textureHeight: 512,
+          waterNormals: this.loader.load('../../../textures/water/waternormals.jpg', function (texture) {
+            texture.wrapS = texture.wrapT = RepeatWrapping;
+          }),
+          alpha: 1.0,
+          sunDirection: this.light.position.clone().normalize(),
+          sunColor: 0xffffff,
+          waterColor: 0x001e0f,
+          distortionScale: 3.7,
+          fog: this.scene.fog !== undefined
+        }
     );
-    water.rotation.x = - Math.PI / 2;
-    this.scene.add( water );
+    water.rotation.x = -Math.PI / 2;
+    this.scene.add(water);
     this.water = water;
   }
 
@@ -99,52 +174,57 @@ export default class SceneManager extends SceneManagerParent {
   };
 
   updateSun() {
-    const phi = MathUtils.degToRad( 90 - this.parameters.elevation );
-    const theta = MathUtils.degToRad( this.parameters.azimuth );
+    const phi = MathUtils.degToRad(90 - this.parameters.elevation);
+    const theta = MathUtils.degToRad(this.parameters.azimuth);
 
-    this.sun.setFromSphericalCoords( 1, phi, theta );
+    this.sun.setFromSphericalCoords(1, phi, theta);
 
-    this.sky.material.uniforms[ 'sunPosition' ].value.copy( this.sun );
+    this.sky.material.uniforms['sunPosition'].value.copy(this.sun);
     // @ts-ignore
-    this.water.material.uniforms[ 'sunDirection' ].value.copy( this.sun ).normalize();
+    this.water.material.uniforms['sunDirection'].value.copy(this.sun).normalize();
 
-    this.scene.environment = this.pmremGenerator.fromScene( this.sky ).texture;
+    const renderTarget = this.pmremGenerator.fromScene(this.sky);
+    this.scene.environment = renderTarget.texture;
   }
 
   addSky() {
     this.sky = new Sky();
-    this.sky.scale.setScalar( 10000 );
-    this.scene.add( this.sky );
+    this.sky.scale.setScalar(10000);
+    this.scene.add(this.sky);
 
     const skyUniforms = this.sky.material.uniforms;
 
-    skyUniforms[ 'turbidity' ].value = 10;
-    skyUniforms[ 'rayleigh' ].value = 2;
-    skyUniforms[ 'mieCoefficient' ].value = 0.005;
-    skyUniforms[ 'mieDirectionalG' ].value = 0.8;
+    skyUniforms['turbidity'].value = 10;
+    skyUniforms['rayleigh'].value = 2;
+    skyUniforms['mieCoefficient'].value = 0.005;
+    skyUniforms['mieDirectionalG'].value = 0.8;
     this.updateSun();
   }
 
   private startShow() {
-    this.mixer = new AnimationMixer( this.sourceSkeletonHelper );
+    if (!this.sourceSkeletonHelper || !this.bvh) return;
+
+    this.mixer = new AnimationMixer(this.sourceSkeletonHelper);
     setTimeout(() => {
-        console.log("Start animation");
-        this.mixer.clipAction(this.bvh.clip).setEffectiveWeight(1.0).setLoop(LoopOnce, 1).play();
-        setTimeout( () => {
-          console.log("Stop animation");
-          this.isAnimationStarted = false;
-        }, this.bvh.clip.duration * 1000)
-      }, 3200
-    )
+          console.log("Start animation");
+          this.mixer.clipAction(this.bvh.clip).setEffectiveWeight(1.0).setLoop(LoopOnce, 1).play();
+          setTimeout(() => {
+            console.log("Stop animation");
+            this.isAnimationStarted = false;
+          }, this.bvh.clip.duration * 1000);
+        }, 3200
+    );
   }
 
   update() {
     super.update();
-    // Update audio listener position to camera position
+
+    if (!this.isLoaded) return; // Block updates until fully loaded
+
     if (this.camera) {
-      // Audio source is at origin (default). Calculate relative distance for volume.
       this.audioHandler.setVolume(this.camera.position);
     }
+
     const time = performance.now() * 0.001;
     if (this.grid && this.player && this.sourceSkeletonHelper) {
       this.grid.rotation.x = Math.sin(time) * 0.2;
@@ -159,13 +239,12 @@ export default class SceneManager extends SceneManagerParent {
       // @ts-ignore
       this.water.material.uniforms['time'].value += 1.0 / 600.0;
     }
-
   }
 
-  updateHandPose(result) {
+  updateHandPose(result: HandTrackingResult) {
     if (this.handPoseManager) {
       this.handPoseManager.renderHands(result);
-      if (!this.isAnimationStarted) {
+      if (this.isLoaded && !this.isAnimationStarted) {
         if (this.handPoseManager.isOpenHand()) {
           this.isAnimationStarted = true;
           this.startShow();
@@ -175,8 +254,8 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   handleGesture(gesture: HandTrackingResult) {
-    if (gesture.gestureType == GestureType.Open_Hand) {
-      if (!this.isAnimationStarted) {
+    if (gesture.gestureType === GestureType.Open_Hand) {
+      if (this.isLoaded && !this.isAnimationStarted) {
         this.isAnimationStarted = true;
         this.startShow();
       }

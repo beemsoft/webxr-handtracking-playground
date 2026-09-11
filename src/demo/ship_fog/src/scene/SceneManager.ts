@@ -217,7 +217,7 @@ export default class SceneManager extends SceneManagerParent {
 
     // Load the 17th century pinnace ship model
     loader.load(
-      '/src/demo/ship/models/pinnace/ship_pinnace_1k.gltf',
+      '../ship/models/pinnace/ship_pinnace_1k.gltf',
       (gltf) => {
         const model = gltf.scene;
         model.name = 'ShipPinnace';

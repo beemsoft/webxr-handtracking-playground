@@ -22,8 +22,8 @@ export class BasketballHelper {
     const ballRadius = 0.14 * scale;
     let ballSphere = new SphereGeometry( ballRadius, 16, 16 );
     let ballMaterial = new MeshPhongMaterial({
-      map: this.loader.load('/textures/ball.png'),
-      normalMap: this.loader.load('/textures/ball_normal.png'),
+      map: this.loader.load('../../../textures/ball.png'),
+      normalMap: this.loader.load('../../../textures/ball_normal.png'),
       shininess: 20,
       reflectivity: 2,
       normalScale: new Vector2(0.5, 0.5)

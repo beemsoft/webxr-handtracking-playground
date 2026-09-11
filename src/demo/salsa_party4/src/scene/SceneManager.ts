@@ -275,7 +275,7 @@ export default class SceneManager extends SceneManagerParent  {
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
     for (let i = 0; i < modelNames.length; i ++) {
       console.log('Loading model ' + modelNames[i].leader);
-      gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].leader + '.vrm').then((gltf) => {
+      gltfLoader.loadAsync('../../../shared/vrm/' + modelNames[i].leader + '.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
         VRMUtils.combineSkeletons(gltf.scene);
         gltf.scene.userData.vrm = gltf.userData.vrm;
@@ -295,7 +295,7 @@ export default class SceneManager extends SceneManagerParent  {
         leaderVrm.humanoid.getNormalizedBoneNode('leftHand').userData.vrm = leaderVrm;
         leaderVrm.humanoid.getNormalizedBoneNode('rightHand').userData.vrm = leaderVrm;
         console.log('Loading model ' + modelNames[i].follower);
-        gltfLoader.loadAsync('/shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
+        gltfLoader.loadAsync('../../../shared/vrm/' + modelNames[i].follower + '.vrm').then((gltf2) => {
           VRMUtils.removeUnnecessaryVertices(gltf2.scene);
           VRMUtils.combineSkeletons(gltf2.scene);
           gltf2.scene.userData.vrm = gltf2.userData.vrm;
@@ -326,7 +326,7 @@ export default class SceneManager extends SceneManagerParent  {
 
   private loadModels() {
     const loader = new GLTFLoader();
-    loader.load('/shared/models/kleeblatt.gltf', (gltf) => {
+    loader.load('../../../shared/models/kleeblatt.gltf', (gltf) => {
       let model = gltf.scene;
       model.scale.set(0.03, 0.03, 0.03);
       model.position.y = -0.4;
@@ -375,12 +375,12 @@ export default class SceneManager extends SceneManagerParent  {
     if (this.move < 10) {
        moveStr = "0" + this.move;
     }
-    bvhLoader.load("/shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
+    bvhLoader.load("../../../shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.bvh1 = bvh;
       this.bvh1Cache[this.move] = bvh;
       this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
       this.source1SkeletonHelper.skeleton = bvh.skeleton;
-      bvhLoader.load("/shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
+      bvhLoader.load("../../../shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.bvh2 = bvh;
         this.bvh2Cache[this.move] = bvh;
         this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
@@ -413,10 +413,10 @@ export default class SceneManager extends SceneManagerParent  {
     if (this.move < 10) {
       moveStr = "0" + this.move;
     }
-    bvhLoader.load("/shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
+    bvhLoader.load("../../../shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.bvh1Cache[this.move] = bvh;
       this.bvh1 = bvh;
-      bvhLoader.load("/shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
+      bvhLoader.load("../../../shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.bvh2Cache[this.move] = bvh;
         this.bvh2 = bvh;
         this.startMove1();

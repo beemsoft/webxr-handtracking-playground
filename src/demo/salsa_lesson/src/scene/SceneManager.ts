@@ -100,7 +100,7 @@ export default class SceneManager extends SceneManagerParent {
     const textureLoader = new TextureLoader();
     const loader = new GLTFLoader();
     let shoeMaterial = new MeshPhongMaterial({
-      map: textureLoader.load('/textures/Shoes.png', () => {
+      map: textureLoader.load('../../../textures/Shoes.png', () => {
         loader.load('models/gltf/right_shoe.glb', (gltf) => {
           let model = gltf.scene;
           // @ts-ignore
@@ -153,14 +153,14 @@ export default class SceneManager extends SceneManagerParent {
   private loadModels() {
     let gltfLoader = new GLTFLoader();
     gltfLoader.register((parser) => new VRMLoaderPlugin(parser));
-    gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+    gltfLoader.loadAsync('../../../shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
       VRMUtils.removeUnnecessaryVertices(gltf.scene);
       VRMUtils.combineSkeletons(gltf.scene);
       const vrm = gltf.userData.vrm;
       this.person1 = vrm;
       this.target1SkeletonHelper = new SkeletonHelper(vrm.scene.children[0]);
       this.target1Skeleton = this.person1
-      gltfLoader.loadAsync('/shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
+      gltfLoader.loadAsync('../../../shared/vrm/VRM1_Constraint_Twist_Sample.vrm').then((gltf) => {
         VRMUtils.removeUnnecessaryVertices(gltf.scene);
         VRMUtils.combineSkeletons(gltf.scene);
         const vrm = gltf.userData.vrm;
@@ -197,7 +197,7 @@ export default class SceneManager extends SceneManagerParent {
     if (move < 10) {
        moveStr = "0" + move;
     }
-    loader.load("../../../../../shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
+    loader.load("../../../shared/bvh/60/60_" + moveStr + "_scaled.bvh", (bvh) => {
       this.bvh1 = bvh;
       this.source1SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
       this.source1SkeletonHelper.skeleton = bvh.skeleton;
@@ -205,7 +205,7 @@ export default class SceneManager extends SceneManagerParent {
       this.boneContainer.add( bvh.skeleton.bones[ 0 ] );
       this.scene.add( this.skeletonHelper );
       this.scene.add( this.boneContainer );
-      loader.load("../../../../../shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
+      loader.load("../../../shared/bvh/61/61_" + moveStr + "_scaled.bvh", (bvh) => {
         this.bvh2 = bvh;
         this.source2SkeletonHelper = new SkeletonHelper(bvh.skeleton.bones[0]);
         this.source2SkeletonHelper.skeleton = bvh.skeleton;

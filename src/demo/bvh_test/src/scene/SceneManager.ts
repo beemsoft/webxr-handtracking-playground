@@ -83,7 +83,7 @@ export default class SceneManager extends SceneManagerParent {
 
   loadBVH = () => {
     let loader = new BVHLoader();
-    loader.load( "/shared/bvh/91_09_scaled_down7.bvh", (bvh) => {
+    loader.load( "../../../shared/bvh/91_09_scaled_down7.bvh", (bvh) => {
       this.bvh = bvh;
       this.sourceSkeletonHelper = new SkeletonHelper( bvh.skeleton.bones[0]);
       this.sourceSkeletonHelper.skeleton = bvh.skeleton;

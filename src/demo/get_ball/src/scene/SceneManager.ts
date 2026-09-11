@@ -51,7 +51,7 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   addHall() {
-    let texture = this.loader.load('/textures/basketball/equirectangular_court.jpg');
+    let texture = this.loader.load('../../../textures/basketball/equirectangular_court.jpg');
     let sphere = new Mesh(
       new SphereGeometry(16, 32, 32),
       new MeshBasicMaterial({
@@ -69,7 +69,7 @@ export default class SceneManager extends SceneManagerParent {
 
   addFloor() {
     let geometry = new PlaneGeometry(28, 15, 1, 1);
-    let texture = this.loader.load('/textures/basketball-court-tiles-396756-free-texture-wall-pine-construction-tile.jpg', function (texture) {
+    let texture = this.loader.load('../../../textures/basketball-court-tiles-396756-free-texture-wall-pine-construction-tile.jpg', function (texture) {
       texture.wrapS = texture.wrapT = RepeatWrapping;
       texture.offset.set(0, 0);
       texture.repeat.set(5, 5);

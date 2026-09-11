@@ -39,17 +39,17 @@ export default class AudioHandler {
     if (customSrc) {
       this.audioElement.src = customSrc;
     } else if (audioDemo == AudioDemo.basketball) {
-      this.audioElement.src = '/vr/sound/bounce.mp3';
+      this.audioElement.src = '../../../vr/sound/bounce.mp3';
     } else if (audioDemo == AudioDemo.dance) {
-      this.audioElement.src = '/vr/sound/bachata.mp3';
+      this.audioElement.src = '../../../vr/sound/bachata.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceFast) {
-      this.audioElement.src = '/vr/sound/fast salsa music mix.mp3';
+      this.audioElement.src = '../../../vr/sound/fast salsa music mix.mp3';
     } else if (audioDemo == AudioDemo.salsaDanceSlow) {
-      this.audioElement.src = '/vr/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
+      this.audioElement.src = '../../../vr/sound/Lalala de Direct Latin Influence (salsa, mambo).mp3';
     } else if (audioDemo == AudioDemo.ocean) {
-      this.audioElement.src = '/vr/sound/ocean-waves-sounds.mp3';
+      this.audioElement.src = '../../../vr/sound/ocean-waves-sounds.mp3';
     } else if (audioDemo == AudioDemo.underwater) {
-      this.audioElement.src = '/vr/sound/Underwater sound effect.mp3';
+      this.audioElement.src = '../../../vr/sound/Underwater sound effect.mp3';
     }
     this.audioElement.load();
     this.audioElement.loop = true;

@@ -46,7 +46,7 @@ export default class SceneManager extends SceneManagerParent {
       {
         textureWidth: 512,
         textureHeight: 512,
-        waterNormals: this.loader.load( '/textures/water/waternormals.jpg', function ( texture ) {
+        waterNormals: this.loader.load( '../../../textures/water/waternormals.jpg', function ( texture ) {
           texture.wrapS = texture.wrapT = RepeatWrapping;
         } ),
         alpha: 1.0,
