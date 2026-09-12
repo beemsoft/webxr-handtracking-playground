@@ -84,6 +84,12 @@ export default class AudioHandler {
     }
   }
 
+  setListenerFromMatrix(matrix: any) {
+    if (this.audioScene && matrix) {
+      this.audioScene.setListenerFromMatrix(matrix);
+    }
+  }
+
   setVolume(v) {
     if (!this.output || !this.audioContext) return;
     let distance = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);

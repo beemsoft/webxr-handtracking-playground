@@ -81,9 +81,25 @@ export default class WebXRManager {
       .then(session => {
         this.session = session;
         let glCanvas: HTMLCanvasElement = document.createElement('canvas');
-        this.gl = <WebGLRenderingContext>glCanvas.getContext('webgl2');
-        this.gl.makeXRCompatible()
-            .then(() => {
+        const contextAttributes = { xrCompatible: true, antialias: false, alpha: false };
+        let gl = (glCanvas.getContext('webgl2', contextAttributes) ||
+          glCanvas.getContext('webgl', contextAttributes) ||
+          glCanvas.getContext('webgl2') ||
+          glCanvas.getContext('webgl') ||
+          glCanvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+
+        if (!gl) {
+          console.error('Failed to acquire WebGL context for WebXR.');
+          return;
+        }
+        this.gl = gl;
+
+        const makeCompatiblePromise = (typeof (this.gl as any).makeXRCompatible === 'function')
+          ? (this.gl as any).makeXRCompatible()
+          : Promise.resolve();
+
+        makeCompatiblePromise
+          .then(() => {
           this.renderer = new WebGLRenderer({canvas: glCanvas, context: this.gl, antialias: false, alpha: false});
           this.renderer.shadowMap.enabled = this.config.enableShadows;
           this.renderer.shadowMap.type = 1; // PCFShadowMap
@@ -178,7 +194,7 @@ export default class WebXRManager {
 
             if (!this.composer) {
               // @ts-ignore
-              this.baseLayer = new XRWebGLLayer(this.session, this.gl)
+              this.baseLayer = new XRWebGLLayer(this.session, this.gl);
               this.session.updateRenderState({
                 baseLayer: this.baseLayer,
                 // @ts-ignore
@@ -187,7 +203,7 @@ export default class WebXRManager {
             }
           } else if (!this.composer) {
             // @ts-ignore
-            this.baseLayer = new XRWebGLLayer(this.session, this.gl)
+            this.baseLayer = new XRWebGLLayer(this.session, this.gl);
             this.session.updateRenderState({
               baseLayer: this.baseLayer
             });
@@ -290,7 +306,8 @@ export default class WebXRManager {
       depthTex.generateMipmaps = false;
 
       this.depthRenderTarget = new WebGLRenderTarget(width, height, {
-        depthTexture: depthTex
+        depthTexture: depthTex,
+        samples: 0
       });
 
       this.shadowCamera.aspect = width / height;
@@ -498,11 +515,16 @@ export default class WebXRManager {
         this.shadowCamera.updateProjectionMatrix();
       }
 
-      // Hide ocean, hand joints, sky, or any transparent objects that shouldn't contribute to depth for foam
+      // Hide ocean, hand joints, sky, or HUD meshes that shouldn't contribute to depth for foam
       this.scene.traverse((obj) => {
-        const material = (obj as Mesh).material;
-        const isTransparent = material && (Array.isArray(material) ? material.some(m => m.transparent) : material.transparent);
-        if (obj.name === 'OceanSurf' || obj.name === 'HandJoint' || obj.name === 'Sky' || isTransparent) {
+        if (
+          obj.name === 'OceanSurf' ||
+          obj.name === 'OceanSurface' ||
+          obj.name === 'OceanMesh' ||
+          obj.name === 'HandJoint' ||
+          obj.name === 'Sky' ||
+          obj.userData?.isHUD
+        ) {
           obj.userData.oldVisible = obj.visible;
           obj.visible = false;
         }
