@@ -6,7 +6,6 @@
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "stats": "webpack --profile --json",
-    "start": "webpack-dev-server --open --config webpack.dev.js"
   },
   "author": "Hans Beemsterboer",
   "license": "Apache-2.0",
@@ -29,7 +28,7 @@
     "rgbcolor": "^1.0.1",
     "stackblur-canvas": "^2.7.0",
     "systemjs": "6.15.1",
-    "three": "^0.185.0"
+    "three": "^0.186.0"
   },
   "devDependencies": {
     "@types/three": "^0.185.0",
