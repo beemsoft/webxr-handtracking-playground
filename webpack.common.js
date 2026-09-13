@@ -42,6 +42,8 @@ module.exports = {
         'natural-disasters': './src/demo/natural_disasters/src',
         ocean_simulation: './src/demo/ocean_simulation/src',
         'ocean-simulation': './src/demo/ocean_simulation/src',
+        ocean_simulation2: './src/demo/ocean_simulation2/src',
+        'ocean-simulation2': './src/demo/ocean_simulation2/src',
     },
     module: {
         rules: [
