@@ -36,6 +36,8 @@ export interface ISharedUniforms {
   uSprayAmount: { value: number };
   uWhitecapCoverage: { value: number };
   uStormFactor: { value: number };
+  uCloudCoverage: { value: number };
+  uCloudDensity: { value: number };
   uSeaLevel: { value: number };
 
   uLightning0: { value: THREE.Vector4 };
@@ -104,6 +106,8 @@ export const U: ISharedUniforms = {
   uSprayAmount: { value: 0.0 },
   uWhitecapCoverage: { value: 0.0 },
   uStormFactor: { value: 0.0 },
+  uCloudCoverage: { value: 0.45 },
+  uCloudDensity: { value: 0.8 },
   uSeaLevel: { value: 0.0 },
 
   uLightning0: { value: new THREE.Vector4(0, 0, 0, 0) },

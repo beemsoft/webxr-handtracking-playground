@@ -172,6 +172,8 @@ export class Weather {
     U.uSprayAmount.value = s.spray;
     U.uWhitecapCoverage.value = this.whitecap;
     U.uStormFactor.value = s.storm;
+    U.uCloudCoverage.value = s.cloudCoverage;
+    U.uCloudDensity.value = s.cloudDensity;
     U.uSeaLevel.value = s.seaLevel;
 
     const el = s.sunElevation, az = s.sunAzimuth;

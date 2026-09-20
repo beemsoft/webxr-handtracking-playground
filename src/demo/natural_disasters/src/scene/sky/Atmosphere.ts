@@ -285,6 +285,9 @@ export class Atmosphere {
     this.sunColor = new THREE.Color(1, 1, 1);
     this.ambientColor = new THREE.Color(0.1, 0.2, 0.35);
     this._readBuf = new Float32Array(4);
+
+    this.buildStaticLUTs(true);
+    this._updateLightColors();
   }
 
   private _syncCommon(pass: FullScreenPass) {

@@ -65,6 +65,7 @@ export class Lightning {
   bolts: any[];
   time: number;
   ambientFlash: number;
+  onStrike?: (data: { position: THREE.Vector3; intensity: number; strokes: { at: number; amp: number }[]; isDistantAmbient?: boolean }) => void;
   private _tmp: THREE.Vector3;
   private _pending: any[];
   private _dirty: boolean;
@@ -128,13 +129,16 @@ export class Lightning {
   }
 
   burst(count: number, opts: any = {}) {
-    const radius = opts.radius ?? 3200;
-    const base = opts.cloudBase ?? 1400;
+    const radius = opts.radius ?? 500;
+    const base = opts.cloudBase ?? 650;
+    const center = opts.center ?? U.uCamPos.value;
+    const cx = center ? center.x : 0;
+    const cz = center ? center.z : 0;
     for (let i = 0; i < count; i++) {
       const delay = Math.random() * (opts.window ?? 3.0);
       const a = Math.random() * Math.PI * 2;
-      const r = radius * (0.25 + Math.random() * 0.95);
-      this.schedule(Math.cos(a) * r, Math.sin(a) * r, base * (0.85 + Math.random() * 0.5), delay);
+      const r = radius * (0.35 + Math.random() * 0.65);
+      this.schedule(cx + Math.cos(a) * r, cz + Math.sin(a) * r, base * (0.85 + Math.random() * 0.4), delay);
     }
   }
 
@@ -174,6 +178,14 @@ export class Lightning {
       pos: new THREE.Vector3(x, top * 0.35, z), intensity: 0,
     });
     this._dirty = true;
+
+    if (this.onStrike) {
+      this.onStrike({
+        position: new THREE.Vector3(x, top * 0.45, z),
+        intensity: 0.9 + Math.random() * 0.5,
+        strokes: flashes.map((f) => ({ at: f.at, amp: f.amp })),
+      });
+    }
   }
 
   private _grow(out: any[], a: THREE.Vector3, b: THREE.Vector3, jitter: number, depth: number, fade: number) {
@@ -220,6 +232,23 @@ export class Lightning {
     const rate = weather?.lightningRate ?? 0;
     if (rate > 0 && Math.random() < rate * dt * 0.9) {
       this.ambientFlash = Math.max(this.ambientFlash, 0.35 + Math.random() * 0.9);
+      const camPos = U.uCamPos.value;
+      if (Math.random() < Math.min(0.7, rate * 0.65)) {
+        const a = Math.random() * Math.PI * 2;
+        const r = 180 + Math.random() * 450;
+        const cloudBase = Math.min(weather.cloudBottom || 650, 750);
+        const top = cloudBase * (0.85 + Math.random() * 0.4);
+        this.strike(camPos.x + Math.cos(a) * r, camPos.z + Math.sin(a) * r, top);
+      } else if (this.onStrike && Math.random() < 0.35) {
+        const a = Math.random() * Math.PI * 2;
+        const r = 500 + Math.random() * 500;
+        this.onStrike({
+          position: new THREE.Vector3(camPos.x + Math.cos(a) * r, 500 + Math.random() * 300, camPos.z + Math.sin(a) * r),
+          intensity: 0.65,
+          isDistantAmbient: true,
+          strokes: [{ at: 0.0, amp: 0.6 }, { at: 0.08, amp: 0.4 }],
+        });
+      }
     }
     this.ambientFlash *= Math.exp(-dt * 5.5);
 

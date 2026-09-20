@@ -72,10 +72,12 @@ float heightProfile(float h, float type) {
 }
 
 vec3 weatherAt(vec2 xz) {
-  vec2 w = xz + uCloudWind * uCloudTime * 0.6;
+  // Simple constant drift: clouds move in one direction at constant speed
+  // Using length of wind to determine drift speed, but a fixed reference direction (1,0)
+  vec2 w = xz + vec2(1.0, 0.0) * uCloudTime * 50.0;
   vec4 m = textureLod(uWeatherMap, w / uWeatherScaleM, 0.0);
   vec4 n = textureLod(uWeatherMap, w / (uWeatherScaleM * 0.27)
-                 + vec2(0.37, 0.11) - uCloudWind * uCloudTime * 0.00002, 0.0);
+                 + vec2(0.37, 0.11), 0.0);
 
   float field = m.r * 0.62 + m.g * 0.22 + n.g * 0.16;
   float cover = clamp((field - 0.5) * uCloudContrast + uCoverage, 0.0, 1.0)
@@ -91,7 +93,8 @@ float gT0 = 0.0, gT1 = 0.0, gIters = 0.0, gSpent = 0.0, gCov = 0.0;
 
 float cloudDensity(vec3 p, float h, float detail) {
   vec3 q = p;
-  q.xz += uCloudWind * uCloudTime * (0.6 + h * 1.5);
+  // Simple constant drift: clouds move in one direction at constant speed
+  q.xz += vec2(1.0, 0.0) * uCloudTime * 50.0;
 
   vec3 wm = weatherAt(q.xz);
   float type = wm.y;
@@ -121,7 +124,10 @@ float cloudDensity(vec3 p, float h, float detail) {
 
   float w1 = clamp(detail, 0.0, 1.0);
   if (w1 > 0.001) {
-    vec2 curl = textureLod(uCurlTex, uvw.xz * 3.1, 0.0).rg * 2.0 - 1.0;
+    vec3 p_unwound = p;
+    vec3 uvw_unwound = p_unwound / uCloudScaleM;
+    uvw_unwound.y *= uCloudAspect;
+    vec2 curl = textureLod(uCurlTex, uvw_unwound.xz * 3.1, 0.0).rg * 2.0 - 1.0;
     vec3 dp = q / (uCloudScaleM * 0.2);
     dp.xz += curl * (1.0 - h) * 3.5;
     vec3 det = detailTex(dp).rgb;
@@ -615,9 +621,9 @@ export class Clouds {
       uCloudTop: { value: 5200 },
       uAnvil: { value: 0.0 },
       uStorm: U.uStormFactor,
-      uCloudWind: { value: new THREE.Vector2(6, 2) },
-      uCloudTime: { value: 0 },
-      uCloudScaleM: { value: 15000 },
+       uCloudWind: { value: new THREE.Vector2(6, 2) },
+       uCloudTime: { value: 0 },
+       uCloudScaleM: { value: 15000 },
       uCloudAspect: { value: 2.6 },
       uCloudContrast: { value: 1.6 },
       uSunIntensity: U.uSunIntensity,

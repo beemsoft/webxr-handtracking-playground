@@ -1,7 +1,5 @@
 import {
   ACESFilmicToneMapping,
-  Color,
-  MathUtils,
   PerspectiveCamera,
   Scene,
   Vector3,
@@ -24,6 +22,7 @@ import { Lightning } from './weather/Lightning';
 import { Waterspout } from './weather/Waterspout';
 import { Rain, Spray } from './weather/Precipitation';
 import { Director } from './weather/Director';
+import { LightningAudioSystem } from './weather/LightningAudio';
 import { CinematicCamera } from './camera/CinematicCamera';
 import { PostFX } from './post/PostFX';
 import { installUI } from './ui/Overlay';
@@ -60,6 +59,7 @@ export default class SceneManager extends SceneManagerParent {
   private _projNoJitter = new Matrix4();
   private _surfaceAudio = new AudioHandler();
   private _underwaterAudio = new AudioHandler();
+  private _lightningAudio = new LightningAudioSystem();
   private _lastGestureTime = 0;
 
   build(camera: PerspectiveCamera, scene: Scene, renderer: WebGLRenderer, physicsHandler: PhysicsHandler) {
@@ -75,9 +75,9 @@ export default class SceneManager extends SceneManagerParent {
     this.cine = new CinematicCamera(camera.aspect);
     this.cine.camera = camera;
     this.camera.near = 0.2;
-    this.camera.far = 100000;
+    this.camera.far = 2000;
     this.camera.fov = 75;
-    this.camera.position.set(0, 10, 35);
+    this.camera.position.set(0, 20, 35);
     this.camera.updateProjectionMatrix();
 
     this.director = new Director(this);
@@ -108,6 +108,11 @@ export default class SceneManager extends SceneManagerParent {
       this.sky = new SkyRenderer(renderer, this.atmosphere);
       this.oceanMesh = new OceanMesh(this.ocean, this.atmosphere, this.quality, this.clouds.shared);
 
+      this.oceanMesh.uniforms.uEventSteps.value = 8;
+      this.oceanMesh.uniforms.uEventBisect.value = 4;
+      this.oceanMesh.uniforms.uRMax.value = 800.0;
+      this.sky.renderEnv();
+
       this.scene.add(this.sky.mesh);
       this.scene.add(this.oceanMesh.mesh);
 
@@ -136,6 +141,13 @@ export default class SceneManager extends SceneManagerParent {
     }
     this._surfaceAudio.setGain(0.85);
     this._underwaterAudio.setGain(0.0);
+
+    // Lightning spatial thunder audio
+    this._lightningAudio.init(sharedContext);
+    this.lightning.onStrike = (strikeData) => {
+      this._lightningAudio.triggerLightning(strikeData, this.camera.position);
+    };
+
     this.startAudio();
   }
 
@@ -146,19 +158,20 @@ export default class SceneManager extends SceneManagerParent {
     if (this.waterspout) this.waterspout.setQuality(this.quality);
     if (this.rain) this.rain.setQuality(this.quality);
     if (this.spray) this.spray.setQuality(this.quality);
-    if (this.oceanMesh) this.oceanMesh.setResolution(this.quality.oceanGridX, this.quality.oceanGridY);
+    if (this.oceanMesh) {
+      this.oceanMesh.setResolution(this.quality.oceanGridX, this.quality.oceanGridY);
+      this.oceanMesh.uniforms.uEventSteps.value = 8;
+      this.oceanMesh.uniforms.uEventBisect.value = 4;
+      this.oceanMesh.uniforms.uRMax.value = 800.0;
+    }
   }
 
   isShadowEnabled(): boolean {
     return false;
   }
 
-  isVR(): boolean {
-    return !!(this.scene?.userData?.isXR || this.renderer?.xr?.isPresenting);
-  }
-
   getInitialCameraPosition(): Vector3 {
-    return new Vector3(0, 10, 35);
+    return new Vector3(0, 20, 35);
   }
 
   getInitialCameraTarget(): Vector3 {
@@ -172,8 +185,25 @@ export default class SceneManager extends SceneManagerParent {
   startAudio() {
     this._surfaceAudio.resume();
     this._underwaterAudio.resume();
+    this._lightningAudio.resume();
     this._surfaceAudio.playFromStart();
     this._underwaterAudio.playFromStart();
+
+    const resumeAll = () => {
+      this._surfaceAudio.resume();
+      this._underwaterAudio.resume();
+      this._lightningAudio.resume();
+      this._surfaceAudio.playFromStart();
+      this._underwaterAudio.playFromStart();
+      window.removeEventListener('click', resumeAll);
+      window.removeEventListener('touchstart', resumeAll);
+      window.removeEventListener('keydown', resumeAll);
+      window.removeEventListener('pointerdown', resumeAll);
+    };
+    window.addEventListener('click', resumeAll);
+    window.addEventListener('touchstart', resumeAll);
+    window.addEventListener('keydown', resumeAll);
+    window.addEventListener('pointerdown', resumeAll);
   }
 
   handleGesture(gesture: HandTrackingResult) {
@@ -219,22 +249,23 @@ export default class SceneManager extends SceneManagerParent {
       this.director.update(dt * this.timeScale);
       this.ocean.update(dt * this.timeScale);
 
-      this.atmosphere.update(this.camera, this.camera.position);
+      // Atmosphere LUTs update smoothly throttled to every 6 frames
+      if (this.frame % 6 === 0) {
+        this.atmosphere.update(this.camera, this.camera.position);
+      }
       this.atmosphere.syncUniforms(U);
 
-      this.sky.update(this.time);
+      this.sky.update(this.time, this.camera.position);
       this.lightning.update(dt * this.timeScale, this.time, this.director.weather.state);
       this.waterspout.update(dt * this.timeScale, this.director.weather.state.cloudBottom);
       this.oceanMesh.update(this.camera.position, U.uSeaLevel.value);
       this.rain.update(this.camera, this.director.weather.state.rain, this.camera.position.y);
       this.spray.update(dt * this.timeScale, this.director.weather.state.spray);
 
-      this.clouds.update(this.time, dt * this.timeScale);
-      this.sky.setCloudTextures(this.clouds.screenTexture, this.clouds.envTexture);
-      this.sky.renderEnv();
-
-      if (!this.isVR()) {
-        this.cine.update(dt * this.timeScale, this.time);
+      // Procedural sky dome renders 3D FBM storm clouds directly on geometry.
+      // Refresh environment map reflections smoothly every 15 frames.
+      if (this.frame % 15 === 0) {
+        this.sky.renderEnv();
       }
 
       // Audio handling
@@ -247,6 +278,8 @@ export default class SceneManager extends SceneManagerParent {
         this._surfaceAudio.setGain(0.6 + storm * 0.4);
         this._underwaterAudio.setGain(0.0);
       }
+
+      this._lightningAudio.updateListener(this.camera.matrixWorld);
     }
   }
 

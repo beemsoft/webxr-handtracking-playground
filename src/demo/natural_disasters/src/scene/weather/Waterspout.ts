@@ -13,12 +13,15 @@ in vec3 position;
 uniform mat4 modelMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
 
 out vec3 vWorld;
+out vec3 vCamPos;
 
 void main(){
   vec4 wp = modelMatrix * vec4(position, 1.0);
   vWorld = wp.xyz;
+  vCamPos = (inverse(viewMatrix) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
@@ -31,6 +34,7 @@ ${SHADING_GLSL}
 ${NOISE_GLSL}
 
 in vec3 vWorld;
+in vec3 vCamPos;
 
 uniform vec3  uCamPos;
 uniform float uTime;
@@ -88,7 +92,7 @@ float funnelShape(vec3 p, float h, out float rn, out float ang, out float cascad
   float body = wall + core;
 
   body *= mix(0.55, 1.0, smoothstep(0.0, 0.16, h));
-  body *= 1.0 - smoothstep(0.86, 1.0, h) * 0.55;
+  body *= smoothstep(1.0, 0.85, h);
 
   float cascH = 22.0 + uShape.x * 0.7;
   if (p.y < cascH * 3.5) {
@@ -138,11 +142,14 @@ void main(){
   }
   if (SPOUT_AMP <= 0.001) discard;
 
-  vec3 ro = uCamPos;
+  vec3 ro = length(vCamPos) > 0.0001 ? vCamPos : uCamPos;
   vec3 rd = normalize(vWorld - ro);
   float top = uSpout.w;
 
-  float Rmax = radiusAt(1.0) + 60.0;
+  float maxLean = uShape.z + 50.0;
+  float maxFunnelR = radiusAt(1.0) * 3.0 + 40.0;
+  float Rmax = maxFunnelR + maxLean + 50.0;
+
   vec2 oc = ro.xz - SPOUT_XZ;
   float a = dot(rd.xz, rd.xz);
   float b = dot(oc, rd.xz);
@@ -332,13 +339,14 @@ export class Waterspout {
     const s = this.strength / 30;
     const neck = (9 + 9 * s) * (0.7 + 0.3 * grow);
     const flare = 30 + 45 * s;
+    const lean = (30 + 55 * s) * grow;
 
     this.uniforms.uSpout.value.set(this.x, this.z, intensity, top);
-    this.uniforms.uShape.value.set(neck, flare, (30 + 55 * s) * grow, this.life);
+    this.uniforms.uShape.value.set(neck, flare, lean, this.life);
 
-    const rMax = neck * 1.4 + flare + 60 + 60;
+    const rMax = Math.max(650, (neck * 2.0 + flare) * 3.5 + lean + 100);
     this.mesh.position.set(this.x, top * 0.5, this.z);
-    this.mesh.scale.set(rMax * 2, top, rMax * 2);
+    this.mesh.scale.set(rMax * 2, top * 1.1 + 50, rMax * 2);
     this.mesh.visible = true;
   }
 

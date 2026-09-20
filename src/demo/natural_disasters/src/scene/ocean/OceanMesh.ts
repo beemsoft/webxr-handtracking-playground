@@ -593,13 +593,13 @@ export class OceanMesh {
     this.triangles = 0;
 
     const uniforms: Record<string, any> = {
-      uRMax: { value: 68000.0 },
+      uRMax: { value: 800.0 },
       uGridSize: { value: new THREE.Vector2(1, 1) },
       uGridMargin: { value: 1.04 },
       uSkirt: { value: 1.1 },
       uGridPlane: { value: 0.0 },
-      uEventSteps: { value: 16 },
-      uEventBisect: { value: 8 },
+      uEventSteps: { value: 8 },
+      uEventBisect: { value: 4 },
       uCurrentStrength: { value: 26.0 },
       uDisplaceScale: { value: 1.0 },
       uCascadeGain: { value: new THREE.Vector3(1, 1, 1) },

@@ -292,9 +292,11 @@ export class Director {
 
   lightningBurst(count: number) {
     const w = this.weather.state;
+    const camPos = this.app.camera?.position || U.uCamPos.value;
     this.app.lightning?.burst(count, {
-      cloudBase: w.cloudBottom,
-      radius: 1200 + w.storm * 4200,
+      cloudBase: Math.min(w.cloudBottom || 650, 750),
+      radius: 350 + (w.storm || 0.5) * 250,
+      center: camPos,
       window: 3.5,
     });
   }

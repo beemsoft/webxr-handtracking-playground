@@ -22,38 +22,38 @@ export interface PresetConfig {
 export const PRESETS: Record<string, PresetConfig> = {
   potato: {
     label: 'POTATO', renderScale: 0.6, maxPixelRatio: 1.0,
-    oceanGridX: 128, oceanGridY: 84, fftSize: 128,
-    cloudScale: 0.32, cloudSteps: 34, cloudLightSteps: 4, cloudEnabled: true,
-    sprayCount: 6000, rainCount: 9000, dof: false, motionBlur: false, taa: true,
-    envSize: 128, envCloudSteps: 12, spoutSteps: 32,
+    oceanGridX: 96, oceanGridY: 60, fftSize: 128,
+    cloudScale: 0.25, cloudSteps: 16, cloudLightSteps: 3, cloudEnabled: false,
+    sprayCount: 2048, rainCount: 3000, dof: false, motionBlur: false, taa: false,
+    envSize: 128, envCloudSteps: 8, spoutSteps: 24,
   },
   low: {
     label: 'LOW', renderScale: 0.72, maxPixelRatio: 1.0,
-    oceanGridX: 176, oceanGridY: 110, fftSize: 128,
-    cloudScale: 0.36, cloudSteps: 48, cloudLightSteps: 5, cloudEnabled: true,
-    sprayCount: 16000, rainCount: 22000, dof: true, motionBlur: true, taa: true,
-    envSize: 128, envCloudSteps: 14, spoutSteps: 44,
+    oceanGridX: 110, oceanGridY: 70, fftSize: 128,
+    cloudScale: 0.3, cloudSteps: 24, cloudLightSteps: 3, cloudEnabled: false,
+    sprayCount: 4000, rainCount: 6000, dof: false, motionBlur: false, taa: false,
+    envSize: 128, envCloudSteps: 10, spoutSteps: 28,
   },
   medium: {
     label: 'MEDIUM', renderScale: 0.85, maxPixelRatio: 1.25,
-    oceanGridX: 240, oceanGridY: 150, fftSize: 256,
-    cloudScale: 0.45, cloudSteps: 66, cloudLightSteps: 6, cloudEnabled: true,
-    sprayCount: 40000, rainCount: 48000, dof: true, motionBlur: true, taa: true,
-    envSize: 256, envCloudSteps: 16, spoutSteps: 56,
+    oceanGridX: 128, oceanGridY: 80, fftSize: 128,
+    cloudScale: 0.35, cloudSteps: 32, cloudLightSteps: 4, cloudEnabled: false,
+    sprayCount: 8000, rainCount: 12000, dof: false, motionBlur: false, taa: false,
+    envSize: 128, envCloudSteps: 12, spoutSteps: 36,
   },
   high: {
-    label: 'HIGH', renderScale: 1.0, maxPixelRatio: 1.5,
-    oceanGridX: 340, oceanGridY: 210, fftSize: 256,
-    cloudScale: 0.5, cloudSteps: 96, cloudLightSteps: 7, cloudEnabled: true,
-    sprayCount: 80000, rainCount: 96000, dof: true, motionBlur: true, taa: true,
-    envSize: 256, envCloudSteps: 20, spoutSteps: 72,
+    label: 'HIGH', renderScale: 1.0, maxPixelRatio: 1.25,
+    oceanGridX: 144, oceanGridY: 90, fftSize: 128,
+    cloudScale: 0.4, cloudSteps: 40, cloudLightSteps: 4, cloudEnabled: false,
+    sprayCount: 12000, rainCount: 16000, dof: false, motionBlur: false, taa: false,
+    envSize: 256, envCloudSteps: 14, spoutSteps: 44,
   },
   ultra: {
-    label: 'ULTRA', renderScale: 1.0, maxPixelRatio: 2.0,
-    oceanGridX: 480, oceanGridY: 300, fftSize: 256,
-    cloudScale: 0.62, cloudSteps: 148, cloudLightSteps: 8, cloudEnabled: true,
-    sprayCount: 150000, rainCount: 180000, dof: true, motionBlur: true, taa: true,
-    envSize: 512, envCloudSteps: 26, spoutSteps: 96,
+    label: 'ULTRA', renderScale: 1.0, maxPixelRatio: 1.5,
+    oceanGridX: 160, oceanGridY: 100, fftSize: 128,
+    cloudScale: 0.5, cloudSteps: 48, cloudLightSteps: 5, cloudEnabled: false,
+    sprayCount: 16000, rainCount: 24000, dof: false, motionBlur: false, taa: false,
+    envSize: 256, envCloudSteps: 16, spoutSteps: 52,
   },
 };
 
@@ -208,5 +208,5 @@ export function autoDetectPreset(rendererString = ''): string {
   if (/apple m[1234]|rtx 20[678]0|rtx 3060|gtx 1660|gtx 10[78]0|rx 6600|rx 5600|rx 5700/.test(r)) return 'high';
   if (/gtx 1650|gtx 10[56]0|rx 580|rx 5500|intel arc|iris xe|radeon graphics|mali-g7[78]|adreno (6[56]0|7[34]0)/.test(r)) return 'medium';
   if (/intel.*uhd|intel.*hd|mali|adreno|powervr|apple a\d+/.test(r)) return 'low';
-  return 'high';
+  return 'medium';
 }
