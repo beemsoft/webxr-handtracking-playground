@@ -34,6 +34,14 @@
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
             line-height: 1.5;
         }
+        /* live 3D underwater background (webgl_water_ocean seen from below the surface) */
+        #ocean-bg{
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            opacity: 0; transition: opacity 2.4s ease;
+        }
+        #ocean-bg.is-ready{ opacity: 1; }
+        #ocean-bg canvas{ display: block; width: 100%; height: 100%; }
+
         /* slow drifting caustic shimmer */
         body::before{
             content: "";
@@ -64,9 +72,12 @@
         .container{ position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px; }
         header{
             position: relative;
+            z-index: 1;
             background:
               linear-gradient(180deg, rgba(63,208,255,0.12), rgba(63,208,255,0.0)),
-              linear-gradient(0deg, rgba(12,31,49,0.92), rgba(12,31,49,0.92));
+              linear-gradient(0deg, rgba(12,31,49,0.72), rgba(12,31,49,0.72));
+            backdrop-filter: blur(6px) saturate(120%);
+            -webkit-backdrop-filter: blur(6px) saturate(120%);
             border-bottom: 1px solid var(--border);
             overflow: hidden;
         }
@@ -96,7 +107,9 @@
         .section-sub{ color: var(--muted); margin: -8px 0 16px; font-size: 14px; }
         .grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
         .card{
-            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            background: linear-gradient(180deg, rgba(12,31,49,.82), rgba(8,22,39,.88));
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             border: 1px solid var(--border);
             border-radius: 14px;
             padding: 16px;
@@ -113,13 +126,15 @@
         .icon{ margin-right: 6px; filter: drop-shadow(0 0 6px rgba(55,230,255,.18)); }
         .badge{ display:inline-block; font-size: 11px; letter-spacing: .3px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: #cfefff; background: rgba(42,143,214,.12); }
         .lists{ display:flex; gap:16px; flex-wrap:wrap; }
-        .panel{ background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+        .panel{ background: linear-gradient(180deg, rgba(12,31,49,.82), rgba(8,22,39,.88)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+        .bg-note{ font-size: 12px; opacity: .8; margin-top: 6px; }
         footer{ padding: 24px 0 40px; color: var(--muted); }
         hr{ border: none; height: 1px; background: linear-gradient(90deg, rgba(55,230,255,0), rgba(55,230,255,.4), rgba(47,211,167,.4), rgba(55,230,255,0)); box-shadow: 0 0 18px rgba(55,230,255,.25); margin: 28px 0; }
         @media (min-width: 900px){ .hero{ grid-template-columns: 1.2fr .8fr; align-items: center; } }
     </style>
 </head>
 <body>
+<div id="ocean-bg" aria-hidden="true"></div>
 <header>
     <div class="container hero">
         <div>
@@ -199,6 +214,9 @@
 
 <footer class="container">
     <div>© 2026 WebXR Hand Tracking Playground · Ocean Fun Department</div>
+    <div class="bg-note">Background: live underwater view of the <a href="src/demo/webgl_water_ocean/index.html">WebGL Water Ocean</a> demo.</div>
 </footer>
+<script src="src/demo/commons/dist/bundle.js"></script>
+<script src="src/demo/ocean_background/dist/bundle.js"></script>
 </body>
 </html>

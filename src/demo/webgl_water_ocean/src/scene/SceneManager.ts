@@ -138,21 +138,35 @@ export default class SceneManager extends SceneManagerParent {
     }
 
     // Audio handlers
-    this.surfaceAudioHandler.initAudio(AudioDemo.ocean);
-    this.surfaceAudioElement = this.surfaceAudioHandler.audioElement;
-    if (this.surfaceAudioElement) this.surfaceAudioElement.loop = true;
+    if (this.isAudioEnabled()) {
+      this.surfaceAudioHandler.initAudio(AudioDemo.ocean);
+      this.surfaceAudioElement = this.surfaceAudioHandler.audioElement;
+      if (this.surfaceAudioElement) this.surfaceAudioElement.loop = true;
 
-    const sharedContext = this.surfaceAudioHandler.getAudioContext();
-    this.underwaterAudioHandler.initAudio(AudioDemo.underwater, undefined, sharedContext);
-    this.underwaterAudioElement = this.underwaterAudioHandler.audioElement;
-    if (this.underwaterAudioElement) this.underwaterAudioElement.loop = true;
+      const sharedContext = this.surfaceAudioHandler.getAudioContext();
+      this.underwaterAudioHandler.initAudio(AudioDemo.underwater, undefined, sharedContext);
+      this.underwaterAudioElement = this.underwaterAudioHandler.audioElement;
+      if (this.underwaterAudioElement) this.underwaterAudioElement.loop = true;
 
-    this.surfaceAudioHandler.setGain(1.0);
-    this.underwaterAudioHandler.setGain(0.0);
-    this.startAudio();
+      this.surfaceAudioHandler.setGain(1.0);
+      this.underwaterAudioHandler.setGain(0.0);
+      this.startAudio();
+    }
 
     // Setup desktop mouse/pointer splash interaction
-    this.setupPointerSplash();
+    if (this.isPointerSplashEnabled()) {
+      this.setupPointerSplash();
+    }
+  }
+
+  /** Override to run the scene silently (e.g. as a landing page background). */
+  protected isAudioEnabled(): boolean {
+    return true;
+  }
+
+  /** Override to disable the window-level mouse/touch splash listeners. */
+  protected isPointerSplashEnabled(): boolean {
+    return true;
   }
 
   private setupPointerSplash() {
