@@ -90,6 +90,7 @@
         .cta:hover{ background: var(--card-hover); text-decoration:none; border-color: rgba(0,240,255,.35); box-shadow: 0 0 0px rgba(0,240,255,0), 0 0 14px rgba(0,240,255,.28), 0 0 32px rgba(138,122,255,.18); transform: translateY(-1px); }
         section{ padding: 18px 0; }
         .section-title{ font-size: 22px; margin: 8px 0 16px; }
+        .section-sub{ color: var(--muted); margin: -8px 0 16px; font-size: 14px; }
         .grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
         .card{
             background: linear-gradient(180deg, var(--panel), var(--panel-2));
@@ -105,6 +106,7 @@
         .card.department{ grid-column: 1 / -1; background: linear-gradient(135deg, rgba(42,143,214,.35), rgba(12,31,49,.95)); border-color: rgba(55,230,255,.45); box-shadow: 0 0 22px rgba(55,230,255,.18); }
         .card.department h3{ font-size: 22px; }
         .card.department.animation{ background: linear-gradient(135deg, rgba(138,92,255,.35), rgba(35,20,51,.95)); border-color: rgba(255,106,213,.45); box-shadow: 0 0 22px rgba(255,106,213,.18); }
+        .card.department.physics{ background: linear-gradient(135deg, rgba(255,120,50,.35), rgba(42,27,16,.95)); border-color: rgba(255,159,67,.45); box-shadow: 0 0 22px rgba(255,159,67,.18); }
         .card a{ color: inherit; text-decoration: none; }
         .card a:hover{ text-decoration: none; }
         .card h3{ font-size: 18px; margin: 0; }
@@ -135,6 +137,7 @@
                 <a class="cta" href="#demos">Browse demos</a>
                 <a class="cta" href="ocean.html">🌊 Ocean Fun Department</a>
                 <a class="cta" href="animation.html">💃 Animation Department</a>
+                <a class="cta" href="physics.html">🧱 Physics Department</a>
                 <a class="cta" href="https://github.com/beemsoft/webxr-handtracking-playground">View on GitHub</a>
             </div>
         </div>
@@ -158,24 +161,36 @@
         <div class="grid">
             <div class="card department"><a href="ocean.html"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean Fun Department</h3><p>All water and ocean related demos: FFT ocean simulations, shorebreak surf, caustics, sea fog, ships, sharks, and natural disasters — 14 scenes in one place.</p></a></div>
             <div class="card department animation"><a href="animation.html"><h3><span class="icon" aria-hidden="true">💃</span>Animation Department</h3><p>All character animation demos: VRM avatars, BVH motion capture playback, salsa bars, lessons and parties, and gesture-controlled animation — 12 scenes in one place.</p></a></div>
+            <div class="card department physics"><a href="physics.html"><h3><span class="icon" aria-hidden="true">🧱</span>Physics Department</h3><p>All physics related demos: Ammo.js rigid bodies, hand-tracked ball grabbing and throwing, and convex object breaking — 4 scenes in one place.</p></a></div>
         </div>
     </section>
 
     <section>
-        <h2 class="section-title">Demos</h2>
+        <h2 class="section-title">Visual effects &amp; rendering</h2>
+        <p class="section-sub">Post-processing and render-pass experiments on the custom WebXR two-pass loop.</p>
         <div class="grid">
-            <div class="card"><a href="src/demo/ball/index.html"><h3><span class="icon" aria-hidden="true">🏀</span>Catch and throw the ball</h3><p>A basketball is dropped from the sky. You can grab it and throw it away.</p></a></div>
-            <div class="card"><a href="src/demo/get_ball/index.html"><h3><span class="icon" aria-hidden="true">✋</span>Get the ball with hand gesture</h3><p>You are in an empty basketball court. Open your hand to get the ball.</p></a></div>
-            <div class="card"><a href="src/demo/elements/index.html"><h3><span class="icon" aria-hidden="true">⚛️</span>Elements</h3><p>Atom Visualizer.</p></a></div>
+            <div class="card"><a href="src/demo/webxr_vr_postprocessing/index.html"><h3><span class="icon" aria-hidden="true">✨</span>WebXR postprocessing</h3><p>Three triangles with Bloom effect (ported from Cody Bennet’s PR).</p></a></div>
+            <div class="card"><a href="src/demo/webxr_vr_postprocessing_unreal_bloom/index.html"><h3><span class="icon" aria-hidden="true">✨</span>Unreal Bloom (WebXR)</h3><p>Ported from Three.js.</p></a></div>
+            <div class="card"><a href="src/demo/depth_visualization/index.html"><h3><span class="icon" aria-hidden="true">📐</span>Depth Visualization</h3><p>Real-time linear depth visualization across 3D geometry in WebXR (stereo VR) and desktop mode.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Tracking &amp; input</h2>
+        <p class="section-sub">Hand and face tracking: WebXR native hand input and MediaPipe webcam fallback.</p>
+        <div class="grid">
             <div class="card"><a href="src/demo/handinput_profiles/index.html"><h3><span class="icon" aria-hidden="true">✋</span>Hand input profiles</h3><p>Ported from Three.js examples.</p></a></div>
             <div class="card"><a href="src/demo/mediapipe_face/index.html"><h3><span class="icon" aria-hidden="true">🦝</span>Mediapipe Face Raccoon</h3><p>Face tracking fun.</p></a></div>
             <div class="card"><a href="src/demo/mediapipe_face_vrm/index.html"><h3><span class="icon" aria-hidden="true">🤖</span>Mediapipe Face VRM</h3><p>Drive a VRM with Mediapipe face tracking.</p></a></div>
-            <div class="card"><a href="src/demo/webxr_vr_postprocessing/index.html"><h3><span class="icon" aria-hidden="true">✨</span>WebXR postprocessing</h3><p>Three triangles with Bloom effect (ported from Cody Bennet’s PR).</p></a></div>
-            <div class="card"><a href="src/demo/webxr_vr_postprocessing_unreal_bloom/index.html"><h3><span class="icon" aria-hidden="true">✨</span>Unreal Bloom (WebXR)</h3><p>Ported from Three.js.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Worlds &amp; science</h2>
+        <p class="section-sub">Explorable scenes and visualizations.</p>
+        <div class="grid">
             <div class="card"><a href="src/demo/moon_walk/index.html"><h3><span class="icon" aria-hidden="true">🌕</span>Moon walk</h3><p>Apollo 11 moon landing scene.</p></a></div>
-            <div class="card"><a href="src/demo/threejs_physics_ammo_break/index.html"><h3>Physics Ammo Break</h3><p>Ported from Three.js Physics Ammo Break demo.</p></a></div>
-            <div class="card"><a href="src/demo/threejs_physics_ammo_break_movable/index.html"><h3>Physics Ammo Break 2</h3><p>Ammo Break demo with movable target.</p></a></div>
-            <div class="card"><a href="src/demo/depth_visualization/index.html"><h3><span class="icon" aria-hidden="true">📐</span>Depth Visualization</h3><p>Real-time linear depth visualization across 3D geometry in WebXR (stereo VR) and desktop mode.</p></a></div>
+            <div class="card"><a href="src/demo/elements/index.html"><h3><span class="icon" aria-hidden="true">⚛️</span>Elements</h3><p>Atom Visualizer.</p></a></div>
         </div>
     </section>
 
