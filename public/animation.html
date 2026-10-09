@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Animation Department – WebXR hand tracking playground</title>
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
+    <style>
+        :root{
+            --bg: #130a1c;
+            --panel: #231433;
+            --panel-2: #1a0f28;
+            --text: #f7ecff;
+            --muted: #c1a9d6;
+            --brand: #ff6ad5;
+            --brand-2: #8a5cff;
+            --neon: #ff6ad5;
+            --neon-2: #ffb347;
+            --border: #3d2457;
+            --card-hover: #2f1b45;
+            --link: #ff9ae6;
+            --glow: 0 0 0px rgba(255,106,213,0), 0 0 12px rgba(255,106,213,.18), 0 0 24px rgba(138,92,255,.12);
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body{
+            margin: 0;
+            background:
+                radial-gradient(1200px 800px at 80% -10%, rgba(138,92,255,0.22), transparent 60%),
+                radial-gradient(1200px 800px at 10% -20%, rgba(255,106,213,0.16), transparent 60%),
+                radial-gradient(800px 600px at 50% 110%, rgba(255,179,71,0.12), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+            line-height: 1.5;
+        }
+        /* drifting disco sparkles */
+        body::before{
+            content: "";
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image:
+              radial-gradient(2px 2px at 15% 25%, rgba(255,255,255,.22), transparent 40%),
+              radial-gradient(1.5px 1.5px at 45% 35%, rgba(255,154,230,.22), transparent 40%),
+              radial-gradient(2px 2px at 70% 15%, rgba(255,255,255,.18), transparent 40%),
+              radial-gradient(1.5px 1.5px at 85% 70%, rgba(255,179,71,.3), transparent 40%),
+              radial-gradient(2px 2px at 25% 80%, rgba(138,92,255,.3), transparent 40%);
+            animation: sparkle 12s ease-in-out infinite alternate;
+            opacity: .6;
+        }
+        @keyframes sparkle{ to{ background-position: 3% -2%, -2% 2%, 2% -1%, -3% 3%, 1% 2%; } }
+
+        /* subtle vignette + scanlines */
+        body::after{
+            content: "";
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px);
+            mix-blend-mode: overlay;
+            box-shadow: inset 0 0 180px rgba(0,0,0,.65);
+            opacity: .35;
+        }
+
+        a{ color: var(--link); text-decoration: none; }
+        a:hover{ text-decoration: underline; }
+        .container{ position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px; }
+        header{
+            position: relative;
+            background:
+              linear-gradient(180deg, rgba(255,106,213,0.12), rgba(255,106,213,0.0)),
+              linear-gradient(0deg, rgba(35,20,51,0.92), rgba(35,20,51,0.92));
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+        /* dance floor spotlights */
+        header::after{
+            content: "";
+            position: absolute; left: -10%; right: -10%; bottom: -40px; height: 160px; pointer-events: none;
+            background:
+              radial-gradient(90px 40px at 10% 60%, rgba(255,106,213,.28), transparent 70%),
+              radial-gradient(90px 40px at 30% 55%, rgba(138,92,255,.26), transparent 70%),
+              radial-gradient(90px 40px at 50% 62%, rgba(255,179,71,.26), transparent 70%),
+              radial-gradient(90px 40px at 70% 56%, rgba(138,92,255,.26), transparent 70%),
+              radial-gradient(90px 40px at 90% 60%, rgba(255,106,213,.28), transparent 70%),
+              repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 2px, transparent 2px 60px),
+              linear-gradient(180deg, transparent, rgba(138,92,255,.22));
+            animation: groove 7s ease-in-out infinite alternate;
+            filter: blur(.4px);
+        }
+        @keyframes groove{ to{ transform: translateX(-4%); filter: hue-rotate(40deg) blur(.4px); } }
+        .hero{ display: grid; grid-template-columns: 1fr; gap: 12px; padding: 36px 0 8px; }
+        .title{ font-size: 34px; margin: 0; letter-spacing: 0.3px; background: linear-gradient(90deg, #fff, var(--neon), var(--neon-2)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 2px 18px rgba(255,106,213,.12); }
+        .subtitle{ color: var(--muted); margin-top: 6px; }
+        .cta-row{ display:flex; gap:12px; flex-wrap: wrap; margin-top: 12px; }
+        .cta{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(180deg, var(--panel), var(--panel-2)); color: var(--text); font-weight:700; box-shadow: var(--glow); }
+        .cta:hover{ background: var(--card-hover); text-decoration:none; border-color: rgba(255,106,213,.35); box-shadow: 0 0 0px rgba(255,106,213,0), 0 0 14px rgba(255,106,213,.28), 0 0 32px rgba(138,92,255,.18); transform: translateY(-1px); }
+        section{ padding: 18px 0; }
+        .section-title{ font-size: 22px; margin: 8px 0 16px; }
+        .section-sub{ color: var(--muted); margin: -8px 0 16px; font-size: 14px; }
+        .grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+        .card{
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            height: 100%;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+            box-shadow: 0 1px 0 rgba(0,0,0,.2);
+        }
+        .card:hover{ transform: translateY(-3px) rotate(-0.4deg); background: var(--card-hover); border-color: rgba(255,106,213,.28); box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 18px rgba(255,106,213,.12); }
+        .card a{ color: inherit; text-decoration: none; }
+        .card a:hover{ text-decoration: none; }
+        .card h3{ font-size: 18px; margin: 0; }
+        .card p{ margin: 0; color: var(--muted); font-size: 14px; }
+        .icon{ margin-right: 6px; filter: drop-shadow(0 0 6px rgba(255,106,213,.18)); }
+        .badge{ display:inline-block; font-size: 11px; letter-spacing: .3px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: #ffd9f5; background: rgba(138,92,255,.12); }
+        .lists{ display:flex; gap:16px; flex-wrap:wrap; }
+        .panel{ background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+        footer{ padding: 24px 0 40px; color: var(--muted); }
+        hr{ border: none; height: 1px; background: linear-gradient(90deg, rgba(255,106,213,0), rgba(255,106,213,.4), rgba(138,92,255,.4), rgba(255,106,213,0)); box-shadow: 0 0 18px rgba(255,106,213,.25); margin: 28px 0; }
+        @media (min-width: 900px){ .hero{ grid-template-columns: 1.2fr .8fr; align-items: center; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container hero">
+        <div>
+            <h1 class="title">💃 Animation Department</h1>
+            <p class="subtitle">All character animation demos in one place: VRM avatars, BVH motion capture playback, salsa dancing, and hand-gesture controlled animation — built with Three.js and tuned for Meta Quest headsets.</p>
+            <div class="cta-row">
+                <a class="cta" href="#demos">Hit the dance floor</a>
+                <a class="cta" href="index.html">← Back to all demos</a>
+            </div>
+        </div>
+        <div class="panel">
+            <strong>What's on stage</strong>
+            <p class="subtitle" style="margin-top:8px">Scenes animate VRM models with BVH motion data (largely from the CMU Salsa collection) and respond to hand gestures: open your hand to start or resume, close it to pause. They also open on desktop browsers with orbit controls.</p>
+            <div class="lists">
+                <span class="badge">VRM avatars</span>
+                <span class="badge">BVH motion capture</span>
+                <span class="badge">Salsa (CMU)</span>
+                <span class="badge">Gesture control</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <section id="demos">
+        <h2 class="section-title">VRM & dance basics</h2>
+        <p class="section-sub">Single-character animation and dance playback.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/dance/index.html"><h3><span class="icon" aria-hidden="true">💃</span>Dance</h3><p>Start the dance by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/vrm_animation/index.html"><h3><span class="icon" aria-hidden="true">🤖</span>VRM model animation</h3><p>Start the animation by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/vrm_dance/index.html"><h3><span class="icon" aria-hidden="true">🤖</span>VRM model dance</h3><p>Start the dance by opening your hand.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Salsa</h2>
+        <p class="section-sub">Bars, lessons, and parties powered by the CMU Salsa BVH collection.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/bar/index.html"><h3><span class="icon" aria-hidden="true">🍹</span>Salsa bar (fast)</h3><p>Start the dance by opening your hand.</p></a></div>
+            <div class="card"><a href="src/demo/bar2/index.html"><h3><span class="icon" aria-hidden="true">🍹</span>Salsa bar (slow)</h3><p>2 VRM models animated with the complete Salsa BVH collection, originally from CMU.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_lesson/index.html"><h3><span class="icon" aria-hidden="true">🧑‍🏫</span>Salsa lesson</h3><p>Follow the leader’s hand and shoe moves. Open your hand to resume, close to pause. Camera: Thumb+Ring = orbit camera; Thumb+Pinky = orbit origin.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party</h3><p>Victorian Greenhouse. 8 VRM models animated with the Salsa BVH collection (CMU).</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party2/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 2</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. 6 VRM models animated with Salsa BVH (CMU).</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party3/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 3</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. Three.js VR hand models + 2 VRM models (Salsa BVH). JS implementation.</p></a></div>
+            <div class="card"><a href="src/demo/salsa_party4/index.html"><h3><span class="icon" aria-hidden="true">🥳</span>Salsa party 4</h3><p>“Ehemalige Kleeblatt Tankstelle Hannover”. 8 VRM models (Salsa BVH). Control animation with hand gestures.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">BVH motion capture tests</h2>
+        <p class="section-sub">Raw rigged-character BVH playback experiments.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/bvh_test/index.html"><h3><span class="icon" aria-hidden="true">🧍</span>BVH test</h3><p>Drunk walking 10‑minute rigged pirate.</p></a></div>
+            <div class="card"><a href="src/demo/bvh_test_2/index.html"><h3><span class="icon" aria-hidden="true">🧍</span>BVH test 2</h3><p>Jack Sparrow drunk walking on a tilting plane.</p></a></div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section>
+        <div class="cta-row">
+            <a class="cta" href="index.html">← Back to all demos</a>
+            <a class="cta" href="ocean.html">🌊 Ocean Fun Department</a>
+            <a class="cta" href="https://github.com/beemsoft/webxr-handtracking-playground">View on GitHub</a>
+        </div>
+    </section>
+</main>
+
+<footer class="container">
+    <div>© 2026 WebXR Hand Tracking Playground · Animation Department</div>
+</footer>
+</body>
+</html>

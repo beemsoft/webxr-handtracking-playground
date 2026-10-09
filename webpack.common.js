@@ -33,6 +33,8 @@ module.exports = {
         threejs_physics_ammo_break: './src/demo/threejs_physics_ammo_break/src',
         threejs_physics_ammo_break_movable: './src/demo/threejs_physics_ammo_break_movable/src',
         ocean_surf: './src/demo/ocean_surf/src',
+        shore_break: './src/demo/shore_break/src',
+        'shore-break': './src/demo/shore_break/src',
         depth_visualization: './src/demo/depth_visualization/src',
         ship_fog: './src/demo/ship_fog/src',
         beautiful_water: './src/demo/beautiful_water/src',

@@ -15,7 +15,7 @@ function isVrDeviceUserAgent() {
     return /OculusBrowser|Quest|Pico|Wolvic|Vive|Vision|Mobile VR|XR/i.test(ua);
 }
 
-export function determineVrOrNonVrSetup(sceneManager, useMediaPipeStuff, useDefaultHandGestures, useAmmoLib) {
+export function determineVrOrNonVrSetup(sceneManager, useMediaPipeStuff = false, useDefaultHandGestures = true, useAmmoLib = false) {
     // 1. First fast-fail if it's not a VR device's native browser
     if (!isVrDeviceUserAgent()) {
         nonVrSetup(sceneManager, useMediaPipeStuff);

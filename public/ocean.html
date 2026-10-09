@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ocean Fun Department – WebXR hand tracking playground</title>
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
+    <style>
+        :root{
+            --bg: #04101c;
+            --panel: #0c1f31;
+            --panel-2: #081627;
+            --text: #ecf7ff;
+            --muted: #9fbfd4;
+            --brand: #3fd0ff;
+            --brand-2: #2a8fd6;
+            --neon: #37e6ff;
+            --neon-2: #2fd3a7;
+            --border: #1a3a55;
+            --card-hover: #123049;
+            --link: #7fdcff;
+            --glow: 0 0 0px rgba(55,230,255,0), 0 0 12px rgba(55,230,255,.18), 0 0 24px rgba(47,211,167,.12);
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body{
+            margin: 0;
+            background:
+                radial-gradient(1200px 800px at 80% -10%, rgba(42,143,214,0.22), transparent 60%),
+                radial-gradient(1200px 800px at 10% -20%, rgba(63,208,255,0.16), transparent 60%),
+                radial-gradient(800px 600px at 50% 110%, rgba(47,211,167,0.14), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+            line-height: 1.5;
+        }
+        /* slow drifting caustic shimmer */
+        body::before{
+            content: "";
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image:
+              radial-gradient(2px 2px at 15% 25%, rgba(255,255,255,.22), transparent 40%),
+              radial-gradient(1.5px 1.5px at 45% 35%, rgba(127,220,255,.2), transparent 40%),
+              radial-gradient(2px 2px at 70% 15%, rgba(255,255,255,.18), transparent 40%),
+              radial-gradient(1.5px 1.5px at 85% 70%, rgba(47,211,167,.3), transparent 40%),
+              radial-gradient(2px 2px at 25% 80%, rgba(63,208,255,.28), transparent 40%);
+            animation: drift 18s ease-in-out infinite alternate;
+            opacity: .6;
+        }
+        @keyframes drift{ to{ background-position: 3% -2%, -2% 2%, 2% -1%, -3% 3%, 1% 2%; } }
+
+        /* subtle vignette + wave lines */
+        body::after{
+            content: "";
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 3px);
+            mix-blend-mode: overlay;
+            box-shadow: inset 0 0 180px rgba(0,0,0,.65);
+            opacity: .35;
+        }
+
+        a{ color: var(--link); text-decoration: none; }
+        a:hover{ text-decoration: underline; }
+        .container{ position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px; }
+        header{
+            position: relative;
+            background:
+              linear-gradient(180deg, rgba(63,208,255,0.12), rgba(63,208,255,0.0)),
+              linear-gradient(0deg, rgba(12,31,49,0.92), rgba(12,31,49,0.92));
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+        /* animated wave surface */
+        header::after{
+            content: "";
+            position: absolute; left: -10%; right: -10%; bottom: -30px; height: 140px; pointer-events: none;
+            background:
+              radial-gradient(60px 24px at 10% 60%, rgba(55,230,255,.28), transparent 70%),
+              radial-gradient(60px 24px at 30% 55%, rgba(55,230,255,.22), transparent 70%),
+              radial-gradient(60px 24px at 50% 62%, rgba(55,230,255,.28), transparent 70%),
+              radial-gradient(60px 24px at 70% 56%, rgba(55,230,255,.22), transparent 70%),
+              radial-gradient(60px 24px at 90% 60%, rgba(55,230,255,.28), transparent 70%),
+              linear-gradient(180deg, transparent, rgba(42,143,214,.25));
+            animation: swell 9s ease-in-out infinite alternate;
+            filter: blur(.4px);
+        }
+        @keyframes swell{ to{ transform: translateX(-4%) translateY(6px); } }
+        .hero{ display: grid; grid-template-columns: 1fr; gap: 12px; padding: 36px 0 8px; }
+        .title{ font-size: 34px; margin: 0; letter-spacing: 0.3px; background: linear-gradient(90deg, #fff, var(--neon), var(--neon-2)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 2px 18px rgba(55,230,255,.12); }
+        .subtitle{ color: var(--muted); margin-top: 6px; }
+        .cta-row{ display:flex; gap:12px; flex-wrap: wrap; margin-top: 12px; }
+        .cta{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(180deg, var(--panel), var(--panel-2)); color: var(--text); font-weight:700; box-shadow: var(--glow); }
+        .cta:hover{ background: var(--card-hover); text-decoration:none; border-color: rgba(55,230,255,.35); box-shadow: 0 0 0px rgba(55,230,255,0), 0 0 14px rgba(55,230,255,.28), 0 0 32px rgba(47,211,167,.18); transform: translateY(-1px); }
+        section{ padding: 18px 0; }
+        .section-title{ font-size: 22px; margin: 8px 0 16px; }
+        .section-sub{ color: var(--muted); margin: -8px 0 16px; font-size: 14px; }
+        .grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+        .card{
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            height: 100%;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+            box-shadow: 0 1px 0 rgba(0,0,0,.2);
+        }
+        .card:hover{ transform: translateY(-3px) rotate(-0.4deg); background: var(--card-hover); border-color: rgba(55,230,255,.28); box-shadow: 0 8px 24px rgba(0,0,0,.35), 0 0 18px rgba(55,230,255,.12); }
+        .card a{ color: inherit; text-decoration: none; }
+        .card a:hover{ text-decoration: none; }
+        .card h3{ font-size: 18px; margin: 0; }
+        .card p{ margin: 0; color: var(--muted); font-size: 14px; }
+        .icon{ margin-right: 6px; filter: drop-shadow(0 0 6px rgba(55,230,255,.18)); }
+        .badge{ display:inline-block; font-size: 11px; letter-spacing: .3px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: #cfefff; background: rgba(42,143,214,.12); }
+        .lists{ display:flex; gap:16px; flex-wrap:wrap; }
+        .panel{ background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+        footer{ padding: 24px 0 40px; color: var(--muted); }
+        hr{ border: none; height: 1px; background: linear-gradient(90deg, rgba(55,230,255,0), rgba(55,230,255,.4), rgba(47,211,167,.4), rgba(55,230,255,0)); box-shadow: 0 0 18px rgba(55,230,255,.25); margin: 28px 0; }
+        @media (min-width: 900px){ .hero{ grid-template-columns: 1.2fr .8fr; align-items: center; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container hero">
+        <div>
+            <h1 class="title">🌊 Ocean Fun Department</h1>
+            <p class="subtitle">All water and ocean related WebXR demos in one place: FFT wave spectra, shoreline surf, caustics, fog, floating ships, marine life, and extreme weather — built with Three.js and tuned for Meta Quest headsets.</p>
+            <div class="cta-row">
+                <a class="cta" href="#demos">Dive in</a>
+                <a class="cta" href="index.html">← Back to all demos</a>
+            </div>
+        </div>
+        <div class="panel">
+            <strong>What's in the water</strong>
+            <p class="subtitle" style="margin-top:8px">Most scenes use the custom two-pass WebXR loop (depth / shadow pre-pass + stereoscopic render) and run at 72–90 FPS on Quest 3S / Quest 2. They also open on desktop browsers with orbit controls.</p>
+            <div class="lists">
+                <span class="badge">FFT / Gerstner waves</span>
+                <span class="badge">Caustics</span>
+                <span class="badge">Foam & shoreline</span>
+                <span class="badge">Sea fog</span>
+                <span class="badge">Marine life</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <section id="demos">
+        <h2 class="section-title">Open ocean & simulations</h2>
+        <p class="section-sub">Large-scale wave spectra, weather, and island environments.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/ocean/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean</h3><p>Three.js ocean demo.</p></a></div>
+            <div class="card"><a href="src/demo/ocean_simulation/index.html"><h3><span class="icon" aria-hidden="true">🏝️</span>Ocean Simulation</h3><p>Interactive real-time tropical island ocean simulation with FFT/JONSWAP waves, Eikonal coastal refraction, dual-resolution foam, caustics, and dynamic weather in WebXR.</p></a></div>
+            <div class="card"><a href="src/demo/ocean_simulation2/index.html"><h3><span class="icon" aria-hidden="true">🏝️</span>Ocean Simulation 2 (Optimized)</h3><p>Optimized tropical island ocean simulation designed for Meta Quest 3S / WebXR headsets with streamlined FFT cascades, efficient foliage instancing, and optimized water shaders.</p></a></div>
+            <div class="card"><a href="src/demo/natural_disasters/index.html"><h3><span class="icon" aria-hidden="true">🌪️</span>Natural Disasters (ABYSSAL)</h3><p>Procedural extreme ocean & weather simulation with multi-cascade FFT waves, volumetric clouds, hurricanes, waterspouts, rogue waves, and tsunamis in WebXR.</p></a></div>
+            <div class="card"><a href="src/demo/beautiful_water/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>Beautiful Water</h3><p>Cinematic shallow-ocean environment with directional wave spectrum, floating buoy, seabed habitat, fish schools, and underwater light rays.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Shoreline & surf</h2>
+        <p class="section-sub">Breaking waves, foam, and beaches.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/shore_break/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>ShoreBreak Rolling Waves</h3><p>Immersive coastal shorebreak simulation featuring analytical Catmull-Rom wave stages, hollow curling lip barrel ribbons, shoaling wave deformation, and beach bathymetry.</p></a></div>
+            <div class="card"><a href="src/demo/ocean_surf/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>Ocean surf</h3><p>Procedural ocean surf shader with foam and Gerstner waves, utilizing a depth pass for shoreline interaction.</p></a></div>
+            <div class="card"><a href="src/demo/beach/index.html"><h3><span class="icon" aria-hidden="true">🏖️</span>Beach</h3><p>Beach.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Ships & fog</h2>
+        <p class="section-sub">Vessels on the water.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/ship/index.html"><h3><span class="icon" aria-hidden="true">🚢</span>Ship</h3><p>Three.js ocean + The Black Pearl + Jack Sparrow.</p></a></div>
+            <div class="card"><a href="src/demo/ship_fog/index.html"><h3><span class="icon" aria-hidden="true">⛵</span>Ship in the Fog</h3><p>17th century sailing ship emerging from atmospheric sea fog with ocean waves and depth-based keel foam.</p></a></div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Caustics, reflection & refraction</h2>
+        <p class="section-sub">Pool-scale water optics and underwater life.</p>
+        <div class="grid">
+            <div class="card"><a href="src/demo/webgl_water/index.html"><h3><span class="icon" aria-hidden="true">💧</span>Water reflection + refraction</h3><p>Ported from Three.js.</p></a></div>
+            <div class="card"><a href="src/demo/threejs_water/index.html"><h3><span class="icon" aria-hidden="true">💧</span>Water caustics</h3><p>Ported from Three.js Water.</p></a></div>
+            <div class="card"><a href="src/demo/threejs_water_shark/index.html"><h3><span class="icon" aria-hidden="true">🦈</span>Water caustics with shark</h3><p>Three.js water caustics simulation with animated swimming shark.</p></a></div>
+            <div class="card"><a href="src/demo/webgl_water_ocean/index.html"><h3><span class="icon" aria-hidden="true">🌊</span>WebGL Water Ocean</h3><p>Interactive water caustics simulation with sandy seabed, fish schools, patrolling shark, dynamic clouds, and 10m abyss fog.</p></a></div>
+        </div>
+    </section>
+
+    <hr>
+
+    <section>
+        <div class="cta-row">
+            <a class="cta" href="index.html">← Back to all demos</a>
+            <a class="cta" href="https://github.com/beemsoft/webxr-handtracking-playground">View on GitHub</a>
+        </div>
+    </section>
+</main>
+
+<footer class="container">
+    <div>© 2026 WebXR Hand Tracking Playground · Ocean Fun Department</div>
+</footer>
+</body>
+</html>
