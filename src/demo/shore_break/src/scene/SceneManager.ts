@@ -2,6 +2,7 @@ import {
   DirectionalLight,
   PerspectiveCamera,
   Scene,
+  Vector2,
   Vector3,
   WebGLRenderer,
   MeshStandardMaterial,
@@ -22,24 +23,32 @@ import { GestureType, HandTrackingResult, PostProcessingConfig } from '../../../
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import { RollingWaterSurface } from './RollingWaterSurface';
 import { LipRibbon } from './LipRibbon';
+import { SplashParticles } from './SplashParticles';
 import { Shorebed } from './Shorebed';
 import { BreakerEvent } from './BreakerWave';
 
 export default class SceneManager extends SceneManagerParent {
   private ocean: RollingWaterSurface;
   private lipRibbon: LipRibbon;
+  private splash: SplashParticles;
   private shorebed: Shorebed;
   private sky: Sky;
   private sun: Vector3 = new Vector3();
+  private drawingBufferSize: Vector2 = new Vector2();
   private pmremGenerator: PMREMGenerator;
   private palmLeaves: Group[] = [];
   private audioHandler = new AudioHandler();
   private audioElement: HTMLAudioElement;
   private isAudioStarted: boolean = false;
 
+  // Endless wave train: events are generated ahead of time from a seeded PRNG and dropped once
+  // their swash has run out, so the surf never visibly loops or resets.
   private breakerEvents: BreakerEvent[] = [];
   private nextEventIndex: number = 0;
-  private waveCycleDuration: number = 18.0; // Seconds per sequence loop
+  private lastT0: number = 0.0;
+  private rngState: number = 0x2f6e2b1;
+  private static readonly EVENT_LEAD = 8.0;   // s before impact an event must be scheduled (shoaling swell visible from ~6 s)
+  private static readonly EVENT_TAIL = 11.0;  // s after impact until the bore / swash have faded
 
   private parameters = {
     elevation: 25.0,
@@ -87,13 +96,73 @@ export default class SceneManager extends SceneManagerParent {
   }
 
   private initWaveSchedule() {
-    // Scheduled wave events calibrated from ShoreBreak (Z, A, a, B, C, D)
-    this.breakerEvents = [
-      { name: 'A', t0: 1.5, H: 0.65, zI: -1.8, c: 2.6, x0: 0.0, seed: 0.37, hPeel: 0.15, stand: 0.0, kappa: 0.0, wobble: 0.012, waviness: 0.03, tilt: 0.0, hvar: 0.08, style: 1.0, spill: 0.2, strength: 1.0, bore: 1.0, splash: 1.0, farPhase: 0.18 },
-      { name: 'B', t0: 5.5, H: 0.85, zI: -1.9, c: 2.8, x0: 0.0, seed: 0.73, hPeel: 0.22, stand: 0.0, kappa: 0.0, wobble: 0.015, waviness: 0.04, tilt: 0.0, hvar: 0.10, style: 1.0, spill: 0.1, strength: 1.0, bore: 1.0, splash: 1.0, farPhase: 0.83 },
-      { name: 'C', t0: 9.8, H: 0.55, zI: -2.0, c: 2.4, x0: -1.5, seed: 0.29, hPeel: -0.15, stand: 0.3, kappa: -0.1, wobble: 0.012, waviness: 0.03, tilt: 0.02, hvar: 0.08, style: 0.5, spill: 0.8, strength: 0.9, bore: 0.9, splash: 0.9, farPhase: 0.36 },
-      { name: 'D', t0: 14.0, H: 0.75, zI: -1.75, c: 2.7, x0: 1.2, seed: 0.91, hPeel: 0.10, stand: 0.0, kappa: 0.0, wobble: 0.014, waviness: 0.03, tilt: -0.01, hvar: 0.09, style: 1.0, spill: 0.2, strength: 1.0, bore: 1.0, splash: 1.0, farPhase: 0.05 },
-    ];
+    this.breakerEvents = [];
+    this.nextEventIndex = 0;
+    this.lastT0 = 1.5 - this.nextInterval();
+    this.fillWaveSchedule(0.0);
+  }
+
+  // Deterministic LCG in [0, 1) so the wave train is the same on every run
+  private rand(): number {
+    this.rngState = (Math.imul(this.rngState, 1664525) + 1013904223) >>> 0;
+    return this.rngState / 4294967296;
+  }
+
+  private randRange(a: number, b: number): number {
+    return a + (b - a) * this.rand();
+  }
+
+  // Wave period 3.6-5.4 s, occasionally a longer lull between sets
+  private nextInterval(): number {
+    const lull = this.rand() < 0.12 ? this.randRange(1.5, 3.0) : 0.0;
+    return this.randRange(3.6, 5.4) + lull;
+  }
+
+  // One breaker calibrated around the ShoreBreak presets (Z, A, a, B, C, D): heights follow a slow
+  // set/lull envelope over ~7 waves with per-wave scatter; mostly plunging barrels with the
+  // occasional smaller spilling wave. `far` is the along-shore timing modulation amplitude (s):
+  // with |farS| <= 1 the first and last sections of a crest break 2*far s apart, so the break
+  // closes out diagonally in sections; each event gets its own phase so the peak falls elsewhere.
+  private makeEvent(t0: number, index: number): BreakerEvent {
+    const setEnv = 0.5 + 0.5 * Math.sin(index * 0.9 + 0.4 * Math.sin(index * 0.37));
+    const spilling = this.rand() < 0.22;
+    const H = spilling
+      ? this.randRange(0.5, 0.62)
+      : MathUtils.clamp(0.58 + 0.3 * setEnv + this.randRange(-0.07, 0.07), 0.55, 0.9);
+    const style = spilling ? this.randRange(0.4, 0.6) : this.randRange(0.9, 1.0);
+    const amp = spilling ? 0.9 : 1.0;
+    return {
+      name: 'W' + index,
+      t0,
+      H,
+      zI: this.randRange(-2.05, -1.7),
+      c: 2.3 + 0.6 * (H - 0.5) / 0.4 + this.randRange(-0.1, 0.1),
+      x0: this.randRange(-1.5, 1.5),
+      seed: this.rand(),
+      hPeel: this.randRange(-0.15, 0.22),
+      stand: spilling ? 0.3 : 0.0,
+      kappa: spilling ? -0.1 : 0.0,
+      wobble: this.randRange(0.011, 0.016),
+      waviness: this.randRange(0.03, 0.04),
+      tilt: this.randRange(-0.015, 0.02),
+      hvar: this.randRange(0.08, 0.1),
+      style,
+      spill: spilling ? 0.8 : this.randRange(0.1, 0.2),
+      strength: amp,
+      bore: amp,
+      splash: amp,
+      farPhase: this.rand(),
+      far: this.randRange(0.3, 0.5),
+    };
+  }
+
+  // Keep events scheduled EVENT_LEAD s ahead and drop those whose swash has run out
+  private fillWaveSchedule(time: number) {
+    while (this.lastT0 < time + SceneManager.EVENT_LEAD) {
+      this.lastT0 += this.nextInterval();
+      this.breakerEvents.push(this.makeEvent(this.lastT0, this.nextEventIndex++));
+    }
+    this.breakerEvents = this.breakerEvents.filter(e => time - e.t0 < SceneManager.EVENT_TAIL);
   }
 
   private addShorebed() {
@@ -107,6 +176,10 @@ export default class SceneManager extends SceneManagerParent {
 
     this.lipRibbon = new LipRibbon();
     this.scene.add(this.lipRibbon);
+
+    // impact splash-up (one point-cloud draw call driven by the same event schedule)
+    this.splash = new SplashParticles();
+    this.scene.add(this.splash);
   }
 
   private addSky() {
@@ -136,6 +209,9 @@ export default class SceneManager extends SceneManagerParent {
     }
     if (this.lipRibbon) {
       (this.lipRibbon.material as any).uniforms.uSunDirection.value.copy(this.sun);
+    }
+    if (this.splash) {
+      (this.splash.material as any).uniforms.uSunDirection.value.copy(this.sun);
     }
     if (this.shorebed) {
       (this.shorebed.material as any).uniforms.uSunDirection.value.copy(this.sun);
@@ -245,29 +321,27 @@ export default class SceneManager extends SceneManagerParent {
     super.update();
     const time = this.timer.getElapsed();
 
-    // Loop active breaker events dynamically across continuous time
-    const activeEvents: BreakerEvent[] = this.breakerEvents.map(evt => {
-      const period = this.waveCycleDuration;
-      const cycleTime = time % period;
-      let shiftedT0 = evt.t0;
-
-      // Keep event active relative to repeating cycle
-      const dt = cycleTime - evt.t0;
-      if (dt < -3.0) {
-        shiftedT0 += period;
-      }
-
-      return {
-        ...evt,
-        t0: shiftedT0
-      };
-    });
+    // Continuous, never-looping wave train: time is passed unwrapped (a wrapped time made the
+    // swell, ripple and caustic phases jump every cycle) and the event list is refilled ahead.
+    this.fillWaveSchedule(time);
+    const activeEvents = this.breakerEvents;
 
     if (this.ocean) {
-      this.ocean.updateUniforms(time % this.waveCycleDuration, activeEvents);
+      this.ocean.updateUniforms(time, activeEvents);
     }
     if (this.lipRibbon) {
-      this.lipRibbon.updateUniforms(time % this.waveCycleDuration, activeEvents);
+      this.lipRibbon.updateUniforms(time, activeEvents);
+    }
+    if (this.splash) {
+      let viewportHeight: number | undefined;
+      if (this.renderer) {
+        this.renderer.getDrawingBufferSize(this.drawingBufferSize);
+        viewportHeight = this.drawingBufferSize.y;
+      }
+      this.splash.updateUniforms(time, activeEvents, viewportHeight);
+    }
+    if (this.shorebed) {
+      this.shorebed.setTime(time);
     }
 
     if (this.camera) {
