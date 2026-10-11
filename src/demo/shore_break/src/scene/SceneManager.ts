@@ -40,6 +40,9 @@ export default class SceneManager extends SceneManagerParent {
   private audioHandler = new AudioHandler();
   private audioElement: HTMLAudioElement;
   private isAudioStarted: boolean = false;
+  private isPaused: boolean = false;
+  private waveTime: number = 0.0;
+  private lastRealElapsed: number = 0.0;
 
   // Endless wave train: events are generated ahead of time from a seeded PRNG and dropped once
   // their swash has run out, so the surf never visibly loops or resets.
@@ -80,6 +83,8 @@ export default class SceneManager extends SceneManagerParent {
     dirLight.shadow.camera.bottom = -30;
     dirLight.shadow.bias = -0.0005;
     this.scene.add(dirLight);
+
+    window.addEventListener('keydown', this.onKeyDown);
 
     this.initWaveSchedule();
     this.addShorebed();
@@ -319,18 +324,22 @@ export default class SceneManager extends SceneManagerParent {
 
   update() {
     super.update();
-    const time = this.timer.getElapsed();
+    const realElapsed = this.timer.getElapsed();
+    const delta = this.lastRealElapsed > 0 ? realElapsed - this.lastRealElapsed : 0;
+    this.lastRealElapsed = realElapsed;
 
-    // Continuous, never-looping wave train: time is passed unwrapped (a wrapped time made the
-    // swell, ripple and caustic phases jump every cycle) and the event list is refilled ahead.
-    this.fillWaveSchedule(time);
+    if (!this.isPaused) {
+      this.waveTime += delta;
+    }
+
+    this.fillWaveSchedule(this.waveTime);
     const activeEvents = this.breakerEvents;
 
     if (this.ocean) {
-      this.ocean.updateUniforms(time, activeEvents);
+      this.ocean.updateUniforms(this.waveTime, activeEvents);
     }
     if (this.lipRibbon) {
-      this.lipRibbon.updateUniforms(time, activeEvents);
+      this.lipRibbon.updateUniforms(this.waveTime, activeEvents);
     }
     if (this.splash) {
       let viewportHeight: number | undefined;
@@ -338,20 +347,20 @@ export default class SceneManager extends SceneManagerParent {
         this.renderer.getDrawingBufferSize(this.drawingBufferSize);
         viewportHeight = this.drawingBufferSize.y;
       }
-      this.splash.updateUniforms(time, activeEvents, viewportHeight);
+      this.splash.updateUniforms(this.waveTime, activeEvents, viewportHeight);
     }
     if (this.shorebed) {
-      this.shorebed.setTime(time);
+      this.shorebed.setTime(this.waveTime);
     }
 
     if (this.camera) {
       this.audioHandler.setVolume(this.camera.position);
     }
 
-    // Gentle palm leaf breeze animation
     this.palmLeaves.forEach((leaf, i) => {
-      const wave = Math.sin(time * 1.5 + i * 0.5) * 0.04;
-      const wave2 = Math.cos(time * 1.0 + i * 0.8) * 0.02;
+      const wave = Math.sin(this.waveTime * 1.5 + i * 0.5) * 0.04;
+      const wave2 = Math.cos(this.waveTime + i * 0.8) * 0.02;
+
       leaf.rotation.x = wave;
       leaf.rotation.z = wave2;
     });
@@ -384,18 +393,10 @@ export default class SceneManager extends SceneManagerParent {
     }
   }
 
-  private startAudio() {
-    if (!this.isAudioStarted) {
-      this.isAudioStarted = true;
-      this.audioHandler.resume();
-      this.audioElement.play().catch(e => {
-        console.warn("Audio play failed:", e);
-        this.isAudioStarted = false;
-      });
-    }
+  getInitialCameraAngle(): number {
+    return 0;
   }
 
-  // Camera placed right on the shoreline water edge (z = 3.5, y = 1.6 standing height) looking directly at the incoming curling breakers (z = -2.0)
   getInitialCameraPosition(): Vector3 {
     return new Vector3(0, 1.6, 3.5);
   }
@@ -403,4 +404,27 @@ export default class SceneManager extends SceneManagerParent {
   getInitialCameraTarget(): Vector3 {
     return new Vector3(0, 0.4, -3.0);
   }
+
+  private readonly onKeyDown = (event: KeyboardEvent) => {
+    if (event.code === 'KeyP') {
+      this.isPaused = !this.isPaused;
+      if (!this.isPaused) {
+        this.lastRealElapsed = this.timer.getElapsed();
+      }
+      console.log(`Wave ${this.isPaused ? 'paused' : 'resumed'} at ${this.waveTime.toFixed(2)}s`);
+    }
+  };
+
+  private startAudio() {
+    if (!this.isAudioStarted) {
+      this.isAudioStarted = true;
+      this.audioHandler.resume();
+      this.audioElement.play().catch(e => {
+        console.warn('Audio play failed:', e);
+        this.isAudioStarted = false;
+      });
+    }
+  }
+
+  // Camera placed right on the shoreline water edge (z = 3.5, y = 1.6 standing height) looking directly at the incoming curling breakers (z = -2.0)
 }

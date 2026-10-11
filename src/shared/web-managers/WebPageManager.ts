@@ -25,7 +25,7 @@ export default class WebPageManager {
     this.camera = new PerspectiveCamera();
     let cameraPosition = sceneManager.getInitialCameraPosition();
     if (cameraPosition) {
-      this.camera.position.add(cameraPosition);
+      this.camera.position.copy(cameraPosition);
     }
     this.renderer = new WebGLRenderer({alpha: false, antialias: false});
     this.renderer.setSize(window.innerWidth, window.innerHeight);

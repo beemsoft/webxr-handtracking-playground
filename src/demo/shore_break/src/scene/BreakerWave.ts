@@ -327,20 +327,21 @@ float brkElevation(vec3 pos, float time, out vec3 outDisp, out vec3 outFoam) {
     float dz = pos.z - apexZ;
     float eventY = 0.0;
     
-    if (dz >= 0.0 && dz <= frontLen) {
+    if (dz >= 0.0 && dz <= frontLen * 1.1) {
       // Front face: cosine offshore, hollow near-vertical wall + flat shoulder as it steepens (st).
       // The heightfield stays single-valued (as in ShoreBreak): the overhanging lip is the
-      // separate LipRibbon sheet, so the mesh never folds over itself.
-      float u = dz / frontLen;
+      // separate LipRibbon sheet, so the mesh never folds over itself. Extended slightly past
+      // frontLen to overlap smoothly with the trough tail for all waves.
+      float u = clamp(dz / frontLen, 0.0, 1.0);
       float F = brkFace(st, u, frontLen);
-      eventY = mix(troughY, apexY, F);
-      
-      // Feathering: patchy whitecap along the crest top before the lip is thrown, continuous
-      // on a spilling crest; then the whole crest turns white as the lip throws
-      float patchy = smoothstep(0.15, 0.75, 0.5 + 0.5 * sin(pos.x * 3.3 + seed * 17.0) * sin(pos.x * 1.7 + seed * 5.0 + 1.0));
-      // a section that breaks late on the far modulation stands up longer and feathers into a
-      // spilling shoulder before it throws (ShoreBreak's stall), so the diagonal closeout reads
-      // as plunging peak -> whitecapping shoulder rather than identical barrels delayed in time
+       eventY = mix(troughY, apexY, F);
+       
+       // Feathering: patchy whitecap along the crest top before the lip is thrown, continuous
+       // on a spilling crest; then the whole crest turns white as the lip throws
+       float patchy = smoothstep(0.15, 0.75, 0.5 + 0.5 * sin(pos.x * 3.3 + seed * 17.0) * sin(pos.x * 1.7 + seed * 5.0 + 1.0));
+       // a section that breaks late on the far modulation stands up longer and feathers into a
+       // spilling shoulder before it throws (ShoreBreak's stall), so the diagonal closeout reads
+       // as plunging peak -> whitecapping shoulder rather than identical barrels delayed in time
       float late = clamp(uEvtD[k].x / 0.6, 0.0, 1.0) * (0.5 + 0.5 * brkFar(k, pos.x));
       float spill = clamp(1.0 - smoothstep(0.3, 0.8, style) + 0.45 * late, 0.0, 1.0);
       float onset = mix(-0.85, -0.3, spill);
@@ -350,12 +351,13 @@ float brkElevation(vec3 pos, float time, out vec3 outDisp, out vec3 outFoam) {
       // the thrown lip's rim and spray streak down the hollow face at impact
       outFoam.x += smoothstep(-0.3, 0.1, tn) * pow(F, 2.0 + 2.0 * st.st) * 0.85;
       outFoam.x += smoothstep(-0.15, 0.1, tn) * st.st * smoothstep(0.3, 1.0, F) * 0.5 * (0.7 + 0.3 * sin(pos.x * 4.1 + seed * 9.0));
-    } else if (dz > frontLen && dz < frontLen + 1.5 * scale) {
+    } else if (dz > frontLen && dz < frontLen + 2.5 * scale) {
       // trough tail: the depressed trough in front of the face relaxes back to the mean level.
       // Normalised so it reaches exactly zero at its end: a bare exp(-e^2) still held 37 % of
       // the trough depth there and dropped to the sea level in one row - a visible ledge in the
-      // water just seaward of the break line.
-      float e = (dz - frontLen) / (1.5 * scale);
+      // water just seaward of the break line. Extended to 2.5*scale to ensure all waves have
+      // smooth continuity regardless of their height or stage parameters.
+      float e = (dz - frontLen) / (2.5 * scale);
       float tailE = exp(-1.0);
       eventY = troughY * max(exp(-e * e) - tailE, 0.0) / (1.0 - tailE);
     } else if (dz < 0.0 && dz >= -backLen) {
