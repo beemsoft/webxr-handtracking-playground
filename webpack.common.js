@@ -47,6 +47,7 @@ module.exports = {
         'ocean-simulation': './src/demo/ocean_simulation/src',
         ocean_simulation2: './src/demo/ocean_simulation2/src',
         'ocean-simulation2': './src/demo/ocean_simulation2/src',
+        caustic: './src/demo/caustic/src',
     },
     module: {
         rules: [
