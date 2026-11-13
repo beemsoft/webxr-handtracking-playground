@@ -1,6 +1,7 @@
 import { PerspectiveCamera, Quaternion, Scene, ToneMapping, Vector3, WebGLRenderer } from 'three';
 import PhysicsHandler from '../physics/cannon/PhysicsHandler';
 import AmmoHandler from "../physics/ammo/AmmoHandler";
+import { XRFrameOfReference, XRReferenceSpace } from '../webxr/WebXRDeviceAPI';
 
 export enum GestureType {
   "None",
@@ -58,6 +59,12 @@ export interface SceneManagerInterface {
 
   isDepthEnabled(): boolean;
   isShadowEnabled?(): boolean;
+
+  /**
+   * Optional: draw the tracked hands yourself (e.g. as gloves). When present, WebXRManager calls it
+   * every XR frame and hides the default per-joint boxes.
+   */
+  updateHands?(frame: XRFrameOfReference, referenceSpace: XRReferenceSpace): void;
 
   setAmmoHandler(ammoHandler: AmmoHandler);
 

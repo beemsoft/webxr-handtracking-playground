@@ -17,12 +17,14 @@ import SceneManagerParent from '../../../../shared/scene/SceneManagerParent';
 import PhysicsHandler from '../../../../shared/physics/cannon/PhysicsHandler';
 import AudioHandler, { AudioDemo } from '../../../../shared/audio/AudioHandler';
 import { GestureType, HandTrackingResult } from '../../../../shared/scene/SceneManagerInterface';
+import { XRFrameOfReference, XRReferenceSpace } from '../../../../shared/webxr/WebXRDeviceAPI';
 import { CausticField, WATER_HEIGHT } from './CausticField';
 import { Rotunda } from './Rotunda';
 import { apertureOf, WATER_DEFAULTS, WaterSurface } from './Water';
 import { LightShafts } from './LightShafts';
 import { Marine } from './Marine';
 import { Motes } from './Motes';
+import { DiverGlove, GloveJoint } from './DiverGlove';
 import { Shark } from './Shark';
 import { StingRays } from './StingRays';
 
@@ -49,6 +51,8 @@ export default class SceneManager extends SceneManagerParent {
   private shark?: Shark;
   private rays?: StingRays;
   private motes?: Motes;
+  private gloves?: { left: DiverGlove; right: DiverGlove };
+  private readonly gloveJoint: GloveJoint = { x: 0, y: 0, z: 0, radius: 0 };
 
   private readonly surfaceAudioHandler = new AudioHandler();
   private readonly underwaterAudioHandler = new AudioHandler();
@@ -127,6 +131,10 @@ export default class SceneManager extends SceneManagerParent {
     this.motes = new Motes(this.field, aperture);
     this.scene.add(this.motes.points);
 
+    // Diver's gloves replace the default joint boxes in VR; hidden until a hand is tracked.
+    this.gloves = { left: new DiverGlove(this.field), right: new DiverGlove(this.field) };
+    this.scene.add(this.gloves.left.group, this.gloves.right.group);
+
     this.field.update(this.waterTime);
     this.marine.update(this.waterTime, 0, this.camera.position, this.shark);
 
@@ -188,6 +196,30 @@ export default class SceneManager extends SceneManagerParent {
     this.underwaterMix = MathUtils.damp(this.underwaterMix, target, 6, delta);
     this.surfaceAudioHandler.setGain(Math.pow(1 - this.underwaterMix, 1.8));
     this.underwaterAudioHandler.setGain(Math.pow(this.underwaterMix, 1.4));
+  }
+
+  /** WebXR hand tracking: pose a neoprene diver's glove over each tracked hand. */
+  updateHands(frame: XRFrameOfReference, referenceSpace: XRReferenceSpace) {
+    if (!this.gloves) return;
+    const seen = { left: false, right: false };
+    for (const source of frame.session.inputSources) {
+      const hand = source.hand;
+      if (!hand || (source.handedness !== 'left' && source.handedness !== 'right')) continue;
+      const joint = this.gloveJoint;
+      this.gloves[source.handedness].update((name) => {
+        const space = hand.get(name);
+        const pose = space ? frame.getJointPose(space, referenceSpace) : null;
+        if (!pose) return null;
+        joint.x = pose.transform.position.x;
+        joint.y = pose.transform.position.y;
+        joint.z = pose.transform.position.z;
+        joint.radius = pose.radius ?? 0.008;
+        return joint;
+      });
+      seen[source.handedness] = true;
+    }
+    if (!seen.left) this.gloves.left.hide();
+    if (!seen.right) this.gloves.right.hide();
   }
 
   update() {

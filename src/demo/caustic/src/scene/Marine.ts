@@ -59,11 +59,38 @@ const FLEE_DAMPING = 2.2;
 const MAX_FLEE_SPEED = 3.4;
 const MAX_DISPLACEMENT = 3.2;
 const COLUMN_CLEARANCE = 0.38;
+/**
+ * A fish cannot swim sideways: the part of its flight velocity that is not along its body decays at
+ * SLIP_DAMPING per second (a keel), and the body turns toward its real motion at HEADING_RATE,
+ * rising to FLEE_HEADING_RATE while it is bolting.
+ */
+const SLIP_DAMPING = 14;
+const HEADING_RATE = 7;
+const FLEE_HEADING_RATE = 16;
+const MAX_TURN_RATE = 12;
+/** A fish thrusts hard once its body is roughly turned away from the threat. */
+const FLEE_THRUST_GAIN = 1.5;
+/** Share of the flee push that may still act sideways. */
+const FLEE_TURN_ASSIST = 0.3;
+/** Seconds ahead the body aims: flee push (m/s^2) times this is added to the velocity it aims along. */
+const FLEE_LEAD = 0.35;
+/** Largest sideways speed of a fish as a share of its forward speed (about 31 degrees off its body axis). */
+const LATERAL_LIMIT = 0.6;
+/** Share of MAX_DISPLACEMENT beyond which a fish counts as tethered to its orbit point, and its turn rate then. */
+const TETHER_START = 0.85;
+const TETHERED_TURN_RATE = 40;
 
-/** What the fish need to know about the shark: where it is and where it is heading. */
+/** The shark's body runs from this far behind its centre to this far ahead of it (along its heading). */
+const SHARK_TAIL = 1.3;
+const SHARK_NOSE = 1.25;
+/** Fish keep at least this far from the shark's body axis (body radius plus the fish's own size and fins). */
+const SHARK_BODY_CLEARANCE = 0.75;
+
+/** What the fish need to know about the shark: where it is, where it is heading and which way its body points. */
 export interface Threat {
   position: Vector3;
   velocity: Vector3;
+  forward?: Vector3;
 }
 
 function createRandom(seed: number) {
@@ -143,6 +170,11 @@ export class Marine {
   private readonly home = new Vector3();
   private readonly offset = new Vector3();
   private readonly flee = new Vector3();
+  private readonly free = new Vector3();
+  private readonly intent = new Vector3();
+  private readonly removed = new Vector3();
+  private readonly sharkAxis = new Vector3();
+  private readonly sharkPoint = new Vector3();
   /** Stand-in camera position when the viewer is above the water: nothing is ever scared of it. */
   private readonly far = new Vector3(1e5, 1e5, 1e5);
   private readonly lateral = new Vector3();
@@ -298,8 +330,40 @@ export class Marine {
     return target.set(Math.sin(angle) * radius, height, Math.cos(angle) * radius);
   }
 
-  /** Keep a fleeing fish inside the water, away from columns and the outer wall, above the floor. */
-  private constrain(p: Vector3) {
+  /**
+   * Closest point to `at` on the shark's body axis (tail to nose), written to this.sharkPoint.
+   * Without a known heading the shark counts as a point at its centre.
+   */
+  private nearestSharkPoint(at: Vector3, shark: Threat): Vector3 {
+    const axis = this.sharkAxis;
+    if (shark.forward && shark.forward.lengthSq() > 1e-6) axis.copy(shark.forward).normalize();
+    else if (shark.velocity.lengthSq() > 0.01) axis.copy(shark.velocity).normalize();
+    else return this.sharkPoint.copy(shark.position);
+    const along = this.lateral.subVectors(at, shark.position).dot(axis);
+    return this.sharkPoint.copy(shark.position).addScaledVector(axis, MathUtils.clamp(along, -SHARK_TAIL, SHARK_NOSE));
+  }
+
+  /** Keep a fleeing fish inside the water, away from the shark's body, columns and the outer wall, above the floor. */
+  private constrain(p: Vector3, shark?: Threat) {
+    if (shark) {
+      // The shark's whole body is solid to a fish: whatever its flight and orbit say, it never swims through it.
+      const nearest = this.nearestSharkPoint(p, shark);
+      const dx = p.x - nearest.x;
+      const dy = p.y - nearest.y;
+      const dz = p.z - nearest.z;
+      const distance = Math.hypot(dx, dy, dz);
+      if (distance < SHARK_BODY_CLEARANCE) {
+        if (distance > 1e-4) {
+          const k = SHARK_BODY_CLEARANCE / distance;
+          p.set(nearest.x + dx * k, nearest.y + dy * k, nearest.z + dz * k);
+        } else {
+          // Exactly on the axis: leave sideways.
+          this.side.crossVectors(this.sharkAxis, this.worldUp);
+          if (this.side.lengthSq() < 1e-6) this.side.set(1, 0, 0);
+          p.addScaledVector(this.side.normalize(), SHARK_BODY_CLEARANCE);
+        }
+      }
+    }
     for (const column of COLUMNS) {
       const dx = p.x - column.x;
       const dz = p.z - column.z;
@@ -357,7 +421,8 @@ export class Marine {
 
     // Shark: flee radially, and sideways out of its path when it is bearing down on the fish.
     if (shark) {
-      this.offset.subVectors(at, shark.position);
+      // Distance is measured to the shark's body, not its centre, so a fish beside its tail also bolts.
+      this.offset.subVectors(at, this.nearestSharkPoint(at, shark));
       const sharkDistance = this.offset.length();
       if (sharkDistance < SHARK_NOTICE && sharkDistance > 1e-3) {
         const panic = Math.sqrt(1 - MathUtils.smoothstep(sharkDistance, 0.8, SHARK_NOTICE));
@@ -396,7 +461,20 @@ export class Marine {
       this.homeVelocity.subVectors(this.ahead, this.home).multiplyScalar(20);
 
       const i3 = i * 3;
+      // How strongly the fish is steering its body toward an escape direction this frame (0..1).
+      let steer = 0;
+      let pushStrength = 0;
+      this.removed.set(0, 0, 0);
+      const startX = displacement[i3];
+      const startY = displacement[i3 + 1];
+      const startZ = displacement[i3 + 2];
+      // Near the edge of its flight range the fish is tethered to its moving orbit point and gets dragged
+      // along with it, so the body simply has to follow that real motion.
+      const tethered = Math.hypot(startX, startY, startZ) > MAX_DISPLACEMENT * TETHER_START;
       if (dt > 0) {
+        const hx = this.headings[i3];
+        const hy = this.headings[i3 + 1];
+        const hz = this.headings[i3 + 2];
         let ax = -FLEE_SPRING * displacement[i3] - FLEE_DAMPING * velocity[i3];
         let ay = -FLEE_SPRING * displacement[i3 + 1] - FLEE_DAMPING * velocity[i3 + 1];
         let az = -FLEE_SPRING * displacement[i3 + 2] - FLEE_DAMPING * velocity[i3 + 2];
@@ -408,13 +486,45 @@ export class Marine {
           );
           this.accumulateFear(this.position, camera && underwater ? camera : this.far, shark, calm);
           // Fish keep to their depth: vertical flight is much weaker than horizontal.
-          ax += this.flee.x;
-          ay += this.flee.y * 0.45;
-          az += this.flee.z;
+          const fx = this.flee.x;
+          const fy = this.flee.y * 0.45;
+          const fz = this.flee.z;
+          const magnitude = Math.hypot(fx, fy, fz);
+          if (magnitude > 1e-3 && (hx !== 0 || hy !== 0 || hz !== 0)) {
+            // A fish cannot be shoved sideways: it thrusts along its body, in proportion to how well the
+            // body already points away from the threat, and turns toward the escape direction.
+            this.intent.set(fx / magnitude, fy / magnitude, fz / magnitude);
+            const alignment = hx * this.intent.x + hy * this.intent.y + hz * this.intent.z;
+            const thrust = magnitude * FLEE_THRUST_GAIN * MathUtils.clamp((alignment + 0.35) / 1.35, 0, 1);
+            const assist = magnitude * FLEE_TURN_ASSIST;
+            ax += hx * thrust + this.intent.x * assist;
+            ay += hy * thrust + this.intent.y * assist;
+            az += hz * thrust + this.intent.z * assist;
+            steer = 1;
+            pushStrength = magnitude;
+          } else {
+            ax += fx;
+            ay += fy;
+            az += fz;
+          }
         }
         velocity[i3] += ax * dt;
         velocity[i3 + 1] += ay * dt;
         velocity[i3 + 2] += az * dt;
+        if (hx !== 0 || hy !== 0 || hz !== 0) {
+          // Remove the sideways part of the motion (relative to the body axis) from the flight velocity.
+          this.lateral.set(
+            this.homeVelocity.x + velocity[i3],
+            this.homeVelocity.y + velocity[i3 + 1],
+            this.homeVelocity.z + velocity[i3 + 2]
+          );
+          const along = this.lateral.x * hx + this.lateral.y * hy + this.lateral.z * hz;
+          const keel = 1 - Math.exp(-SLIP_DAMPING * dt);
+          velocity[i3] -= (this.lateral.x - along * hx) * keel;
+          velocity[i3 + 1] -= (this.lateral.y - along * hy) * keel;
+          velocity[i3 + 2] -= (this.lateral.z - along * hz) * keel;
+          if (!tethered) this.confineToBody(i3);
+        }
         this.offset.set(velocity[i3], velocity[i3 + 1], velocity[i3 + 2]).clampLength(0, MAX_FLEE_SPEED);
         velocity[i3] = this.offset.x;
         velocity[i3 + 1] = this.offset.y;
@@ -428,11 +538,34 @@ export class Marine {
           displacement[i3] = this.offset.x;
           displacement[i3 + 1] = this.offset.y;
           displacement[i3 + 2] = this.offset.z;
+          // At the edge of its flight range the fish no longer moves outward, so neither does its velocity.
+          this.offset.normalize();
+          const outward = velocity[i3] * this.offset.x + velocity[i3 + 1] * this.offset.y + velocity[i3 + 2] * this.offset.z;
+          if (outward > 0) {
+            velocity[i3] -= outward * this.offset.x;
+            velocity[i3 + 1] -= outward * this.offset.y;
+            velocity[i3 + 2] -= outward * this.offset.z;
+          }
         }
+        // The velocity is what the fish really did this frame, whatever the range limit made of its plan.
+        velocity[i3] = (displacement[i3] - startX) / dt;
+        velocity[i3 + 1] = (displacement[i3 + 1] - startY) / dt;
+        velocity[i3 + 2] = (displacement[i3 + 2] - startZ) / dt;
+        if (!tethered) this.confineToBody(i3);
       }
 
       this.position.set(this.home.x + displacement[i3], this.home.y + displacement[i3 + 1], this.home.z + displacement[i3 + 2]);
-      this.constrain(this.position);
+      this.free.copy(this.position);
+      this.constrain(this.position, shark);
+      if (dt > 0) {
+        // A fish blocked by stone, wall or floor loses the velocity it pushed into the obstacle (it
+        // slides along it) instead of straining against it while its body points the wrong way.
+        velocity[i3] += (this.position.x - this.free.x) / dt;
+        velocity[i3 + 1] += (this.position.y - this.free.y) / dt;
+        velocity[i3 + 2] += (this.position.z - this.free.z) / dt;
+        // The clamps may have left the fish moving sideways or tail-first; confine it again.
+        if (!tethered) this.confineToBody(i3);
+      }
       // Keep the stored offset consistent with what the constraints allowed.
       displacement[i3] = this.position.x - this.home.x;
       displacement[i3 + 1] = this.position.y - this.home.y;
@@ -444,6 +577,18 @@ export class Marine {
         this.homeVelocity.y + velocity[i3 + 1],
         this.homeVelocity.z + velocity[i3 + 2]
       );
+      if (steer > 0) {
+        // A fish held back (at the edge of its flight range or against an obstacle) cannot go where it
+        // wants to, so its body follows its real motion instead.
+        const range = Math.hypot(displacement[i3], displacement[i3 + 1], displacement[i3 + 2]);
+        steer *= 1 - MathUtils.smoothstep(range, MAX_DISPLACEMENT * 0.8, MAX_DISPLACEMENT);
+        if (this.free.distanceToSquared(this.position) > 1e-8) steer = 0;
+      }
+      // A fleeing fish aims its body at where the push is about to take it: its motion plus the escape
+      // direction scaled by the push strength (a gentle nudge barely turns it, a bolt turns it fully).
+      if (steer > 0) this.direction.addScaledVector(this.intent, steer * pushStrength * FLEE_LEAD);
+      // Where the fish wants to go includes the motion the body could not follow, so it still turns toward it.
+      this.direction.add(this.removed);
       if (this.direction.lengthSq() < 1e-10) this.direction.set(1, 0, 0);
       this.direction.normalize();
       const heading = this.headings;
@@ -452,8 +597,19 @@ export class Marine {
         heading[i3 + 1] = this.direction.y;
         heading[i3 + 2] = this.direction.z;
       } else {
-        const mix = dt > 0 ? 1 - Math.exp(-7 * dt) : 0;
-        this.offset.set(heading[i3], heading[i3 + 1], heading[i3 + 2]).lerp(this.direction, mix);
+        const bolting = MathUtils.smoothstep(Math.hypot(velocity[i3], velocity[i3 + 1], velocity[i3 + 2]), 0.3, 1.6);
+        let mix = dt > 0 ? 1 - Math.exp(-MathUtils.lerp(HEADING_RATE, FLEE_HEADING_RATE, bolting) * dt) : 0;
+        this.offset.set(heading[i3], heading[i3 + 1], heading[i3 + 2]);
+        // A body only turns so fast, however sharp the escape.
+        const turn = Math.acos(MathUtils.clamp(this.offset.dot(this.direction), -1, 1));
+        if (turn > 1e-4) mix = Math.min(mix, ((tethered ? TETHERED_TURN_RATE : MAX_TURN_RATE) * dt) / turn);
+        if (turn > 2.6) {
+          // Turning about face: a straight lerp would collapse through zero, so turn about the vertical axis.
+          this.side.crossVectors(this.offset, this.worldUp);
+          if (this.side.lengthSq() < 1e-6) this.side.set(0, 0, 1);
+          this.direction.addScaledVector(this.side.normalize(), 1.2).normalize();
+        }
+        this.offset.lerp(this.direction, mix);
         if (this.offset.lengthSq() < 1e-4) this.offset.copy(this.direction);
         this.offset.normalize();
         heading[i3] = this.offset.x;
@@ -473,6 +629,41 @@ export class Marine {
       this.fish.setMatrixAt(i, this.dummy.matrix);
     }
     this.fish.instanceMatrix.needsUpdate = true;
+  }
+
+  /**
+   * A fish only swims head-first: its net motion (orbit plus flight) may not point backwards along its body,
+   * and its sideways part may not exceed LATERAL_LIMIT times its forward speed. Whatever is cut off is added
+   * to this.removed, so the body still turns toward where the fish wanted to go.
+   */
+  private confineToBody(i3: number) {
+    const hx = this.headings[i3];
+    const hy = this.headings[i3 + 1];
+    const hz = this.headings[i3 + 2];
+    if (hx === 0 && hy === 0 && hz === 0) return;
+    const velocity = this.displacementVelocity;
+    const nx = this.homeVelocity.x + velocity[i3];
+    const ny = this.homeVelocity.y + velocity[i3 + 1];
+    const nz = this.homeVelocity.z + velocity[i3 + 2];
+    const along = nx * hx + ny * hy + nz * hz;
+    const lx = nx - along * hx;
+    const ly = ny - along * hy;
+    const lz = nz - along * hz;
+    const lateral = Math.hypot(lx, ly, lz);
+    const forward = Math.max(along, 0);
+    const allowed = forward * LATERAL_LIMIT;
+    if (along >= 0 && lateral <= allowed) return;
+    const k = lateral > allowed && lateral > 1e-9 ? allowed / lateral : 1;
+    // New net motion: forward part along the body plus the clipped sideways part.
+    const dx = forward * hx + lx * k - nx;
+    const dy = forward * hy + ly * k - ny;
+    const dz = forward * hz + lz * k - nz;
+    velocity[i3] += dx;
+    velocity[i3 + 1] += dy;
+    velocity[i3 + 2] += dz;
+    this.removed.x -= dx;
+    this.removed.y -= dy;
+    this.removed.z -= dz;
   }
 
   dispose() {

@@ -12,6 +12,7 @@ import {
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
 import { CausticField, COLUMN_COUNT, COLUMN_RADIUS, COLUMN_RING_RADIUS, WATER_HEIGHT } from './CausticField';
 import { createCausticMaterial } from './CausticMaterials';
+import { createColumnGeometry } from './ColumnGeometry';
 import { createStoneTexture } from './StoneTexture';
 
 export const ROOM_RADIUS = 11.5;
@@ -90,13 +91,11 @@ export class Rotunda {
       stoneParts.push(faceInward(new CylinderGeometry(r, r, TERRACE_RISE, 96, 1, true)).translate(0, y - TERRACE_RISE / 2, 0));
     }
 
-    // Columns reach through the water surface.
+    // Columns reach through the water surface: moulded base, fluted shaft with entasis, capital.
     for (const { x, z, radius } of COLUMNS) {
-      const bottom = floorHeight(Math.hypot(x, z) - radius * 1.35);
+      const bottom = floorHeight(Math.hypot(x, z) - radius * 1.35) - 0.01;
       const top = WATER_HEIGHT + 0.04;
-      const height = top - bottom;
-      stoneParts.push(new CylinderGeometry(radius, radius * 1.02, height, 28, 1, true).translate(x, bottom + height / 2, z));
-      stoneParts.push(new CylinderGeometry(radius * 1.25, radius * 1.32, 0.22, 28).translate(x, bottom + 0.11, z));
+      stoneParts.push(createColumnGeometry(radius, top - bottom).translate(x, bottom, z));
     }
 
     this.addMerged(floorParts, this.floorMaterial, 'Polished stone terraces');

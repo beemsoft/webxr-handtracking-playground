@@ -408,6 +408,13 @@ export default class WebXRManager {
     if (this.trackedHandsManager) {
       handTrackingResult = this.trackedHandsManager.renderHandsAndDetectGesture(frame, pose, this.xrReferenceSpace);
     }
+    if (this.sceneBuilder.updateHands) {
+      // The scene draws the hands itself: hide the default joint boxes (their physics bodies stay).
+      for (const child of this.scene.children) {
+        if (child.name === 'HandJoint') child.visible = false;
+      }
+      this.sceneBuilder.updateHands(frame, this.xrReferenceSpace);
+    }
     if (handTrackingResult) {
       if (handTrackingResult.gestureType == GestureType.None) {
         if (this.trackedHandsManager) {

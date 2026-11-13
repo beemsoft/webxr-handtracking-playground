@@ -34,7 +34,8 @@ export class Shark {
   readonly position = new Vector3(PATROL_RADIUS, 3, 0);
   readonly velocity = new Vector3();
 
-  private readonly forward = new Vector3(0, 0, 1);
+  /** Unit vector along the body, tail to nose; the fish use it to keep out of the shark's whole body. */
+  readonly forward = new Vector3(0, 0, 1);
   private readonly desired = new Vector3();
   private readonly target = new Vector3();
   private readonly toCamera = new Vector3();
