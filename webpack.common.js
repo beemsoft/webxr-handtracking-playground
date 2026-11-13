@@ -48,6 +48,7 @@ module.exports = {
         ocean_simulation2: './src/demo/ocean_simulation2/src',
         'ocean-simulation2': './src/demo/ocean_simulation2/src',
         caustic: './src/demo/caustic/src',
+        caustic_webgpu: './src/demo/caustic_webgpu/src',
     },
     module: {
         rules: [
@@ -73,6 +74,14 @@ module.exports = {
     optimization: {
         splitChunks: {
             cacheGroups: {
+                // The pinned Three.js build of caustic_webgpu stays out of `commons` so no other demo downloads it.
+                causticWebgpuVendor: {
+                    name: 'caustic_webgpu_vendor',
+                    test: /[\\/]caustic_webgpu[\\/]vendor[\\/]/,
+                    chunks: 'all',
+                    priority: 20,
+                    enforce: true
+                },
                 commons: {
                     name: 'commons',
                     chunks: 'all'

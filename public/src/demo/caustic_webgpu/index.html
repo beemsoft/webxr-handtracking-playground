@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#295661">
+    <title>WebXR Caustic (WebGPU) - A sunken observatory of light</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../../img/favicon.ico" />
+    <style>
+      :root { --fog-color: #295661; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--fog-color); font-family: system-ui, sans-serif; color: #e6fbff; }
+      canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+      #bar { position: fixed; top: 0; left: 0; right: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; pointer-events: none; z-index: 5; }
+      #bar > * { pointer-events: auto; }
+      #bar .title { font-size: 14px; letter-spacing: .04em; opacity: .85; margin-right: auto; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+      #bar button { font: inherit; font-size: 13px; color: #e6fbff; background: rgba(4, 38, 48, .55); border: 1px solid rgba(160, 235, 255, .35); border-radius: 6px; padding: 6px 12px; cursor: pointer; backdrop-filter: blur(6px); }
+      #bar button:hover { background: rgba(8, 70, 88, .7); }
+      #vr-note { font-size: 12px; opacity: .8; max-width: 320px; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+      #vr-note a { color: #9be8ff; }
+      #status { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; font-size: 18px; background: var(--fog-color); z-index: 10; }
+      #status a { color: #9be8ff; }
+      .lil-gui.root { position: fixed; top: 52px; right: 12px; z-index: 6; }
+    </style>
+</head>
+<body>
+  <canvas></canvas>
+  <header id="bar">
+    <span class="title">Caustic &middot; WebGPU</span>
+    <span id="vr-slot"></span>
+    <button id="view" type="button" title="Next camera view">View</button>
+    <button id="ripple" type="button" title="Send a ripple (R)">Ripple</button>
+    <button id="pause" type="button" aria-label="Pause animation">Pause</button>
+  </header>
+  <div id="status">Starting WebGPU&hellip;</div>
+  <script src="../commons/dist/bundle.js"></script>
+  <script src="../caustic_webgpu_vendor/dist/bundle.js"></script>
+  <script src="dist/bundle.js"></script>
+</body>
+</html>
